@@ -1,0 +1,2 @@
+﻿src/screens/AuthScreens/SuperAdmin/AddEvent.tsx(292,10): error TS2304: Cannot find name 'Target'.
+src/screens/main/AttendanceHome.tsx(348,22): error TS2304: Cannot find name 'ChevronRight'.

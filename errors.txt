@@ -1,0 +1,68 @@
+src/api/locations.ts(51,36): error TS6133: 'query' is declared but its value is never read.
+src/api/locations.ts(51,51): error TS6133: 'countryCode' is declared but its value is never read.
+src/api/webLoader.ts(2,30): error TS2307: Cannot find module '@screens/AuthScreens/SuperAdmin/styles' or its corresponding type declarations.
+src/api/webLoader.ts(3,29): error TS2307: Cannot find module 'expo-web-browser' or its corresponding type declarations.
+src/components/RoleSwitchCountdown.tsx(3,10): error TS6133: 'Shield' is declared but its value is never read.
+src/components/RoleSwitchCountdown.tsx(3,25): error TS6133: 'X' is declared but its value is never read.
+src/screens/AuthScreens/SuperAdmin/ApproveSuperAdmins.tsx(5,39): error TS6133: 'UserCircle' is declared but its value is never read.
+src/screens/AuthScreens/SuperAdmin/EventAndAnnouncement.tsx(77,9): error TS6133: '_onRefresh' is declared but its value is never read.
+src/screens/AuthScreens/SuperAdmin/FingerprintSetup.tsx(9,10): error TS6133: 'ArrowLeft' is declared but its value is never read.
+src/screens/AuthScreens/SuperAdmin/FormScreen.tsx(26,10): error TS6133: 'profileFile' is declared but its value is never read.
+src/screens/AuthScreens/UnitLeader/ManageUnit.tsx(39,9): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/screens/main/FinanceSummary.tsx(3,18): error TS6133: 'AnimatePresence' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(5,33): error TS6133: 'X' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(5,36): error TS6133: 'Filter' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(6,29): error TS6133: 'Wallet' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(6,37): error TS6133: 'DollarSign' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(7,3): error TS6133: 'ChevronRight' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(7,17): error TS6133: 'Calendar' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(7,27): error TS6133: 'ArrowUpRight' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(7,41): error TS6133: 'ArrowDownRight' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(8,15): error TS6133: 'PieIcon' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(8,35): error TS6133: 'Download' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(30,24): error TS6133: 'setSelectedYear' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(95,55): error TS6133: 'key' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(117,36): error TS6133: 'key' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(226,21): error TS2304: Cannot find name 'Plus'.
+src/screens/main/FinanceSummary.tsx(328,41): error TS6133: 'entry' is declared but its value is never read.
+src/screens/main/FinanceSummary.tsx(349,43): error TS6133: 'entry' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(1,60): error TS6133: 'useRef' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(5,1): error TS6133: 'toast' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(7,42): error TS2307: Cannot find module '../../../utils/activeUnit' or its corresponding type declarations.
+src/screens/main/Member/MemberDashboard.tsx(8,1): error TS6133: 'AppEventBus' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(14,40): error TS6133: 'RefreshCw' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(15,9): error TS6133: 'MapPin' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(15,27): error TS6133: 'CheckCircle' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(15,40): error TS6133: 'Shield' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(27,9): error TS2503: Cannot find namespace 'JSX'.
+src/screens/main/Member/MemberDashboard.tsx(54,17): error TS6133: 'size' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(182,9): error TS6133: 'location' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(183,11): error TS6133: 'personalCount' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(187,10): error TS6133: 'error' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(187,17): error TS6133: 'setError' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(189,23): error TS6133: 'setUnreadTotal' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(197,23): error TS6133: 'setPendingRole' is declared but its value is never read.
+src/screens/main/Member/MemberDashboard.tsx(454,18): error TS2304: Cannot find name 'Banknote'.
+src/screens/main/MemberList.tsx(6,3): error TS6133: 'MessageSquare' is declared but its value is never read.
+src/screens/main/MemberList.tsx(6,24): error TS6133: 'User' is declared but its value is never read.
+src/screens/main/MemberList.tsx(7,22): error TS6133: 'UserCheck' is declared but its value is never read.
+src/screens/main/MemberList.tsx(8,14): error TS6133: 'Download' is declared but its value is never read.
+src/screens/main/MemberList.tsx(10,3): error TS6133: 'Lock' is declared but its value is never read.
+src/screens/main/MemberList.tsx(10,17): error TS6133: 'CheckCircle2' is declared but its value is never read.
+src/screens/main/MemberList.tsx(205,54): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/screens/main/MemberList.tsx(218,50): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/screens/main/MemberList.tsx(231,50): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/screens/main/Notification.tsx(7,13): error TS6133: 'Info' is declared but its value is never read.
+src/screens/main/Notification.tsx(9,3): error TS6133: 'Mail' is declared but its value is never read.
+src/screens/main/Notification.tsx(9,15): error TS6133: 'Sparkles' is declared but its value is never read.
+src/screens/main/Notification.tsx(10,3): error TS6133: 'Clock' is declared but its value is never read.
+src/screens/main/Notification.tsx(12,1): error TS6133: 'axios' is declared but its value is never read.
+src/screens/main/Notification.tsx(14,1): error TS6133: 'BASE_URl' is declared but its value is never read.
+src/screens/main/Notification.tsx(50,13): error TS6133: 'token' is declared but its value is never read.
+src/screens/main/Notification.tsx(86,30): error TS2554: Expected 2 arguments, but got 1.
+src/screens/main/NotificationDetail.tsx(7,9): error TS6133: 'Clock' is declared but its value is never read.
+src/screens/main/SuperAdmin/ChurchSwitchScreen.tsx(3,1): error TS6192: All imports in import declaration are unused.
+src/screens/main/UnitLeader/UnitLeaderDashboard.tsx(5,17): error TS6133: 'Heart' is declared but its value is never read.
+src/screens/main/UnitLeader/UnitLeaderDashboard.tsx(307,31): error TS2304: Cannot find name 'cn'.

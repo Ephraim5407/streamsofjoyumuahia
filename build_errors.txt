@@ -1,0 +1,30 @@
+﻿src/App.tsx(162,25): error TS2786: 'EventsAnnouncementsScreen' cannot be used as a JSX component.
+  Its type '() => void' is not a valid JSX element type.
+    Type '() => void' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'void' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/App.tsx(200,55): error TS2786: 'MembersAssisted' cannot be used as a JSX component.
+  Its type '() => void' is not a valid JSX element type.
+    Type '() => void' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'void' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/App.tsx(228,48): error TS2786: 'EventsAnnouncementsScreen' cannot be used as a JSX component.
+  Its type '() => void' is not a valid JSX element type.
+    Type '() => void' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'void' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/App.tsx(243,44): error TS2786: 'LegalContentScreen' cannot be used as a JSX component.
+  Its type '() => void' is not a valid JSX element type.
+    Type '() => void' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'void' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/App.tsx(244,46): error TS2786: 'WelcomeScreen' cannot be used as a JSX component.
+  Its type '() => void' is not a valid JSX element type.
+    Type '() => void' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'void' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/App.tsx(245,51): error TS2786: 'MailOtpScreen' cannot be used as a JSX component.
+  Its type '() => void' is not a valid JSX element type.
+    Type '() => void' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'void' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+src/screens/AuthScreens/SuperAdmin/AddAnnouncement.tsx(50,68): error TS2554: Expected 1 arguments, but got 2.
+src/screens/AuthScreens/SuperAdmin/AddEvent.tsx(77,9): error TS2554: Expected 1 arguments, but got 2.
+src/screens/AuthScreens/SuperAdmin/AddEvent.tsx(282,10): error TS2304: Cannot find name 'Target'.
+src/screens/AuthScreens/SuperAdmin/FinanceSummary.tsx(223,29): error TS2304: Cannot find name 'cn'.
+src/screens/AuthScreens/SuperAdmin/FinanceSummary.tsx(265,47): error TS2304: Cannot find name 'cn'.
+src/screens/main/AttendanceHome.tsx(348,22): error TS2304: Cannot find name 'ChevronRight'.

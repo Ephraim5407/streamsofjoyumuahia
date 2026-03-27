@@ -1,0 +1,264 @@
+
+> webpwa@0.0.0 lint C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA
+> eslint . "--fix"
+
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\App.tsx
+  79:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\App.tsx:79:5
+  77 |   useEffect(() => {
+  78 |     const token = localStorage.getItem('token');
+> 79 |     setDest(token ? '/home' : '/welcome');
+     |     ^^^^^^^ Avoid calling setState() directly within an effect
+  80 |   }, []);
+  81 |   if (!dest) return null;
+  82 |   return <Navigate to={dest} replace />;  react-hooks/set-state-in-effect
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\components\LayoutWrapper.tsx
+  9:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\components\RoleSwitchCountdown.tsx
+  30:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\components\RoleSwitchCountdown.tsx:30:7
+  28 |   useEffect(() => {
+  29 |     if (isOpen) {
+> 30 |       setRemaining(seconds);
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  31 |       executedRef.current = false;
+  32 |       
+  33 |       timerRef.current = setInterval(() => {  react-hooks/set-state-in-effect
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\components\RoleSwitcher.tsx
+  13:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\context\SoulsStore.tsx
+  33:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\context\SoulsStore.tsx:33:5
+  31 |
+  32 |   useEffect(() => {
+> 33 |     syncContext();
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  34 |     const off = AppEventBus.on((event) => {
+  35 |       if (
+  36 |         event === 'roleSwitched' ||   react-hooks/set-state-in-effect
+  56:6   warning  React Hook useEffect has missing dependencies: 'personal' and 'unit'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/exhaustive-deps
+  83:17  error    Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-refresh/only-export-components
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\AdminFinanceSummary.tsx
+   66:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\AdminFinanceSummary.tsx:66:5
+  64 |
+  65 |   useEffect(() => {
+> 66 |     loadData();
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  67 |   }, [location.state?.ministry]);
+  68 |
+  69 |   useEffect(() => {                                                                                                                                                                                                                                                                                                                         react-hooks/set-state-in-effect
+   67:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+   74:7  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\AdminFinanceSummary.tsx:74:7
+  72 |       // But Native used raw toDateString. Let's do a loose matching or standard object check.
+  73 |       const selD = new Date(selectedDate).toDateString();
+> 74 |       setFilteredIncomes(incomes.filter(inc => new Date(inc.date).toDateString() === selD));
+     |       ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  75 |       setFilteredExpenses(expenses.filter(exp => new Date(exp.date).toDateString() === selD));
+  76 |     } else {
+  77 |       setFilteredIncomes(incomes);  react-hooks/set-state-in-effect
+  164:5  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\AdminFinanceSummary.tsx:164:5
+  162 |
+  163 |   useEffect(() => {
+> 164 |     setIsSearching(true);
+      |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  165 |     const timeout = setTimeout(() => {
+  166 |       if (!searchQuery) {
+  167 |         setFilteredMonthlyData(monthlyData);                                                                                                                                                                                                                                         react-hooks/set-state-in-effect
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\ExpensesAdmin.tsx
+   92:5   error    Error: Cannot access variable before it is declared
+
+`loadAll` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\ExpensesAdmin.tsx:92:5
+  90 |
+  91 |   useEffect(() => {
+> 92 |     loadAll();
+     |     ^^^^^^^ `loadAll` accessed before it is declared
+  93 |   }, []);
+  94 |
+  95 |   const loadAll = async () => {
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\ExpensesAdmin.tsx:95:3
+   93 |   }, []);
+   94 |
+>  95 |   const loadAll = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  96 |     try {
+      | ^^^^^^^^^
+>  97 |       const userRaw = await AsyncStorage.getItem('user');
+      …
+      | ^^^^^^^^^
+> 108 |     } catch (e) { console.log('load error', e); }
+      | ^^^^^^^^^
+> 109 |   };
+      | ^^^^^ `loadAll` is declared here
+  110 |
+  111 |   // Auto-calc totals
+  112 |   useEffect(() => {  react-hooks/immutability
+   93:6   warning  React Hook useEffect has a missing dependency: 'loadAll'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+  168:13  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\ExpensesAdmin.tsx:168:13
+  166 |     try {
+  167 |       const newExpense: Omit<ExpenseRecord, '_id'> = {
+> 168 |         id: Date.now().toString(),
+      |             ^^^^^^^^^^ Cannot call impure function
+  169 |         category: selectedCategory,
+  170 |         date: selectedDate,
+  171 |         ministry: getCurrentMinistry(),                                                                                                                                                                                                                                                                            react-hooks/purity
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\IncomeAdmin.tsx
+  142:21  error    Error: Cannot access variable before it is declared
+
+`loadAll` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\IncomeAdmin.tsx:142:21
+  140 |   };
+  141 |
+> 142 |   useEffect(() => { loadAll(); fetchBanks(); }, []);
+      |                     ^^^^^^^ `loadAll` accessed before it is declared
+  143 |
+  144 |   const loadAll = async () => {
+  145 |     try {
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\IncomeAdmin.tsx:144:3
+  142 |   useEffect(() => { loadAll(); fetchBanks(); }, []);
+  143 |
+> 144 |   const loadAll = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 145 |     try {
+      | ^^^^^^^^^
+> 146 |       const userRaw = await AsyncStorage.getItem('user');
+      | ^^^^^^^^^
+> 147 |       if (userRaw) setCurrentUser(JSON.parse(userRaw));
+      | ^^^^^^^^^
+> 148 |     } catch {}
+      | ^^^^^^^^^
+> 149 |     try {
+      | ^^^^^^^^^
+> 150 |       const data = await getIncomes(getCurrentMinistry());
+      | ^^^^^^^^^
+> 151 |       setIncomes(data);
+      | ^^^^^^^^^
+> 152 |     } catch (e) { console.log('load error', e); }
+      | ^^^^^^^^^
+> 153 |   };
+      | ^^^^^ `loadAll` is declared here
+  154 |
+  155 |   const fetchBanks = async () => {
+  156 |     const fallback = [  react-hooks/immutability
+  142:32  error    Error: Cannot access variable before it is declared
+
+`fetchBanks` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\IncomeAdmin.tsx:142:32
+  140 |   };
+  141 |
+> 142 |   useEffect(() => { loadAll(); fetchBanks(); }, []);
+      |                                ^^^^^^^^^^ `fetchBanks` accessed before it is declared
+  143 |
+  144 |   const loadAll = async () => {
+  145 |     try {
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AdminFinance\IncomeAdmin.tsx:155:3
+  153 |   };
+  154 |
+> 155 |   const fetchBanks = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 156 |     const fallback = [
+      | ^^^^^^^^^^^^^^^^^^^^^^
+> 157 |       { name: 'Access Bank', code: '044' }, { name: 'Fidelity Bank Nigeria', code: '070' },
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^
+> 168 |     } catch { setBanks(fallback); setFilteredBanks(fallback); }
+      | ^^^^^^^^^^^^^^^^^^^^^^
+> 169 |   };
+      | ^^^^^ `fetchBanks` is declared here
+  170 |
+  171 |   const handleBankSearch = (query: string) => {
+  172 |     setDepositBankName(query);                                                                                                                                                                                          react-hooks/immutability
+  142:49  warning  React Hook useEffect has a missing dependency: 'loadAll'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AuthScreens\Home\MailOtpScreen.tsx
+  108:6  warning  React Hook useEffect has missing dependencies: 'params?.prefills' and 'params?.userId'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  117:6  warning  React Hook useEffect has missing dependencies: 'loading' and 'sendMailOtp'. Either include them or remove the dependency array              react-hooks/exhaustive-deps
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AuthScreens\Login\ForgotPasswordScreen.tsx
+  48:46  warning  React Hook useEffect has missing dependencies: 'email' and 'sendOtp'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AuthScreens\Login\LoginScreen.tsx
+  14:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AuthScreens\Registration\RegularRegistrationForm.tsx
+  258:6  warning  React Hook useEffect has a missing dependency: 'prefills?.church'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AuthScreens\SuperAdmin\EventAndAnnouncement.tsx
+  74:6  warning  React Hook useEffect has a missing dependency: 'loadAndCache'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\AuthScreens\SuperAdmin\ManageUnit.tsx
+  137:51  warning  React Hook useEffect has missing dependencies: 'fetchAll' and 'fetchCounts'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\main\Notification.tsx
+  89:20  error  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  89:34  error  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+C:\Users\PC\React Native App\StreamsOfJoyMobileApp\WebPWA\src\screens\main\Reports.tsx
+  164:6  warning  React Hook useMemo has a missing dependency: 'allTools'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 27 problems (16 errors, 11 warnings)
+
+ ELIFECYCLE  Command failed with exit code 1.

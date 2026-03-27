@@ -1,0 +1,13 @@
+src/api/webLoader.ts(2,30): error TS2307: Cannot find module '@screens/AuthScreens/SuperAdmin/styles' or its corresponding type declarations.
+src/api/webLoader.ts(3,29): error TS2307: Cannot find module 'expo-web-browser' or its corresponding type declarations.
+src/screens/AuthScreens/UnitLeader/ManageUnit.tsx(39,9): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  Type 'undefined' is not assignable to type 'string | null'.
+src/screens/main/FinanceSummary.tsx(226,21): error TS2304: Cannot find name 'Plus'.
+src/screens/main/Member/MemberDashboard.tsx(7,42): error TS2307: Cannot find module '../../../utils/activeUnit' or its corresponding type declarations.
+src/screens/main/Member/MemberDashboard.tsx(27,9): error TS2503: Cannot find namespace 'JSX'.
+src/screens/main/Member/MemberDashboard.tsx(454,18): error TS2304: Cannot find name 'Banknote'.
+src/screens/main/MemberList.tsx(205,54): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/screens/main/MemberList.tsx(218,50): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/screens/main/MemberList.tsx(231,50): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/screens/main/Notification.tsx(86,30): error TS2554: Expected 2 arguments, but got 1.
+src/screens/main/UnitLeader/UnitLeaderDashboard.tsx(307,31): error TS2304: Cannot find name 'cn'.
