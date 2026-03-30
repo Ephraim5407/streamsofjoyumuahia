@@ -247,7 +247,7 @@ export default function MemberListScreen() {
 
   const canManageRoles = useMemo(() => {
     if (!viewer) return false;
-    if (viewer.activeRole === "SuperAdmin") return true;
+    if (viewer.activeRole === "SuperAdmin" || viewer.activeRole === "MinistryAdmin") return true;
     if (viewer.activeRole === "UnitLeader") {
       const uId = unitId || viewer.activeUnitId || (viewer.roles || []).find((r: any) => r.role === "UnitLeader" && r.unit)?.unit;
       return (viewer.roles || []).some(
@@ -297,15 +297,15 @@ export default function MemberListScreen() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2">Total Strength</p>
+              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2">Total Members</p>
               <h3 className="text-3xl font-black text-white">{stats.total}</h3>
             </div>
             <div className="bg-blue-500/10 backdrop-blur-md p-6 rounded-2xl border border-blue-500/20">
-              <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mb-2">Male Personnel</p>
+              <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mb-2">Male Members</p>
               <h3 className="text-3xl font-black text-blue-400">{stats.male}</h3>
             </div>
             <div className="bg-rose-500/10 backdrop-blur-md p-6 rounded-2xl border border-rose-500/20">
-              <p className="text-rose-400 text-[10px] font-black uppercase tracking-widest mb-2">Female Personnel</p>
+              <p className="text-rose-400 text-[10px] font-black uppercase tracking-widest mb-2">Female Members</p>
               <h3 className="text-3xl font-black text-rose-400">{stats.female}</h3>
             </div>
           </div>
@@ -512,62 +512,61 @@ export default function MemberListScreen() {
             />
             <motion.div
               layoutId={selectedMember._id}
-              className="relative w-full max-w-2xl bg-white dark:bg-[#1a1c1e] rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-4xl bg-white dark:bg-[#0f1218] rounded-[24px] md:rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-white/5 mx-2"
             >
               {detailsLoading ? (
-                <div className="p-20 flex flex-col items-center gap-6">
+                <div className="p-16 md:p-32 flex flex-col items-center gap-8">
                   <div className="w-16 h-16 border-4 border-[#349DC5] border-t-transparent rounded-full animate-spin" />
-                  <p className="text-xs font-bold text-gray-400 uppercase animate-pulse">
-                    Accessing Personnel File...
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] animate-pulse">
+                    Pulling Intel...
                   </p>
                 </div>
               ) : (
-                <>
-                  <div className="h-40 bg-[#00204a] p-10 flex items-end relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#349DC5]/10 rounded-full -mr-32 -mt-32 blur-3xl" />
-                    <div className="absolute top-10 right-10 flex gap-3">
-                      <button
-                        onClick={() => setSelectedMember(null)}
-                        className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white transition-all shadow-xl"
-                      >
-                        <X size={24} />
-                      </button>
-                    </div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar bg-white dark:bg-[#0f1218] relative">
+                  <div className="h-40 md:h-44 bg-[#00204a] p-6 md:p-10 flex items-start justify-end relative">
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#349DC5]/10 rounded-full -mr-48 -mt-48 blur-[100px] opacity-40" />
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black/40" />
+                    <button
+                      onClick={() => setSelectedMember(null)}
+                      className="relative z-30 p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/10 border border-white/20 text-white hover:bg-white/30 hover:scale-105 transition-all active:scale-90 shadow-2xl backdrop-blur-md"
+                    >
+                      <X size={24} />
+                    </button>
                   </div>
-                  <div className="px-10 pb-12 -mt-16 relative z-10 overflow-y-auto custom-scrollbar">
-                    <div className="flex flex-col md:flex-row items-end gap-8 mb-12">
-                      <div className="w-36 h-36 rounded-[40px] border-[8px] border-white dark:border-[#1a1c1e] p-1 shadow-2xl overflow-hidden bg-white dark:bg-white/10 backdrop-blur-xl">
-                        {selectedMember.profile?.avatar ? (
+                  <div className="px-6 md:px-12 pb-12 relative z-10">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 mb-10 md:mb-16 -mt-20 md:mt-[-120px]">
+                      <div className="w-40 h-40 md:w-48 md:h-48 rounded-[32px] md:rounded-[48px] border-[6px] md:border-[10px] border-white dark:border-[#0f1218] p-1 shadow-2xl overflow-hidden bg-white dark:bg-white/10 backdrop-blur-xl shrink-0 group">
+                        {selectedMember.profile?.avatar || selectedMember.avatar ? (
                           <img
-                            src={selectedMember.profile.avatar}
-                            className="w-full h-full object-cover rounded-[32px]"
+                            src={selectedMember.profile?.avatar || selectedMember.avatar}
+                            className="w-full h-full object-cover rounded-[24px] md:rounded-[38px] transition-transform duration-700 group-hover:scale-110"
                             alt="Avatar"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-[#00204a] text-white font-black text-4xl">
+                          <div className="w-full h-full flex items-center justify-center bg-[#00204a] text-white font-black text-4xl md:text-5xl">
                             {selectedMember.firstName?.[0]}{selectedMember.surname?.[0]}
                           </div>
                         )}
                       </div>
-                      <div className="pb-3 flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-4">
-                          <div className="px-3.5 py-1.5 bg-gray-100 dark:bg-white/5 rounded-full flex items-center gap-2 border border-gray-200 dark:border-white/10">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#349DC5]" />
-                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest">
-                              {selectedMember.approved ? "Verified Asset" : "Pending Intel"}
+                      <div className="pt-4 md:pt-[120px] flex-1 text-center md:text-left min-w-0">
+                        <div className="flex items-center justify-center md:justify-start gap-2 md:gap-3 mb-4 md:mb-6">
+                          <div className="px-5 py-2 bg-white dark:bg-white/5 rounded-full flex items-center gap-3 border border-gray-100 dark:border-white/10 shadow-lg shadow-black/5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#349DC5] shadow-[0_0_10px_#349DC5]" />
+                            <span className="text-[10px] font-black text-[#00204a] dark:text-white/80 uppercase tracking-widest">
+                              {selectedMember.approved ? "Active Personnel" : "Restricted Access"}
                             </span>
                           </div>
                         </div>
-                        <h2 className="text-4xl font-black text-[#00204a] dark:text-white leading-none truncate tracking-tight uppercase">
-                          {selectedMember.title} {selectedMember.firstName}{" "}
+                        <h2 className="text-3xl md:text-5xl font-black text-[#00204a] dark:text-white leading-[1.1] md:leading-[1] tracking-tighter uppercase mb-6 md:mb-8 drop-shadow-xl break-words">
+                          {selectedMember.title} {selectedMember.firstName} <br className="hidden md:block" />
                           {selectedMember.surname}
                         </h2>
-                        <div className="flex items-center gap-3 mt-4">
-                          <span className="px-4 py-1.5 bg-[#00204a] text-white rounded-xl text-[10px] font-black uppercase tracking-[0.1em] shadow-lg shadow-blue-900/20">
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-5">
+                          <span className="px-4 py-2 md:px-7 md:py-3 bg-[#00204a] text-white rounded-[16px] md:rounded-[20px] text-[10px] md:text-[11px] font-black uppercase tracking-wider md:tracking-[0.2em] shadow-xl shadow-blue-900/40 border border-white/5">
                             {selectedMember.activeRole || "Member"}
                           </span>
-                          <span className="text-xs font-bold text-gray-400 dark:text-white/40 border-l border-gray-200 dark:border-white/10 pl-3">
-                            {selectedMember.email || "NO_EXT_COMM"}
+                          <span className="text-[10px] md:text-[11px] font-black text-[#349DC5] uppercase tracking-widest bg-blue-50 dark:bg-blue-500/10 px-3 md:px-4 py-2 rounded-xl">
+                            {selectedMember.email || "UNIDENTIFIED_COMM"}
                           </span>
                         </div>
                       </div>
@@ -609,38 +608,38 @@ export default function MemberListScreen() {
                             <DataRow
                               icon={<User size={18} />}
                               label="Gender"
-                              value={selectedMember.profile?.gender || selectedMember.gender}
+                              value={selectedMember.gender || selectedMember.profile?.gender || selectedMember.userProfile?.gender || selectedMember.sex || selectedMember.profile?.sex || selectedMember.userData?.gender}
                             />
                             <DataRow
                               icon={<Calendar size={18} />}
                               label="Date of Birth"
-                              value={selectedMember.profile?.dob || selectedMember.profile?.dateOfBirth}
+                              value={selectedMember.dob || selectedMember.dateOfBirth || selectedMember.profile?.dob || selectedMember.profile?.dateOfBirth || selectedMember.userProfile?.dob || selectedMember.birthday || selectedMember.profile?.birthday}
                               isDate
                             />
                             <DataRow
                               icon={<Heart size={18} />}
                               label="Marital Status"
-                              value={selectedMember.profile?.maritalStatus}
+                              value={selectedMember.maritalStatus || selectedMember.profile?.maritalStatus || selectedMember.userProfile?.maritalStatus || selectedMember.userData?.maritalStatus}
                             />
                             <DataRow
                               icon={<Briefcase size={18} />}
                               label="Employment"
-                              value={selectedMember.profile?.employmentStatus}
+                              value={selectedMember.employmentStatus || selectedMember.profile?.employmentStatus || selectedMember.userProfile?.employmentStatus || selectedMember.employment || selectedMember.profile?.employment}
                             />
                             <DataRow
                               icon={<Briefcase size={18} />}
                               label="Occupation"
-                              value={selectedMember.profile?.occupation}
+                              value={selectedMember.occupation || selectedMember.profile?.occupation || selectedMember.userProfile?.occupation || selectedMember.job || selectedMember.profile?.job}
                             />
                             <DataRow
                               icon={<Shield size={18} />}
                               label="Education"
-                              value={selectedMember.profile?.education}
+                              value={selectedMember.education || selectedMember.profile?.education || selectedMember.userProfile?.education || selectedMember.qualification || selectedMember.profile?.qualification}
                             />
                             <DataRow
                               icon={<MapPin size={18} />}
                               label="Address"
-                              value={selectedMember.profile?.address}
+                              value={selectedMember.address || selectedMember.profile?.address || selectedMember.userProfile?.address || selectedMember.location || selectedMember.profile?.location}
                             />
                           </div>
                         </div>
@@ -717,25 +716,27 @@ export default function MemberListScreen() {
                           </div>
                         )}
 
-                        <div>
-                          <label className="text-[10px] font-bold text-gray-400 uppercase mb-6 block border-b border-gray-100 dark:border-white/5 pb-2">
-                            Security Operations
-                          </label>
-                          <div className="space-y-3">
-                            <button className="w-full h-14 flex items-center justify-between px-8 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-[20px] text-gray-400 hover:text-[#349DC5] hover:border-[#349DC5]/20 transition-all font-black text-[9px] uppercase tracking-widest group">
-                              Disable Account
-                              <Clock size={16} className="text-gray-300 group-hover:text-[#349DC5]" />
-                            </button>
-                            <button className="w-full h-14 flex items-center justify-between px-8 bg-white dark:bg-[#1a1c1e] border border-red-100 dark:border-red-950/20 rounded-[20px] text-red-500/60 hover:bg-red-500 hover:text-white transition-all font-black text-[9px] uppercase tracking-widest group">
-                              Purge Personnel Profile or Delete Account
-                              <Trash2 size={16} className="text-red-200 group-hover:text-white" />
-                            </button>
+                        {canManageRoles && (
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase mb-6 block border-b border-gray-100 dark:border-white/5 pb-2">
+                              Security Operations
+                            </label>
+                            <div className="space-y-3">
+                              <button className="w-full h-14 flex items-center justify-between px-8 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-[20px] text-gray-400 hover:text-[#349DC5] hover:border-[#349DC5]/20 transition-all font-black text-[9px] uppercase tracking-widest group">
+                                Disable Account
+                                <Clock size={16} className="text-gray-300 group-hover:text-[#349DC5]" />
+                              </button>
+                              <button className="w-full h-14 flex items-center justify-between px-8 bg-white dark:bg-[#1a1c1e] border border-red-100 dark:border-red-950/20 rounded-[20px] text-red-500/60 hover:bg-red-500 hover:text-white transition-all font-black text-[9px] uppercase tracking-widest group">
+                                Purge Personnel Profile or Delete Account
+                                <Trash2 size={16} className="text-red-200 group-hover:text-white" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                </>
+                </div>
               )}
             </motion.div>
           </div>

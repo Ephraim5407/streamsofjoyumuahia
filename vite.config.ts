@@ -15,6 +15,12 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'apple-touch-icon.png', 'masked-icon.svg'],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5000000,
+      },
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: 'Streams of Joy Management',
         short_name: 'SOJ Manage',

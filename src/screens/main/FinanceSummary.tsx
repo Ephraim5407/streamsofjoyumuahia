@@ -87,6 +87,23 @@ export default function FinanceSummaryScreen() {
     expense: false,
   });
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [userRole, setUserRole] = useState("");
+
+  useEffect(() => {
+    AsyncStorage.getItem("user").then((u) => {
+      if (u) {
+        const user = JSON.parse(u);
+        setUserRole(user?.activeRole || "");
+      }
+    });
+  }, []);
+
+  const isEffectiveReadOnly = useMemo(() => {
+    // If it's explicitly readOnly or if an Admin is viewing a specific unit's dashboard which is not their own context
+    if (readOnly) return true;
+    const isAdmin = userRole === "SuperAdmin" || userRole === "MinistryAdmin";
+    return isAdmin && !!routeUnitId;
+  }, [readOnly, userRole, routeUnitId]);
 
   const suggestions = useMemo(() => {
     if (!search || search.length < 2) return [];
@@ -104,6 +121,10 @@ export default function FinanceSummaryScreen() {
       try {
         const token = await AsyncStorage.getItem("token");
         if (!token) return;
+        const rawUser = await AsyncStorage.getItem("user");
+        const user = rawUser ? JSON.parse(rawUser) : null;
+        const currentRole = user?.activeRole || "";
+
         const unitId = routeUnitId || (await AsyncStorage.getItem("activeUnitId"));
 
         const [sumRes, listRes] = await Promise.all([
@@ -135,10 +156,10 @@ export default function FinanceSummaryScreen() {
   const stats = useMemo(() => {
     // Current year-specific stats for sections
     const yearIncome = finances
-      .filter((f) => f.type === "income")
+      .filter((f) => f.type?.toLowerCase() === "income" || f.type?.toLowerCase() === "deposit")
       .reduce((acc, curr) => acc + (curr.amount || 0), 0);
     const yearExpense = finances
-      .filter((f) => f.type === "expense")
+      .filter((f) => f.type?.toLowerCase() === "expense")
       .reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
     // Global totals from summary API (source of truth for accuracy)
@@ -146,23 +167,23 @@ export default function FinanceSummaryScreen() {
     const expense = summary?.totals.expense ?? yearExpense;
     const net = summary?.totals.net ?? income - expense;
 
-    // Foreign currency calculation (parity with Admin logic)
+    // Foreign currency calculation
     const usd = finances.reduce(
       (sum, f) =>
         sum +
-        (f.type === "income" ? Number(f.donorName) || 0 : -(Number(f.totalDollar) || 0)),
+        (f.type?.toLowerCase() === "income" ? Number(f.donorName) || 0 : -(Number(f.totalDollar) || 0)),
       0,
     );
     const gbp = finances.reduce(
       (sum, f) =>
         sum +
-        (f.type === "income" ? Number(f.department) || 0 : -(Number(f.totalPound) || 0)),
+        (f.type?.toLowerCase() === "income" ? Number(f.department) || 0 : -(Number(f.totalPound) || 0)),
       0,
     );
     const eur = finances.reduce(
       (sum, f) =>
         sum +
-        (f.type === "income" ? Number(f.eventName) || 0 : -(Number(f.totalEuro) || 0)),
+        (f.type?.toLowerCase() === "income" ? Number(f.eventName) || 0 : -(Number(f.totalEuro) || 0)),
       0,
     );
 
@@ -183,10 +204,11 @@ export default function FinanceSummaryScreen() {
           totalExpense: 0,
         };
       }
-      if (f.type === "income") {
+      const type = f.type?.toLowerCase();
+      if (type === "income" || type === "deposit") {
         months[key].income.push(f);
         months[key].totalIncome += f.amount || 0;
-      } else {
+      } else if (type === "expense") {
         months[key].expense.push(f);
         months[key].totalExpense += f.amount || 0;
       }
@@ -211,8 +233,8 @@ export default function FinanceSummaryScreen() {
     const total = inc + exp;
     if (total === 0) return [];
     return [
-      { name: "Income", value: inc, fill: "#7C3AED" },
-      { name: "Expense", value: exp, fill: "#10B981" },
+      { name: "Income", value: inc, fill: "#10B981" },
+      { name: "Expense", value: exp, fill: "#EF4444" },
     ];
   }, [summary]);
 
@@ -221,7 +243,7 @@ export default function FinanceSummaryScreen() {
       style: "currency",
       currency: "NGN",
       maximumFractionDigits: 0,
-    }).format(val);
+    }).format(val || 0);
   };
 
   const filteredMonthly = useMemo(() => {
@@ -270,87 +292,79 @@ export default function FinanceSummaryScreen() {
 
       <div className="max-w-4xl mx-auto px-6 -mt-8">
         {/* Rapid Metrics */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-[#1a1c1e] p-8 rounded-xl border-2 border-[#349DC5]/30 shadow-sm flex flex-col items-center justify-center mb-6"
-        >
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-            Net Surplus / Deficit
-          </p>
-          <h2
-            className={cn(
-              "text-4xl font-bold tabular-nums",
-              stats.net >= 0 ? "text-[#00204a] dark:text-white" : "text-rose-500",
-            )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-[#1a1c1e] p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex flex-col items-center justify-center"
           >
-            {formatCurrency(stats.net)}
-          </h2>
-        </motion.div>
-
-        {/* Foreign Assets */}
-        <div className="bg-white dark:bg-[#1a1c1e] p-7 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm mb-6">
-          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-6 text-center">
-            Foreign Currencies
-          </p>
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col items-center flex-1">
-              <span className="text-sm font-black text-[#00204a] dark:text-white">
-                $ {stats.usd.toLocaleString()}
-              </span>
-              <span className="text-[9px] font-bold text-gray-400 uppercase mt-1">
-                USD
-              </span>
-            </div>
-            <div className="w-px h-10 bg-gray-100 dark:bg-white/5 mx-4" />
-            <div className="flex flex-col items-center flex-1">
-              <span className="text-sm font-black text-[#00204a] dark:text-white">
-                £ {stats.gbp.toLocaleString()}
-              </span>
-              <span className="text-[9px] font-bold text-gray-400 uppercase mt-1">
-                GBP
-              </span>
-            </div>
-            <div className="w-px h-10 bg-gray-100 dark:bg-white/5 mx-4" />
-            <div className="flex flex-col items-center flex-1">
-              <span className="text-sm font-black text-[#00204a] dark:text-white">
-                € {stats.eur.toLocaleString()}
-              </span>
-              <span className="text-[9px] font-bold text-gray-400 uppercase mt-1">
-                EUR
-              </span>
-            </div>
-          </div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+              Total Income
+            </p>
+            <h2 className="text-xl font-black text-[#10B981] tabular-nums">
+              {formatCurrency(stats.income)}
+            </h2>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white dark:bg-[#1a1c1e] p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm flex flex-col items-center justify-center"
+          >
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+              Total Expenses
+            </p>
+            <h2 className="text-xl font-black text-rose-500 tabular-nums">
+              {formatCurrency(stats.expense)}
+            </h2>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="bg-[#00204a] p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center border border-white/10"
+          >
+            <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-1">
+              Net Surplus/Deficit
+            </p>
+            <h2 className={cn("text-xl font-black tabular-nums", stats.net >= 0 ? "text-white" : "text-rose-400")}>
+              {formatCurrency(stats.net)}
+            </h2>
+          </motion.div>
         </div>
 
         {/* Registry Quick Controls */}
-        <div className="flex flex-col sm:flex-row gap-8 mb-16">
+        <div className="flex flex-col sm:flex-row gap-6 mb-12">
+          {!isEffectiveReadOnly && (
+            <button
+              onClick={() => navigate(`/finance/record?type=income`)}
+              className="flex-1 h-16 bg-[#349DC5] text-white rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-[#349DC5]/20"
+            >
+              <Plus size={20} /> Add Entry
+            </button>
+          )}
           <button
-            onClick={() => navigate(`/admin-finance/income`)}
-            className="flex-1 h-20 bg-[#00204a] text-white rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center shadow-xl active:scale-95 transition-all hover:bg-[#1a3a6a] hover:shadow-[#00204a]/20"
+            onClick={() => navigate(`/finance/history/income${routeUnitId ? `?unitId=${routeUnitId}` : ""}`)}
+            className="flex-1 h-16 bg-[#349DC5] text-white rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center justify-center shadow-lg active:scale-95 transition-all hover:bg-[#00204a]"
           >
             Income History
           </button>
           <button
-            onClick={() => navigate(`/admin-finance/expenses`)}
-            className="flex-1 h-20 bg-white dark:bg-[#1a1c1e] text-[#00204a] dark:text-white rounded-2xl font-black text-base uppercase tracking-widest flex items-center justify-center border-2 border-[#00204a] dark:border-white/20 shadow-lg active:scale-95 transition-all hover:bg-gray-50 dark:hover:bg-white/5"
+            onClick={() => navigate(`/finance/history/expense${routeUnitId ? `?unitId=${routeUnitId}` : ""}`)}
+            className="flex-1 h-16 bg-white dark:bg-white/5 text-[#00204a] dark:text-white rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center justify-center border-2 border-rose-500/20 dark:border-rose-500/10 shadow-md active:scale-95 transition-all"
           >
             Expense History
           </button>
         </div>
 
-        {/* Search & Actions */}
-        <div className="flex flex-col sm:flex-row gap-6 mb-12">
-          <div className="flex-1 relative group">
-            <Search
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#349DC5] transition-colors"
-              size={22}
-            />
+        {/* Search & Year Picker */}
+        <div className="flex flex-col md:flex-row gap-4 mb-12">
+          <div className="flex-1 relative">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Search command modules..."
-              className="w-full h-20 pl-16 pr-8 bg-white dark:bg-[#1a1c1e] text-[#00204a] dark:text-gray-100 rounded-2xl border-2 border-gray-100 dark:border-white/5 font-black text-base outline-none focus:border-[#349DC5] transition-all shadow-md placeholder:text-gray-300 placeholder:font-bold"
+              placeholder="Search records by description..."
+              className="w-full h-14 pl-14 pr-6 bg-white dark:bg-[#1a1c1e] text-[#00204a] dark:text-white rounded-xl border border-gray-100 dark:border-white/5 font-bold text-sm outline-none focus:border-[#349DC5] transition-all shadow-sm"
               value={search}
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
@@ -359,272 +373,112 @@ export default function FinanceSummaryScreen() {
             <AnimatePresence>
               {showSuggestions && suggestions.length > 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                  className="absolute top-full left-0 right-0 mt-4 bg-white dark:bg-[#1a1c1e] rounded-2xl border-2 border-[#349DC5]/20 shadow-2xl z-[100] overflow-hidden backdrop-blur-xl"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a1c1e] rounded-xl border border-gray-100 dark:border-white/5 shadow-2xl z-[100] overflow-hidden"
                 >
-                  <div className="p-3 bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3">
-                      Suggestions
-                    </p>
-                  </div>
                   {suggestions.map((item, idx) => (
                     <button
                       key={idx}
-                      onClick={() => {
-                        setSearch(item);
-                        setShowSuggestions(false);
-                      }}
-                      className="w-full px-6 py-4 text-left text-sm font-black text-[#00204a] dark:text-gray-200 hover:bg-[#349DC5]/10 hover:text-[#349DC5] transition-all border-b last:border-0 border-gray-50 dark:border-white/5 flex items-center justify-between group"
+                      onClick={() => { setSearch(item); setShowSuggestions(false); }}
+                      className="w-full px-5 py-3 text-left text-xs font-bold text-[#00204a] dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-all border-b last:border-0 border-gray-50 dark:border-white/5"
                     >
-                      <span>{item}</span>
-                      <ChevronRight size={18} className="translate-x-0 group-hover:translate-x-2 transition-transform" />
+                      {item}
                     </button>
                   ))}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-          {!readOnly && (
-            <button
-              onClick={() => navigate(`/finance/record?type=income`)}
-              className="h-20 px-10 bg-[#00204a] text-white rounded-2xl font-black text-sm uppercase flex items-center gap-4 active:scale-95 transition-all shadow-xl hover:bg-[#1a3a6a]"
+          <div className="w-full md:w-48 flex items-center bg-white dark:bg-[#1a1c1e] px-4 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm h-14">
+            <Calendar className="text-[#349DC5] shrink-0" size={16} />
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="flex-1 bg-transparent border-none outline-none font-bold text-xs text-[#00204a] dark:text-white ml-3 cursor-pointer"
             >
-              <Plus size={24} /> Add Entry
-            </button>
-          )}
-        </div>
-
-        {/* Year Picker */}
-        <div className="flex items-center bg-white dark:bg-[#1a1c1e] px-4 rounded-xl border border-gray-100 dark:border-white/5 mb-8 shadow-sm h-14">
-          <Calendar className="text-[#349DC5] shrink-0" size={18} />
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="flex-1 bg-transparent border-none outline-none font-bold text-xs text-[#00204a] dark:text-white h-full ml-3 cursor-pointer"
-          >
-            {Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-              <option key={y} value={y} className="text-[#00204a]">
-                Year {y}
-              </option>
-            ))}
-          </select>
+              {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
+                <option key={y} value={y}>Year {y}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Ledger Breakdown Sections */}
         <div className="space-y-12 mb-16">
           {/* Income Section */}
-          <div>
-            <h3 className="text-base font-bold text-[#00204a] dark:text-white uppercase mb-6 flex items-center gap-2">
-              <div className="w-1 h-5 bg-[#7C3AED] rounded-full" />
-              Income Breakdown (Month-by-Month)
-            </h3>
-            <div className="space-y-6">
-              {filteredMonthly.length > 0 ? (
-                filteredMonthly
-                  .slice(0, expanded.income ? undefined : 2)
-                  .map(([key, data]) => (
-                    <div
-                      key={key}
-                      className="bg-white dark:bg-[#1a1c1e] rounded-xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden"
-                    >
-                      <div className="px-6 py-4 bg-gray-50/50 dark:bg-white/2 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
-                        <h4 className="font-bold text-sm text-[#00204a] dark:text-white uppercase">
-                          {data.month}
-                        </h4>
-                        <span className="text-xs font-bold tabular-nums text-emerald-500">
-                          {formatCurrency(data.totalIncome)}
-                        </span>
-                      </div>
-                      <div className="p-6 space-y-5">
-                        {data.income.map((doc: any) => (
-                          <div key={doc._id} className="flex items-center justify-between group">
-                            <div className="flex-1 min-w-0 pr-6">
-                              <p className="text-[13px] font-bold text-[#00204a] dark:text-gray-300 truncate group-hover:text-[#7C3AED] transition-colors">
-                                {doc.description || "Uncategorized Item"}
-                              </p>
-                              <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">
-                                {doc.source} • {new Date(doc.date).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <span className="text-sm font-bold text-[#00204a] dark:text-white tabular-nums">
-                              {formatCurrency(doc.amount)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <div className="py-10 text-center text-gray-400 text-[10px] font-bold uppercase">
-                  No income discovered
-                </div>
-              )}
-              {filteredMonthly.length > 2 && (
-                <button
-                  onClick={() => setExpanded((e) => ({ ...e, income: !e.income }))}
-                  className="w-full py-4 text-xs font-black uppercase text-[#349DC5] hover:underline"
-                >
-                  {expanded.income ? "View Less" : "View More"}
-                </button>
-              )}
-            </div>
-          </div>
+          <SectionBreakdown
+            title="Income Breakdown (Month-by-Month)"
+            items={filteredMonthly}
+            type="income"
+            themeColor="#10B981"
+            isExpanded={expanded.income}
+            toggleExpand={() => setExpanded(prev => ({ ...prev, income: !prev.income }))}
+          />
 
           {/* Expense Section */}
-          <div>
-            <h3 className="text-base font-bold text-[#00204a] dark:text-white uppercase mb-6 flex items-center gap-2">
-              <div className="w-1 h-5 bg-[#EF4444] rounded-full" />
-              Expenses Breakdown (Month-by-Month)
-            </h3>
-            <div className="space-y-6">
-              {filteredMonthly.length > 0 ? (
-                filteredMonthly
-                  .slice(0, expanded.expense ? undefined : 2)
-                  .map(([key, data]) => (
-                    <div
-                      key={key}
-                      className="bg-white dark:bg-[#1a1c1e] rounded-xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden"
-                    >
-                      <div className="px-6 py-4 bg-gray-50/50 dark:bg-white/2 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
-                        <h4 className="font-bold text-sm text-[#00204a] dark:text-white uppercase">
-                          {data.month}
-                        </h4>
-                        <span className="text-xs font-bold tabular-nums text-rose-500">
-                          {formatCurrency(data.totalExpense)}
-                        </span>
-                      </div>
-                      <div className="p-6 space-y-5">
-                        {data.expense.map((doc: any) => (
-                          <div key={doc._id} className="flex items-center justify-between group">
-                            <div className="flex-1 min-w-0 pr-6">
-                              <p className="text-[13px] font-bold text-[#00204a] dark:text-gray-300 truncate group-hover:text-rose-500 transition-colors">
-                                {doc.description || "Uncategorized Item"}
-                              </p>
-                              <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">
-                                {doc.source} • {new Date(doc.date).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <span className="text-sm font-bold text-[#00204a] dark:text-white tabular-nums">
-                              {formatCurrency(doc.amount)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <div className="py-10 text-center text-gray-400 text-[10px] font-bold uppercase">
-                  No expenses discovered
-                </div>
-              )}
-              {filteredMonthly.length > 2 && (
-                <button
-                  onClick={() => setExpanded((e) => ({ ...e, expense: !e.expense }))}
-                  className="w-full py-4 text-xs font-black uppercase text-[#349DC5] hover:underline"
-                >
-                  {expanded.expense ? "View Less" : "View More"}
-                </button>
-              )}
-            </div>
-          </div>
+          <SectionBreakdown
+            title="Expenses Breakdown (Month-by-Month)"
+            items={filteredMonthly}
+            type="expense"
+            themeColor="#EF4444"
+            isExpanded={expanded.expense}
+            toggleExpand={() => setExpanded(prev => ({ ...prev, expense: !prev.expense }))}
+          />
         </div>
 
         {/* Strategic Analysis */}
         {!search && finances.length > 0 && (
           <section className="space-y-12 pb-20">
             <div>
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-4 mb-6">
                 <BarChart3 className="text-[#349DC5]" size={20} />
-                <h3 className="text-lg font-bold text-[#00204a] dark:text-white uppercase leading-none">
-                  Income Trend
+                <h3 className="text-base font-black text-[#00204a] dark:text-white uppercase">
+                  Finance Trend (Last 6 Months)
                 </h3>
               </div>
-              <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm h-[380px]">
+              <div className="bg-white dark:bg-[#1a1c1e] p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-[320px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E6EAF0" />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10, fontWeight: 900, fill: "#94A3B8" }}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10, fontWeight: 900, fill: "#94A3B8" }}
-                    />
-                    <Tooltip
-                      cursor={{ fill: "rgba(52, 157, 197, 0.05)" }}
-                      contentStyle={{
-                        borderRadius: "12px",
-                        border: "none",
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-                      }}
-                      labelStyle={{
-                        fontWeight: 900,
-                        fontSize: "10px",
-                        textTransform: "uppercase",
-                        color: "#00204a",
-                      }}
-                    />
-                    <Bar dataKey="income" radius={[4, 4, 0, 0]} barSize={20}>
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Bar>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E6EAF0" opacity={0.5} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: "#94A3B8" }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: "#94A3B8" }} />
+                    <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 30px rgba(0,0,0,0.1)", fontSize: "10px", fontWeight: "bold" }} />
+                    <Bar dataKey="income" fill="#10B981" radius={[4, 4, 0, 0]} barSize={15} />
+                    <Bar dataKey="expense" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={15} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center gap-4 mb-8">
-                <PieIcon className="text-[#349DC5]" size={20} />
-                <h3 className="text-lg font-bold text-[#00204a] dark:text-white uppercase leading-none">
-                  Financial Health Comparison
-                </h3>
-              </div>
-              <div className="bg-white dark:bg-[#1a1c1e] p-10 rounded-xl border border-gray-100 dark:border-white/5 shadow-sm flex flex-col md:flex-row items-center gap-12">
-                <div className="w-48 h-48 shrink-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white dark:bg-[#1a1c1e] p-8 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
+              <div className="flex flex-col items-center">
+                <div className="w-48 h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                        {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
                       </Pie>
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex-1 w-full space-y-4">
-                  {pieData.map((item, idx) => {
+              </div>
+              <div className="space-y-6">
+                <h3 className="text-base font-black text-[#00204a] dark:text-white uppercase">
+                  Financial Health Overview
+                </h3>
+                <div className="space-y-4">
+                  {pieData.map((item) => {
                     const total = pieData.reduce((acc, curr) => acc + curr.value, 0);
                     const pct = ((item.value / total) * 100).toFixed(1);
                     return (
-                      <div key={item.name} className="flex items-center justify-between">
+                      <div key={item.name} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
                         <div className="flex items-center gap-3">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: COLORS[idx % COLORS.length] }}
-                          />
-                          <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
-                            {item.name}
-                          </span>
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.fill }} />
+                          <span className="text-xs font-bold text-gray-500 uppercase">{item.name} Allocation</span>
                         </div>
-                        <span className="text-[11px] font-bold text-[#00204a] dark:text-white">
-                          {pct}%
-                        </span>
+                        <span className="text-sm font-black text-[#00204a] dark:text-white">{pct}%</span>
                       </div>
                     );
                   })}
@@ -633,15 +487,80 @@ export default function FinanceSummaryScreen() {
             </div>
           </section>
         )}
-
-        <footer className="mt-12 py-10 border-t border-gray-100 dark:border-white/5 flex flex-col items-center gap-4">
-          <div className="flex items-center gap-3">
-          </div>
-          {/* <p className="text-[9px] font-bold uppercase text-gray-300">
-            © 2025 STREAMS OF JOY GLOBAL • OFFICIAL FINANCIAL RECORDS
-          </p> */}
-        </footer>
       </div>
     </div>
   );
 }
+
+function SectionBreakdown({ title, items, type, themeColor, isExpanded, toggleExpand }: any) {
+  const filtered = items.slice(0, isExpanded ? undefined : 3);
+
+  return (
+    <div>
+      <h3 className="text-sm font-bold text-[#00204a] dark:text-white uppercase mb-6 flex items-center gap-2">
+        <div className="w-1 h-5 rounded-full" style={{ backgroundColor: themeColor }} />
+        {title}
+      </h3>
+      <div className="space-y-6">
+        {filtered.length > 0 ? (
+          filtered.map(([key, data]: any) => {
+            const list = type === "income" ? data.income : data.expense;
+            const total = type === "income" ? data.totalIncome : data.totalExpense;
+
+            return (
+              <div key={key} className="bg-white dark:bg-[#1a1c1e] rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 bg-gray-50/50 dark:bg-white/5 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
+                  <h4 className="font-bold text-xs text-[#00204a] dark:text-white uppercase tracking-tighter">{data.month}</h4>
+                  <span className="text-sm font-black tabular-nums" style={{ color: themeColor }}>
+                    {formatCurrencyForComponent(total)}
+                  </span>
+                </div>
+                <div className="p-6 space-y-5">
+                  {list.length > 0 ? (
+                    list.map((doc: any) => (
+                      <div key={doc._id} className="flex items-center justify-between group">
+                        <div className="flex-1 min-w-0 pr-6">
+                          <p className="text-[13px] font-bold text-[#00204a] dark:text-gray-300 truncate transition-colors">
+                            {doc.description || doc.source || "Untitled Entry"}
+                          </p>
+                          <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">
+                            {doc.source} • {new Date(doc.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className="text-sm font-bold text-[#00204a] dark:text-white tabular-nums">
+                          {formatCurrencyForComponent(doc.amount)}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-[10px] text-gray-400 font-bold uppercase py-2">No data recorded</p>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="py-12 bg-gray-50/50 dark:bg-white/2 rounded-2xl border border-dashed border-gray-200 dark:border-white/10 text-center text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+            No entries discovered for this cycle
+          </div>
+        )}
+
+        {items.length > 3 && (
+          <button onClick={toggleExpand} className="w-full py-4 text-[10px] font-black uppercase text-[#349DC5] hover:tracking-widest transition-all">
+            {isExpanded ? "Minimize Reports" : "View Comprehensive Breakdown"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatCurrencyForComponent(val: number) {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
+  }).format(val || 0);
+}
+
+const currentYear = new Date().getFullYear();

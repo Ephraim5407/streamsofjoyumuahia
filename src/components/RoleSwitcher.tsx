@@ -153,12 +153,13 @@ export default function RoleSwitcher({
     <>
       <AnimatePresence>
         {isOpen && !showCountdown && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/60 backdrop-blur-md">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-[#1a1c1e] rounded-[32px] overflow-hidden shadow-md border border-white/20 dark:border-white/5"
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="relative w-full max-w-lg bg-white dark:bg-[#1a1c1e] rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl border-t sm:border border-white/20 dark:border-white/5 pb-safe"
             >
               <div className="px-8 pt-8 pb-6 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
                 <div>

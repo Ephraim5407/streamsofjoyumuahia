@@ -80,11 +80,11 @@ export default function SoulHarvestedScreen() {
       });
       const data = Array.isArray(res.data) ? res.data : res.data?.souls || [];
       setSouls(Array.isArray(data) ? data : []);
-      
+
       const rawUser = await AsyncStorage.getItem("user");
       if (rawUser) {
-          const u = JSON.parse(rawUser);
-          setRole(u.activeRole || "");
+        const u = JSON.parse(rawUser);
+        setRole(u.activeRole || "");
       }
     } catch { toast.error("Failed to load records"); }
     finally { setLoading(false); }
@@ -95,7 +95,7 @@ export default function SoulHarvestedScreen() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return souls.filter(s => {
-      const matchesSearch = !q || s.name.toLowerCase().includes(q) || (s.location || "").toLowerCase().includes(q) || (s.through || "").toLowerCase().includes(q);
+      const matchesSearch = !q || (s.name || "").toLowerCase().includes(q) || (s.location || "").toLowerCase().includes(q) || (s.through || "").toLowerCase().includes(q);
       const matchesYear = (year === 0) || (s.date && new Date(s.date).getFullYear() === year);
       return matchesSearch && matchesYear;
     });
@@ -172,7 +172,7 @@ export default function SoulHarvestedScreen() {
             <div className="flex items-center gap-2">
               <span className="text-xl">🔥</span>
               <h1 className="text-xl sm:text-2xl font-black text-[#00204a] dark:text-white uppercase tracking-tight">
-                Soul Harvested
+                Souls Won
               </h1>
             </div>
             <div className="flex items-center gap-3">
@@ -217,7 +217,7 @@ export default function SoulHarvestedScreen() {
           </div>
           {canMutate && (
             <button onClick={openNew} className="h-16 px-8 bg-[#349DC5] text-white rounded-[24px] text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10 active:scale-95 transition-all whitespace-nowrap">
-              <Plus size={18} /> Log Harvest
+              <Plus size={18} /> Add Souls
             </button>
           )}
         </div>

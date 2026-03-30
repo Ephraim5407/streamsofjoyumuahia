@@ -82,7 +82,7 @@ export default function UnitTestimonies() {
   const filteredTestimonies = useMemo(() => {
     return testimonies.filter(
       (t) =>
-        (t.name.toLowerCase().includes(search.toLowerCase()) || (t.description || "").toLowerCase().includes(search.toLowerCase())) &&
+        ((t.name || "").toLowerCase().includes(search.toLowerCase()) || (t.description || "").toLowerCase().includes(search.toLowerCase())) &&
         (selectedYear === "All" || (t.date && new Date(t.date).getFullYear().toString() === selectedYear))
     );
   }, [testimonies, search, selectedYear]);

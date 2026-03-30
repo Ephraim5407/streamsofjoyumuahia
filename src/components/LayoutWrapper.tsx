@@ -13,6 +13,8 @@ import {
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import RoleSwitcher from "./RoleSwitcher";
+import { AppEventBus } from "../utils/AppEventBus";
+
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 } // Emulating React Native SafeArea / Notification system for the wrapper
@@ -28,6 +30,15 @@ export default function LayoutWrapper({
     );
   });
   const [isRoleSwitcherOpen, setIsRoleSwitcherOpen] = useState(false);
+
+  useEffect(() => {
+    const unsub = AppEventBus.on((event, payload) => {
+      if (event === "openRoleSwitcher") setIsRoleSwitcherOpen(true);
+      if (event === "setDarkMode") setIsDarkMode(payload);
+    });
+    return unsub;
+  }, []);
+
   const location = useLocation();
   const hideNavPaths = [
     "/login",
@@ -48,6 +59,7 @@ export default function LayoutWrapper({
       document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
+    AppEventBus.emit("themeChanged", isDarkMode);
   }, [isDarkMode]);
   if (hideNav) {
     return (
@@ -71,6 +83,12 @@ export default function LayoutWrapper({
   const mobileNavItems = [
     { label: "Home", path: "/home", icon: <Home size={24} /> },
     { label: "Reports", path: "/reports", icon: <BarChart2 size={24} /> },
+    {
+      label: "Switch Role",
+      path: "#role",
+      icon: <RefreshCw size={24} />,
+      onClick: () => setIsRoleSwitcherOpen(true),
+    },
     { label: "Support", path: "/support", icon: <Headphones size={24} /> },
     { label: "More", path: "/more", icon: <Menu size={24} /> },
   ];
@@ -152,21 +170,41 @@ export default function LayoutWrapper({
       </main>
       {/* Mobile Bottom Tab Navigation (Hide on Desktop) */}
       <nav className="md:hidden flex flex-row items-center justify-around bg-white dark:bg-[#1e1e1e] h-[70px] pb-[10px] w-full fixed bottom-0 z-20 pb-safe rounded-t-[20px] shadow-[0_-2px_15px_rgba(0,0,0,0.05)] dark:shadow-none border-t border-[#f0f0f0] dark:border-dark-border">
-        {mobileNavItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              cn(
-                "flex flex-col items-center justify-center gap-1 w-full h-full",
-                isActive ? "text-[#349DC5]" : "text-[#8e8e93]",
-              )
-            }
-          >
-            {item.icon}
-            <span className="text-[12px] font-medium">{item.label}</span>
-          </NavLink>
-        ))}
+        {mobileNavItems.map((item) => {
+          const content = (
+            <>
+              {item.icon}
+              <span className="text-[10px] sm:text-[12px] font-medium leading-none mt-1">
+                {item.label}
+              </span>
+            </>
+          );
+          if (item.onClick) {
+            return (
+              <button
+                key={item.label}
+                onClick={item.onClick}
+                className="flex flex-col items-center justify-center gap-0.5 w-full h-full text-[#8e8e93] active:scale-95 transition-transform"
+              >
+                {content}
+              </button>
+            );
+          }
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                cn(
+                  "flex flex-col items-center justify-center gap-0.5 w-full h-full transition-all",
+                  isActive ? "text-[#349DC5] transform scale-105" : "text-[#8e8e93]",
+                )
+              }
+            >
+              {content}
+            </NavLink>
+          );
+        })}
       </nav>
       <RoleSwitcher
         isOpen={isRoleSwitcherOpen}

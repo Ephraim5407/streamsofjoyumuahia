@@ -72,7 +72,7 @@ export default function SuperAdminAddUnitScreen() {
     fetchData();
   }, [fetchData]);
   const existingNames = useMemo(
-    () => new Set(units.map((u) => u.name.trim().toLowerCase())),
+    () => new Set(units.map((u) => (u.name || "").trim().toLowerCase())),
     [units],
   );
   const suggestions = useMemo(() => {

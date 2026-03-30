@@ -83,7 +83,7 @@ export default function RecoveredAddicts() {
 
   const filteredAddicts = useMemo(() => {
     return addicts.filter(a =>
-      (a.fullName.toLowerCase().includes(search.toLowerCase()) || a.addictionType.toLowerCase().includes(search.toLowerCase())) &&
+      ((a.fullName || "").toLowerCase().includes(search.toLowerCase()) || (a.addictionType || "").toLowerCase().includes(search.toLowerCase())) &&
       (selectedYear === "All" || (a.dateOfRecovery && new Date(a.dateOfRecovery).getFullYear().toString() === selectedYear))
     );
   }, [addicts, search, selectedYear]);

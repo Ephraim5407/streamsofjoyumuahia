@@ -160,7 +160,13 @@ export default function FinanceHistoryScreen() {
     })();
   }, [items]);
 
-  const canRecord = role === "UnitLeader" || role === "SuperAdmin" || role === "MinistryAdmin" || (role === "Member" && hasFinSec);
+  const canRecord = useMemo(() => {
+    // If we're an observer (Admin viewing a unit they don't own) we should be read-only
+    const isObserver = (role === "SuperAdmin" || role === "MinistryAdmin") && !!unitIdParam;
+    if (isObserver) return false;
+    
+    return role === "UnitLeader" || role === "SuperAdmin" || role === "MinistryAdmin" || (role === "Member" && hasFinSec);
+  }, [role, hasFinSec, unitIdParam]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

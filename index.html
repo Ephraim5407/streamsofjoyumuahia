@@ -7,6 +7,14 @@
     <meta name="theme-color" content="#ffffff">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Streams of Joy PWA</title>
+    <script>
+      window.deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        window.dispatchEvent(new Event('deferredPromptReady'));
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

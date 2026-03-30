@@ -34,6 +34,7 @@ import {
 } from "../../../api/attendance";
 import AsyncStorage from "../../../utils/AsyncStorage";
 import RoleSwitcher from "../../../components/RoleSwitcher";
+import { AppEventBus } from "../../../utils/AppEventBus";
 
 function cn(...inputs: any[]) {
   return inputs.filter(Boolean).join(" ");
@@ -66,7 +67,6 @@ export default function MinistryDashboard() {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isRoleSwitcherOpen, setIsRoleSwitcherOpen] = useState(false);
 
   const currentMinistry = useMemo(() => {
     if (!profile?.roles) return "Global Ministry";
@@ -94,6 +94,10 @@ export default function MinistryDashboard() {
         const activeRoleData = (u?.roles || []).find((r: any) => r?.role === u?.activeRole);
         const minName = activeRoleData?.ministryName || "Global Ministry";
 
+        const isYS = minName &&
+          (minName.toLowerCase().includes("youth") ||
+          minName.toLowerCase().includes("single"));
+
         const [sumRes, eventsRes, attendances] = await Promise.all([
           getMinistrySummary({ ministry: minName }),
           axios
@@ -101,8 +105,7 @@ export default function MinistryDashboard() {
               headers: { Authorization: `Bearer ${token}` },
             })
             .catch(() => ({ data: { ok: false, events: [] } })),
-          (minName.toLowerCase().includes("youth") ||
-          minName.toLowerCase().includes("single")
+          (isYS
             ? getYSAttendances()
             : getMainChurchAttendances()
           ).catch(() => []),
@@ -191,38 +194,42 @@ export default function MinistryDashboard() {
                 </div>
               </div>
               
-              <button 
-                onClick={() => setIsRoleSwitcherOpen(true)}
-                className="hidden sm:flex items-center gap-3 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl transition-all active:scale-95"
-              >
-                <LayoutGrid size={18} className="text-[#349DC5]" />
-                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Switch Role</span>
-              </button>
+              {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
+                <button 
+                  onClick={() => AppEventBus.emit("openRoleSwitcher")}
+                  className="hidden sm:flex items-center gap-3 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl transition-all active:scale-95"
+                >
+                  <LayoutGrid size={18} className="text-[#349DC5]" />
+                  <span className="text-[10px] font-black uppercase tracking-widest leading-none">Switch Role</span>
+                </button>
+              )}
             </div>
 
-            {/* Mobile Selection & Intelligence Actions */}
-            <div className="flex flex-wrap items-center gap-3">
-              <button 
-                onClick={() => setIsRoleSwitcherOpen(true)}
-                className="flex sm:hidden flex-1 items-center justify-center gap-3 h-14 bg-[#349DC5] text-white rounded-2xl shadow-lg shadow-blue-900/40 active:scale-95 transition-all"
-              >
-                <LayoutGrid size={20} />
-                <span className="text-[11px] font-black uppercase tracking-widest">Switch Role</span>
-              </button>
+            {/* Unified Intelligence Controls */}
+            <div className="flex items-center gap-3 flex-wrap">
+              {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
+                <button 
+                  onClick={() => AppEventBus.emit("openRoleSwitcher")}
+                  className="w-14 h-14 rounded-2xl bg-white text-[#00204a] flex items-center justify-center shadow-lg active:scale-95 transition-all border-2 border-white/20"
+                  title="Switch Role"
+                >
+                  <LayoutGrid size={22} className="text-[#349DC5]" />
+                </button>
+              )}
               
               <button
                 onClick={() => fetchData(true)}
-                className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all border border-white/10 text-white/60"
+                className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-white/60 hover:bg-white/10 transition-all active:scale-95"
               >
-                <RefreshCw size={22} className={refreshing ? "animate-spin text-[#349DC5]" : ""} />
+                <RefreshCw size={22} className={refreshing ? "animate-spin text-[#349DC5]" : "text-white"} />
               </button>
               
               <button
                 onClick={() => navigate("/notifications")}
-                className="flex items-center gap-3 h-14 px-6 bg-white/5 text-white rounded-2xl border border-white/10 hover:bg-white/10 transition-all active:scale-95"
+                className="flex-1 sm:flex-none h-14 px-6 bg-white/5 text-white rounded-2xl border border-white/10 hover:bg-white/10 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
                 <Bell size={20} className="text-[#349DC5]" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Notifications</span>
+                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Notifications</span>
               </button>
             </div>
           </div>
@@ -513,10 +520,6 @@ export default function MinistryDashboard() {
         )}
       </AnimatePresence>
 
-      <RoleSwitcher
-        isOpen={isRoleSwitcherOpen}
-        onClose={() => setIsRoleSwitcherOpen(false)}
-      />
     </div>
   );
 }

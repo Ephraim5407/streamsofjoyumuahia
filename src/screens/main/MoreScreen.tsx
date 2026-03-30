@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, LogOut, FileText, Settings, UserCircle, ChevronRight, Fingerprint, ShieldAlert, BookOpen, AlertCircle } from "lucide-react";
+import { Users, LogOut, FileText, Settings, UserCircle, ChevronRight, Fingerprint, ShieldAlert, BookOpen, AlertCircle, Moon, Sun } from "lucide-react";
 import axios from "axios";
 import { BASE_URl } from "../../api/users";
 import toast from "react-hot-toast";
+import { AppEventBus } from "../../utils/AppEventBus";
 
 const token = () => localStorage.getItem("token");
 
@@ -16,6 +17,9 @@ export default function MoreScreen() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showUpdatesModal, setShowUpdatesModal] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark" || document.documentElement.classList.contains("dark");
+  });
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -32,7 +36,19 @@ export default function MoreScreen() {
     fetchProfile();
     const bioPref = localStorage.getItem("biometricEnabled");
     if (bioPref === "true") setBiometricEnabled(true);
+
+    const unsub = AppEventBus.on((event, payload) => {
+      if (event === "themeChanged") {
+        setIsDarkMode(payload);
+      }
+    });
+    return unsub;
   }, [fetchProfile]);
+
+  const toggleTheme = (val: boolean) => {
+    setIsDarkMode(val);
+    AppEventBus.emit("setDarkMode", val);
+  };
 
   const handleLogout = async () => {
     localStorage.removeItem("token");
@@ -166,7 +182,7 @@ export default function MoreScreen() {
         {/* Settings Section */}
         <div className="space-y-2">
           <p className="text-xs font-black text-gray-400 uppercase tracking-widest pl-2">Settings</p>
-          <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm">
+          <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm flex flex-col divide-y divide-gray-100 dark:divide-white/5">
             <div className="w-full flex items-center justify-between p-4">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center">
@@ -186,6 +202,25 @@ export default function MoreScreen() {
                     if(val) toast.success("Biometric login enabled on this device");
                     else toast.success("Biometric login disabled");
                   }} 
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#349DC5]"></div>
+              </label>
+            </div>
+            
+            {/* Dark Mode Toggle */}
+            <div className="w-full flex items-center justify-between p-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center">
+                  {isDarkMode ? <Moon size={20} className="text-[#349DC5]" /> : <Sun size={20} className="text-[#349DC5]" />}
+                </div>
+                <p className="text-sm font-black text-[#00204a] dark:text-white">Dark Mode</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={isDarkMode} 
+                  onChange={(e) => toggleTheme(e.target.checked)} 
                 />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#349DC5]"></div>
               </label>

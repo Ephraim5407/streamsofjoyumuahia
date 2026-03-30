@@ -12,6 +12,7 @@ import {
   ArrowUpRight,
   MapPin,
   Clock,
+  LayoutGrid,
   Lock,
   Wallet,
   ArrowDownRight,
@@ -29,6 +30,7 @@ import {
 import { useSoulsStore } from "../../../context/SoulsStore";
 import AsyncStorage from "../../../utils/AsyncStorage";
 import RoleSwitcher from "../../../components/RoleSwitcher";
+import { AppEventBus } from "../../../utils/AppEventBus";
 
 function cn(...inputs: any[]) {
   return inputs.filter(Boolean).join(" ");
@@ -45,7 +47,6 @@ export default function UnitLeaderDashboard() {
   const [allEvents, setAllEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [eventModalOpen, setEventModalOpen] = useState(false);
-  const [switchModalVisible, setSwitchModalVisible] = useState(false);
 
   const fetchData = useCallback(
     async (isRefresh = false) => {
@@ -169,31 +170,33 @@ export default function UnitLeaderDashboard() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={() => fetchData(true)}
-              className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all border border-white/10"
+              className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all border border-white/10 active:scale-95"
             >
               <RefreshCw
                 size={22}
-                className={refreshing ? "animate-spin text-[#349DC5]" : "text-white/60"}
+                className={refreshing ? "animate-spin text-[#349DC5]" : "text-white"}
               />
-            </button>
-            <button
-              onClick={() => navigate("/notifications")}
-              className="h-14 px-8 bg-[#349DC5] text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-md hover:bg-[#2d8ab0] active:scale-95 transition-all flex items-center gap-3"
-            >
-              <Bell size={18} />
-              Notifications
             </button>
             {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
               <button
-                onClick={() => setSwitchModalVisible(true)}
-                className="h-14 px-8 bg-white text-[#00204a] rounded-xl font-bold text-xs uppercase tracking-wider shadow-md active:scale-95 transition-all"
+                onClick={() => AppEventBus.emit("openRoleSwitcher")}
+                className="w-14 h-14 rounded-xl bg-white text-[#00204a] flex items-center justify-center shadow-lg active:scale-95 transition-all border-2 border-white/20"
+                title="Switch Role"
               >
-                Switch Role
+                <LayoutGrid size={22} className="text-[#349DC5]" />
               </button>
             )}
+            <button
+              onClick={() => navigate("/notifications")}
+              className="h-14 flex-1 sm:flex-none px-6 bg-[#349DC5] text-white rounded-xl font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-blue-900/20 hover:bg-[#2d8ab0] active:scale-95 transition-all flex items-center justify-center gap-3"
+            >
+              <Bell size={18} />
+              <span className="hidden sm:inline">Notifications</span>
+              <span className="sm:hidden">{unreadCount > 0 ? unreadCount : ""} Alerts</span>
+            </button>
           </div>
         </div>
       </div>
@@ -434,10 +437,6 @@ export default function UnitLeaderDashboard() {
         )}
       </AnimatePresence>
 
-      <RoleSwitcher
-        isOpen={switchModalVisible}
-        onClose={() => setSwitchModalVisible(false)}
-      />
     </div>
   );
 }

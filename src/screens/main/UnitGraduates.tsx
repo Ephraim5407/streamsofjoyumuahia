@@ -75,7 +75,7 @@ export default function UnitGraduates() {
   const filteredGraduates = useMemo(() => {
     return graduates.filter(
       (g) =>
-        (g.name.toLowerCase().includes(search.toLowerCase()) || g.academy.toLowerCase().includes(search.toLowerCase())) &&
+        ((g.name || "").toLowerCase().includes(search.toLowerCase()) || (g.academy || "").toLowerCase().includes(search.toLowerCase())) &&
         (selectedYear === "All" || (g.graduationDate && new Date(g.graduationDate).getFullYear().toString() === selectedYear))
     );
   }, [graduates, search, selectedYear]);

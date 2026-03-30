@@ -74,8 +74,8 @@ export default function SuperAdminChurchSwitchScreen() {
     if (!term) return churches;
     return churches.filter(
       (ch) =>
-        ch.name.toLowerCase().includes(term) ||
-        ch.superAdmins.some((s) => `${s.firstName} ${s.surname}`.toLowerCase().includes(term)),
+        (ch.name || "").toLowerCase().includes(term) ||
+        (ch.superAdmins || []).some((s) => `${s.firstName || ""} ${s.surname || ""}`.toLowerCase().includes(term)),
     );
   }, [searchQuery, churches]);
 

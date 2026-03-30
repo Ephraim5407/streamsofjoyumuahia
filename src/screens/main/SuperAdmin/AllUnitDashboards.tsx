@@ -96,7 +96,7 @@ export default function AllUnitDashboards() {
     const lower = search.toLowerCase();
     return data.filter(
       (u) =>
-        u.name.toLowerCase().includes(lower) || u.leaderName.toLowerCase().includes(lower),
+        (u.name || "").toLowerCase().includes(lower) || (u.leaderName || "").toLowerCase().includes(lower),
     );
   }, [search, data]);
 

@@ -96,26 +96,34 @@ export default function AdminFinanceSummary() {
     return "Main Church";
   }, [currentUser, location.search]);
 
-  const loadData = useCallback(async () => {
+  useEffect(() => {
+    const init = async () => {
+      const userRaw = await AsyncStorage.getItem("user");
+      if (userRaw) setCurrentUser(JSON.parse(userRaw));
+    };
+    init();
+  }, []);
+
+  const loadData = useCallback(async (minName: string) => {
     try {
       setLoading(true);
-      const userRaw = await AsyncStorage.getItem("user");
-      const user = userRaw ? JSON.parse(userRaw) : null;
-      setCurrentUser(user);
-      const ministry = getCurrentMinistry();
-      const [incRes, expRes] = await Promise.all([getIncomes(ministry), getExpenses(ministry)]);
+      const [incRes, expRes] = await Promise.all([getIncomes(minName), getExpenses(minName)]);
       setIncomes(incRes || []);
       setExpenses(expRes || []);
     } catch (e: any) {
+      console.error("Finance Sync Failure:", e);
+      // We only toast if it's not a background refresh or if we want to alert user
       toast.error("Fiscal sync error");
     } finally {
       setLoading(false);
     }
-  }, [getCurrentMinistry]);
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    const min = getCurrentMinistry();
+    // Only load if we have a ministry context or if it's the default
+    loadData(min);
+  }, [getCurrentMinistry, loadData]);
 
   const filteredIncomes = useMemo(
     () =>

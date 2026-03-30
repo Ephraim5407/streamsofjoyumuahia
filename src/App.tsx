@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 
 import LayoutWrapper from "./components/LayoutWrapper";
+import InstallPWAPrompt from "./components/InstallPWAPrompt";
 
 import LegalContentScreen from "./screens/LegalContentScreen";
 import AdminFinanceSummary from "./screens/AdminFinance/AdminFinanceSummary";
@@ -74,6 +75,9 @@ import AssignedFirstTimers from "./screens/main/AssignedFirstTimers";
 import SongsReleased from "./screens/main/SongsReleased";
 import EmporiumSales from "./screens/main/EmporiumSales";
 import Logistics from "./screens/main/Logistics";
+import Equipment from "./screens/main/Equipment";
+import Broadcast from "./screens/main/Broadcast";
+
 
 // Smart root redirect — sends logged-in users to /home, others to /welcome
 function RootRedirect() {
@@ -86,16 +90,10 @@ function RootRedirect() {
   return <Navigate to={dest} replace />;
 }
 
+import ComingSoonScreen from "./screens/ComingSoon/ComingSoon";
+
 const ComingSoon = ({ title }: { title: string }) => (
-  <div className="flex flex-col items-center justify-center min-h-[60vh]">
-    <div className="text-6xl mb-4">🚧</div>
-    <h2 className="text-2xl font-black text-[#00204a] uppercase tracking-tighter">
-      {title}
-    </h2>
-    <p className="text-gray-400 font-bold uppercase text-xs tracking-widest mt-2">
-      Coming Soon
-    </p>
-  </div>
+  <ComingSoonScreen title={title} />
 );
 
 const queryClient = new QueryClient();
@@ -124,6 +122,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <InstallPWAPrompt />
         <LayoutWrapper>
           <Routes>
             <Route path="/login" element={<LoginScreen />} />
@@ -227,6 +226,14 @@ export default function App() {
             <Route
               path="/reports/logistics"
               element={<Logistics />}
+            />
+            <Route
+              path="/reports/equipment"
+              element={<Equipment />}
+            />
+            <Route
+              path="/reports/broadcast"
+              element={<Broadcast />}
             />
             <Route
               path="/reports/external"

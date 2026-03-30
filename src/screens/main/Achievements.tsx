@@ -56,7 +56,8 @@ export default function Achievements() {
       const res = await axios.get(`${BASE_URl}/api/achievements?unitId=${unitId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setItems(res.data || []);
+      const data = res.data?.achievements || res.data || [];
+      setItems(Array.isArray(data) ? data : []);
     } catch (e) {
       toast.error("Failed to sync records");
     } finally {
@@ -85,8 +86,8 @@ export default function Achievements() {
 
   const filtered = useMemo(() => {
     return items.filter((i) =>
-      i.title.toLowerCase().includes(search.toLowerCase()) ||
-      i.description.toLowerCase().includes(search.toLowerCase())
+      (i.title || "").toLowerCase().includes(search.toLowerCase()) ||
+      (i.description || "").toLowerCase().includes(search.toLowerCase())
     );
   }, [items, search]);
 

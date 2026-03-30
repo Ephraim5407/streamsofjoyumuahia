@@ -320,7 +320,7 @@ export default function UnitLeaderProfile() {
               value={unitSummary?.counts?.achievementsCount ?? 0}
               onClick={() => navigate(`/achievements?unitId=${viewingUnitId}`)}
             />
-            {unitSummary?.unit?.name?.toLowerCase().includes("music") && (
+            {(unitSummary?.unit?.name || "").toLowerCase().includes("music") && (
               <MetricTile
                 icon={<Music size={24} className="text-rose-500" />}
                 label="Songs Released"

@@ -99,8 +99,8 @@ export default function MembersAssisted() {
     return assists
       .filter((a) => {
         const matchesSearch =
-          a.memberName.toLowerCase().includes(search.toLowerCase()) ||
-          a.reason.toLowerCase().includes(search.toLowerCase());
+          (a.memberName || "").toLowerCase().includes(search.toLowerCase()) ||
+          (a.reason || "").toLowerCase().includes(search.toLowerCase());
         const matchesYear =
           String(selectedYear) === "All" ||
           new Date(a.assistedOn).getFullYear() === Number(selectedYear);
@@ -149,7 +149,7 @@ export default function MembersAssisted() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0f1113] pb-32">
-      <div className="bg-[#00204a] pt-12 sm:pt-16 pb-32 sm:pb-24 px-6 sm:px-8 relative overflow-hidden">
+      <div className="bg-[#00204a] pt-12 sm:pt-12 pb-28 sm:pb-20 px-6 sm:px-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-20 opacity-10 pointer-events-none">
           <HandHeart size={300} className="text-[#349DC5] -rotate-12" />
         </div>
@@ -194,8 +194,8 @@ export default function MembersAssisted() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 -mt-8">
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-[48px] p-2 top-20 shadow-sm border border-gray-100 dark:border-white/5 mb-10 overflow-x-auto no-scrollbar flex gap-2">
+      <div className="max-w-4xl mx-auto px-6 -mt-1">
+        <div className="bg-white dark:bg-[#1e1e1e] rounded-[48px] no-scrollbar p-2 top-20 shadow-sm border border-gray-100 dark:border-white/5 mb-10 overflow-x-auto no-scrollbar flex gap-2">
           {years.map((y) => (
             <button
               key={y}
