@@ -28,6 +28,12 @@ axiosRetry(apiClient, {
 // Request interceptor to add token
 apiClient.interceptors.request.use(
   async (config) => {
+    // dynamically setting baseURL
+    const dynamicBase = await AsyncStorage.getItem("API_BASE_URL");
+    if (dynamicBase) {
+       config.baseURL = dynamicBase;
+    }
+
     const token = await AsyncStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

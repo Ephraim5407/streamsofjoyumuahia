@@ -722,7 +722,7 @@ export default function MemberListScreen() {
                               Security Operations
                             </label>
                             <div className="space-y-3">
-                              {viewer?.activeRole === "SuperAdmin" && (
+                              {viewer?.activeRole === "SuperAdmin" && viewer?.multi && (
                                 <button
                                   onClick={() =>
                                     navigate(

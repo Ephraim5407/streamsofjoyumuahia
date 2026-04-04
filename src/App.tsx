@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import axios from "axios";
 
 import LayoutWrapper from "./components/LayoutWrapper";
 import InstallPWAPrompt from "./components/InstallPWAPrompt";
@@ -107,6 +108,23 @@ export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
+    // Global Axios Interceptor for 401 Unauthorized
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+           // We clear localStorage and redirect to /login
+           localStorage.removeItem("token");
+           localStorage.removeItem("user");
+           localStorage.removeItem("activeUnitId");
+           if (window.location.pathname !== '/login' && window.location.pathname !== '/welcome') {
+               window.location.href = '/login';
+           }
+        }
+        return Promise.reject(error);
+      }
+    );
+
     // Simulate App Bootstrap Gate / Splash Screen sequence
     const initApp = async () => {
       // Intialize push notifications, socket connection here.
@@ -114,6 +132,10 @@ export default function App() {
       setAppIsReady(true);
     };
     initApp();
+
+    return () => {
+       axios.interceptors.response.eject(interceptor);
+    };
   }, []);
 
   if (!appIsReady) {

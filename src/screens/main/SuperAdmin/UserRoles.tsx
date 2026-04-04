@@ -11,6 +11,7 @@ import {
   Building2,
   Church,
   Globe,
+  Fingerprint,
 } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -22,12 +23,16 @@ import AsyncStorage from "../../../utils/AsyncStorage";
 function getRoleStyle(role: string) {
   switch (role) {
     case "SuperAdmin":
+    case "Church Admin":
       return { bg: "#0B2346", badge: "bg-[#0b2346]", accent: "#0B2346", light: "#e8eef8" };
     case "MinistryAdmin":
+    case "Ministry Admin":
       return { bg: "#6c3483", badge: "bg-purple-700", accent: "#6c3483", light: "#f5eef8" };
     case "UnitLeader":
+    case "Unit Leader":
       return { bg: "#1a6e4c", badge: "bg-emerald-700", accent: "#1a6e4c", light: "#eafaf1" };
     case "Member":
+    case "Unit Member":
       return { bg: "#1c4a7e", badge: "bg-blue-700", accent: "#1c4a7e", light: "#eaf0fb" };
     default:
       return { bg: "#349DC5", badge: "bg-[#349DC5]", accent: "#349DC5", light: "#e0f2fe" };
@@ -40,14 +45,16 @@ interface RoleContext {
   value: string;
 }
 
-function buildRoleContextLines(role: string, item: any, isMulti: boolean, user: any): RoleContext[] {
+function buildRoleContextLines(role: string, item: any, isMulti: boolean, user: any, units: any[]): RoleContext[] {
   const lines: RoleContext[] = [];
 
-  // Helper: safely extract name from a populated ref (object) or skip if it's a raw ObjectId string
-  const safeName = (field: any): string | null => {
+  const safeName = (field: any, isUnitField: boolean = false): string | null => {
     if (!field) return null;
     if (typeof field === 'object' && field.name) return field.name;
-    // If it's still a raw ObjectId string, return null (don't expose the ID)
+    if (isUnitField && typeof field === 'string' && units) {
+        const found = units.find((u: any) => u._id === field);
+        if (found && found.name) return found.name;
+    }
     return null;
   };
 
@@ -86,11 +93,9 @@ function buildRoleContextLines(role: string, item: any, isMulti: boolean, user: 
     if (!lines.length) lines.push({ icon: Globe, label: "Scope", value: "Ministry-Wide Access" });
 
   } else if (role === "UnitLeader" || role === "Member") {
-    // item.unit must be populated by the backend for name to appear
-    const unitName = safeName(item.unit);
+    const unitName = safeName(item.unit, true);
     if (unitName) {
       lines.push({ icon: Building2, label: "Unit", value: unitName });
-      // Nested church from unit.church (populated via roles.unit → church)
       const churchName = safeName(item.unit?.church);
       if (churchName) lines.push({ icon: Church, label: "Church", value: churchName });
     } else {
@@ -107,12 +112,22 @@ export default function UserRoles() {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, setUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [units, setUnits] = useState<any[]>([]);
+  const [churches, setChurches] = useState<any[]>([]);
+  
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
+  const [selectedChurch, setSelectedChurch] = useState("");
+  const [selectedMinistry, setSelectedMinistry] = useState("");
+  
   const [submitting, setSubmitting] = useState(false);
+  
+  // Security Verification Step
+  const [showVerify, setShowVerify] = useState(false);
+  const [verifyState, setVerifyState] = useState<'idle'|'scanning'|'success'>('idle');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -120,19 +135,17 @@ export default function UserRoles() {
       const token = await AsyncStorage.getItem("token");
       if (!token) { navigate("/login"); return; }
 
-      const [userRes, unitsRes] = await Promise.all([
-        axios.get(`${BASE_URl}/api/users/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${BASE_URl}/api/units`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => ({ data: { units: [] } })),
+      const [userRes, unitsRes, meRes, churchRes] = await Promise.all([
+        axios.get(`${BASE_URl}/api/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${BASE_URl}/api/units`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { units: [] } })),
+        axios.get(`${BASE_URl}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { user: null } })),
+        axios.get(`${BASE_URl}/api/churches`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: { churches: [] } })),
       ]);
 
-      if (userRes.data?.user || userRes.data) {
-        setUser(userRes.data.user || userRes.data);
-      }
+      if (userRes.data?.user || userRes.data) setUser(userRes.data.user || userRes.data);
+      if (meRes.data?.user) setCurrentUser(meRes.data.user);
       if (unitsRes.data?.units) setUnits(unitsRes.data.units);
+      if (churchRes.data?.churches) setChurches(churchRes.data.churches);
     } catch {
       toast.error("Failed to load user data");
     } finally {
@@ -142,18 +155,66 @@ export default function UserRoles() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleAddRole = async () => {
-    if (!selectedRole) { toast.error("Please select a role"); return; }
-    if ((selectedRole === "UnitLeader" || selectedRole === "Member") && !selectedUnit) {
-      toast.error("Please select a unit"); return;
-    }
+  // Determine assigner scope
+  const isMeSuperAdmin = currentUser?.activeRole === 'SuperAdmin' || (currentUser?.roles||[]).some((r:any) => r.role === 'SuperAdmin');
+  const isMeMulti = isMeSuperAdmin && currentUser?.multi;
+  const isMeMinistryAdmin = currentUser?.activeRole === 'MinistryAdmin';
+  const meChurchName = typeof currentUser?.church === 'object' ? currentUser?.church?.name : (churches.find(c=>c._id===currentUser?.church)?.name || "Current Church");
+  const meMinistryName = (currentUser?.roles||[]).find((r:any)=>r.role==='MinistryAdmin')?.ministryName || "Current Ministry";
 
+  const handleRoleSelect = (r: string) => {
+    setSelectedRole(r);
+    setSelectedChurch("");
+    setSelectedMinistry("");
+    setSelectedUnit("");
+  };
+
+  const handleInitialAssignClick = () => {
+    if (!selectedRole) { toast.error("Please select a role"); return; }
+    
+    if (selectedRole === 'SuperAdmin') {
+      if (!selectedChurch) { toast.error("Please select a church"); return; }
+    } else if (selectedRole === 'MinistryAdmin') {
+      if (!selectedChurch && isMeMulti) { toast.error("Please select a church"); return; }
+      if (!selectedMinistry && (isMeMulti || isMeSuperAdmin)) { toast.error("Please select a ministry"); return; }
+    } else if (selectedRole === 'UnitLeader' || selectedRole === 'Member') {
+      if (!selectedUnit) { toast.error("Please select a unit"); return; }
+    }
+    
+    setShowVerify(true);
+    setVerifyState('idle');
+  };
+
+  const executeVerifyAndSubmit = () => {
+    setVerifyState('scanning');
+    setTimeout(() => {
+      setVerifyState('success');
+      setTimeout(() => {
+        setShowVerify(false);
+        submitRoleAssignment();
+      }, 800);
+    }, 1500);
+  };
+
+  const submitRoleAssignment = async () => {
     setSubmitting(true);
     try {
       const token = await AsyncStorage.getItem("token");
       const payload: any = { role: selectedRole };
+      
       if (selectedUnit) payload.unitId = selectedUnit;
-
+      if (selectedChurch) payload.churchId = selectedChurch;
+      if (selectedMinistry) payload.ministryName = selectedMinistry;
+      
+      // Implicit selections based on assigner scope
+      if (!isMeMulti && selectedRole === 'MinistryAdmin') {
+         if (!payload.churchId && currentUser?.church?._id) payload.churchId = currentUser.church._id;
+         if (!payload.churchId && typeof currentUser?.church === 'string') payload.churchId = currentUser.church;
+      }
+      if (selectedRole === 'SuperAdmin') {
+         if (!isMeMulti) payload.churchId = typeof currentUser?.church === 'object' ? currentUser?.church?._id : currentUser?.church;
+      }
+      
       const res = await axios.post(`${BASE_URl}/api/users/${userId}/add-role`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -163,6 +224,8 @@ export default function UserRoles() {
         setShowAddModal(false);
         setSelectedRole("");
         setSelectedUnit("");
+        setSelectedChurch("");
+        setSelectedMinistry("");
         fetchData();
       } else {
         toast.error(res.data?.message || "Assignment failed");
@@ -184,6 +247,28 @@ export default function UserRoles() {
 
   const isMulti = !!user?.multi;
   const fullName = [user?.title, user?.firstName, user?.surname].filter(Boolean).join(" ") || "Unnamed User";
+  
+  // Available roles for the assigner to give
+  let assignableRoles = ["Church Admin", "Ministry Admin", "Unit Leader", "Unit Member"];
+  if (isMeSuperAdmin && !isMeMulti) {
+    assignableRoles = ["Ministry Admin", "Unit Leader", "Unit Member"];
+  } else if (isMeMinistryAdmin) {
+    assignableRoles = ["Unit Leader", "Unit Member"];
+  }
+
+  const roleValueMap: any = {
+    "Church Admin": "SuperAdmin",
+    "Ministry Admin": "MinistryAdmin",
+    "Unit Leader": "UnitLeader",
+    "Unit Member": "Member"
+  };
+
+  const getMinistryOpts = () => {
+      const cid = selectedChurch || (typeof currentUser?.church === 'string' ? currentUser?.church : currentUser?.church?._id);
+      if (!cid) return [];
+      const ch = churches.find(c => c._id === cid);
+      return ch?.ministries || [];
+  };
 
   return (
     <div className="min-h-screen bg-[#f1f5f9] dark:bg-[#0f1218] pb-40">
@@ -238,6 +323,11 @@ export default function UserRoles() {
                   🌐 Multi-Church
                 </span>
               )}
+              {((user?.roles || []).some((r:any)=>r.role==='SuperAdmin') && !isMulti) && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 dark:bg-gray-500/10 rounded-full text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  🏛️ Single Church Access
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -254,7 +344,7 @@ export default function UserRoles() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(user?.roles || []).map((role: any, idx: number) => {
                 const styles = getRoleStyle(role.role);
-                const contextLines = buildRoleContextLines(role.role, role, isMulti, user);
+                const contextLines = buildRoleContextLines(role.role, role, isMulti, user, units);
                 return (
                   <motion.div
                     key={idx}
@@ -264,7 +354,6 @@ export default function UserRoles() {
                     className="bg-white dark:bg-[#1a1c1e] rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                     style={{ borderLeftWidth: 4, borderLeftColor: styles.bg }}
                   >
-                    {/* Role Name Badge Row */}
                     <div className="flex items-center justify-between px-5 pt-5 pb-3">
                       <span
                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-black text-white uppercase tracking-wide"
@@ -274,8 +363,6 @@ export default function UserRoles() {
                         {role.role}
                       </span>
                     </div>
-
-                    {/* Context lines */}
                     <div className="px-5 pb-5 space-y-2">
                       {contextLines.map((ctx, ci) => (
                         <div key={ci} className="flex items-start gap-3">
@@ -295,20 +382,6 @@ export default function UserRoles() {
                           </div>
                         </div>
                       ))}
-
-                      {/* Duties */}
-                      {role.duties && role.duties.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-50 dark:border-white/5">
-                          <p className="text-[9px] font-black text-gray-300 uppercase tracking-wider mb-1.5">Duties</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {role.duties.map((d: string, di: number) => (
-                              <span key={di} className="px-2 py-0.5 bg-gray-50 dark:bg-white/5 rounded text-[10px] font-semibold text-gray-500 dark:text-gray-400">
-                                {d}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </motion.div>
                 );
@@ -318,7 +391,6 @@ export default function UserRoles() {
             <div className="text-center py-20 bg-white dark:bg-[#1a1c1e] rounded-2xl border-2 border-dashed border-gray-100 dark:border-white/5">
               <Shield size={48} className="mx-auto text-gray-200 mb-4" />
               <p className="text-sm font-bold text-gray-400">No roles assigned yet</p>
-              <p className="text-xs text-gray-300 mt-1">Use the button below to assign a role</p>
             </div>
           )}
         </div>
@@ -340,97 +412,162 @@ export default function UserRoles() {
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowAddModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => { setShowAddModal(false); setShowVerify(false); }}
+              className="absolute inset-0 bg-[#0B2346]/40 backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }}
-              className="relative w-full sm:max-w-xl bg-white dark:bg-[#0f1218] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full sm:max-w-md bg-white dark:bg-[#0f1218] rounded-t-[32px] sm:rounded-3xl shadow-2xl overflow-hidden"
             >
-              {/* Modal Header */}
-              <div className="p-6 border-b border-gray-50 dark:border-white/5 flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-black text-[#0B2346] dark:text-white uppercase tracking-tight">
-                    Assign New Role
-                  </h3>
-                  <p className="text-[9px] font-black text-[#349DC5] uppercase tracking-widest mt-0.5">
-                    Select a role &amp; target
-                  </p>
-                </div>
-                <button onClick={() => setShowAddModal(false)} className="p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary transition-all">
-                  <X size={22} />
-                </button>
-              </div>
-
-              <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-                {/* Role Picker */}
-                <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3">
-                    Designatory Role
-                  </label>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {["SuperAdmin", "MinistryAdmin", "UnitLeader", "Member"].map((r) => {
-                      const s = getRoleStyle(r);
-                      return (
-                        <button
-                          key={r}
-                          onClick={() => { setSelectedRole(r); setSelectedUnit(""); }}
-                          className="h-12 rounded-xl font-black text-xs uppercase transition-all active:scale-95 border-2"
-                          style={{
-                            backgroundColor: selectedRole === r ? s.bg : "transparent",
-                            color: selectedRole === r ? "#fff" : "#64748b",
-                            borderColor: selectedRole === r ? s.bg : "#e2e8f0",
-                          }}
-                        >
-                          {r}
-                        </button>
-                      );
-                    })}
+              {!showVerify ? (
+                  <div className="flex flex-col max-h-[85vh]">
+                  <div className="p-6 border-b border-gray-50 dark:border-white/5 flex items-center justify-between shrink-0">
+                    <div>
+                      <h3 className="text-xl font-black text-[#0B2346] dark:text-white uppercase tracking-tight">
+                        Add New Role
+                      </h3>
+                      <p className="text-[10px] font-black text-[#349DC5] uppercase tracking-widest mt-0.5">
+                        Select role type for {user?.firstName}
+                      </p>
+                    </div>
+                    <button onClick={() => setShowAddModal(false)} className="p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary transition-all">
+                      <X size={22} />
+                    </button>
                   </div>
-                </div>
-
-                {/* Unit Picker */}
-                {(selectedRole === "UnitLeader" || selectedRole === "Member") && (
-                  <div>
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3">
-                      Assigned Unit
-                    </label>
-                    <div className="max-h-52 overflow-y-auto bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 divide-y divide-gray-100 dark:divide-white/5">
-                      {units.map((u) => (
-                        <button
-                          key={u._id}
-                          onClick={() => setSelectedUnit(u._id)}
-                          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white dark:hover:bg-white/5 transition-all"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Building2 size={14} className={selectedUnit === u._id ? "text-[#0B2346]" : "text-gray-300"} />
-                            <span className={`text-sm font-${selectedUnit === u._id ? "black" : "medium"} ${selectedUnit === u._id ? "text-[#0B2346] dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                              {u.name}
-                            </span>
+    
+                  <div className="p-6 space-y-6 overflow-y-auto w-full max-w-full">
+                    {/* Role Picker List */}
+                    <div className="space-y-3">
+                      {assignableRoles.map((r) => {
+                        const val = roleValueMap[r];
+                        const s = getRoleStyle(r);
+                        return (
+                          <button
+                            key={r}
+                            onClick={() => handleRoleSelect(val)}
+                            className="w-full h-14 rounded-xl font-black text-sm transition-all active:scale-95 border flex items-center justify-center gap-3"
+                            style={{
+                              backgroundColor: selectedRole === val ? s.light : "transparent",
+                              color: selectedRole === val ? s.bg : "#64748b",
+                              borderColor: selectedRole === val ? s.bg : "rgba(100,116,139,0.2)",
+                            }}
+                          >
+                            <Shield size={18} /> {r}
+                          </button>
+                        );
+                      })}
+                    </div>
+    
+                    {/* Context Fillers based on Assigner & Role */}
+                    {selectedRole && (
+                      <div className="space-y-4 pt-2">
+                        {/* Scope fixed by Assigner */}
+                        {!isMeMulti && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-gray-400">Current Church: {meChurchName}</p>
+                            {isMeMinistryAdmin && <p className="text-xs font-semibold text-gray-400">Current Ministry: {meMinistryName}</p>}
                           </div>
-                          {selectedUnit === u._id && <CheckCircle2 size={16} className="text-[#0B2346] dark:text-[#349DC5] shrink-0" />}
+                        )}
+                        
+                        {/* Dropdowns logic */}
+                        {isMeMulti && (selectedRole === 'MinistryAdmin' || selectedRole === 'UnitLeader' || selectedRole === 'Member' || selectedRole === 'SuperAdmin') && (
+                          <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Select Church</p>
+                            <select 
+                               className="w-full h-12 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 text-sm font-semibold outline-none"
+                               value={selectedChurch} onChange={(e) => { setSelectedChurch(e.target.value); setSelectedMinistry(""); setSelectedUnit(""); }}
+                            >
+                               <option value="">-- Choose Church --</option>
+                               {churches.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                            </select>
+                          </div>
+                        )}
+                        
+                        {(isMeSuperAdmin || isMeMulti) && (selectedRole === 'MinistryAdmin' || selectedRole === 'UnitLeader' || selectedRole === 'Member') && (
+                           <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Select Ministry</p>
+                            <select 
+                               className="w-full h-12 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 text-sm font-semibold outline-none disabled:opacity-50"
+                               value={selectedMinistry} onChange={(e) => { setSelectedMinistry(e.target.value); setSelectedUnit(""); }}
+                               disabled={isMeMulti && !selectedChurch}
+                            >
+                               <option value="">-- Choose Ministry --</option>
+                               {getMinistryOpts().map((m: any, i:number) => <option key={i} value={m.name}>{m.name}</option>)}
+                            </select>
+                          </div>
+                        )}
+                        
+                        {(selectedRole === 'UnitLeader' || selectedRole === 'Member') && (
+                           <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Select Unit</p>
+                            <select 
+                               className="w-full h-12 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 text-sm font-semibold outline-none disabled:opacity-50"
+                               value={selectedUnit} onChange={(e) => { setSelectedUnit(e.target.value); }}
+                               disabled={ (isMeMulti && (!selectedChurch || !selectedMinistry)) || (isMeSuperAdmin && !isMeMulti && !selectedMinistry) }
+                            >
+                               <option value="">-- Choose Unit --</option>
+                               {units.filter(u => {
+                                  if (isMeMinistryAdmin) return true;
+                                  if (isMeSuperAdmin && !isMeMulti && selectedMinistry) {
+                                      const mCid = typeof currentUser?.church === 'object' ? currentUser?.church?._id : currentUser?.church;
+                                      return (typeof u.church === 'object' ? u.church._id === mCid : u.church === mCid) && u.ministryName === selectedMinistry;
+                                  }
+                                  if (isMeMulti && selectedChurch && selectedMinistry) {
+                                      return (typeof u.church === 'object' ? u.church._id === selectedChurch : u.church === selectedChurch) && u.ministryName === selectedMinistry;
+                                  }
+                                  return false;
+                               }).map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Confirm */}
+                    <div className="flex gap-3 pt-4 pb-2">
+                        <button
+                          onClick={() => setShowAddModal(false)}
+                          className="flex-1 h-12 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 text-gray-500 dark:text-gray-400 rounded-xl font-bold uppercase tracking-wide transition-all"
+                        >
+                          Cancel
                         </button>
-                      ))}
-                      {units.length === 0 && (
-                        <p className="text-center text-sm text-gray-400 py-8">No units available</p>
-                      )}
+                        <button
+                          onClick={handleInitialAssignClick}
+                          className="flex-1 h-12 bg-[#349DC5] hover:bg-[#2b83a5] text-white rounded-xl font-bold uppercase tracking-wide shadow-lg shadow-[#349DC5]/30 transition-all font-black tracking-widest"
+                        >
+                           Assign Role
+                        </button>
                     </div>
                   </div>
-                )}
-
-                {/* Confirm */}
-                <button
-                  onClick={handleAddRole}
-                  disabled={submitting}
-                  className="w-full h-14 bg-[#0B2346] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-60"
-                >
-                  {submitting ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <><Zap size={18} /> Confirm Assignment</>
-                  )}
-                </button>
-              </div>
+                  </div>
+               ) : (
+                   /* Beautiful Biometric / Verification Step */
+                   <div className="p-8 pb-12 flex flex-col items-center justify-center text-center max-h-[85vh]">
+                     <p className="text-[10px] font-black text-[#349DC5] uppercase tracking-widest mb-6">Security Verification Requirements</p>
+                     <div className={`w-28 h-28 rounded-full border-[3px] flex items-center justify-center mb-6 transition-all duration-500 ${verifyState === 'success' ? 'border-emerald-500 bg-emerald-50' : verifyState === 'scanning' ? 'border-[#349DC5] bg-blue-50 shadow-[0_0_40px_rgba(52,157,197,0.3)] animate-pulse' : 'border-gray-200 bg-gray-50'}`}>
+                         {verifyState === 'success' ? (
+                            <CheckCircle2 size={48} className="text-emerald-500" />
+                         ) : (
+                            <Fingerprint size={48} className={verifyState === 'scanning' ? 'text-[#349DC5]' : 'text-gray-300'} />
+                         )}
+                     </div>
+                     <h3 className="text-xl font-black text-[#0B2346] dark:text-white capitalize leading-tight mb-2">
+                        {verifyState === 'success' ? 'Identity Verified' : 'Verify Assignment'}
+                     </h3>
+                     <p className="text-sm text-gray-400 max-w-[260px] mx-auto mb-8">
+                        {verifyState === 'success' ? 'Role securely attached to system.' : 'Please verify your identity to issue this global role assignment.'}
+                     </p>
+                     
+                     {verifyState === 'idle' && (
+                        <button 
+                           onClick={executeVerifyAndSubmit}
+                           className="w-full h-14 bg-[#0B2346] text-white rounded-xl font-black uppercase tracking-widest"
+                        >
+                           Authorize
+                        </button>
+                     )}
+                   </div>
+               )}
             </motion.div>
           </div>
         )}

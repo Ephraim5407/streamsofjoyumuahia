@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Home,
@@ -14,6 +14,8 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import RoleSwitcher from "./RoleSwitcher";
 import { AppEventBus } from "../utils/AppEventBus";
+import { eventBus } from "../utils/eventBus";
+import toast from "react-hot-toast";
 
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -61,6 +63,29 @@ export default function LayoutWrapper({
     }
     AppEventBus.emit("themeChanged", isDarkMode);
   }, [isDarkMode]);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check missing token on mount or path change
+    if (!hideNav) {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Session missing. Please log in.");
+        navigate("/welcome", { replace: true });
+      }
+    }
+
+    // Listen for 401 tokenExpired
+    const unsubEventBus = eventBus.on("tokenExpired", () => {
+      toast.error("Session expired. Please log in.");
+      navigate("/welcome", { replace: true });
+    });
+
+    return () => {
+      unsubEventBus();
+    };
+  }, [location.pathname, hideNav, navigate]);
   if (hideNav) {
     return (
       <div className="flex h-screen w-full flex-col bg-background dark:bg-dark-background text-text dark:text-dark-text overflow-hidden">
