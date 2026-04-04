@@ -38,6 +38,7 @@ import SuperAdminDashboard from "./screens/main/SuperAdmin/DashboardScreen";
 import ProfileScreen from "./screens/main/ProfileScreen";
 import SuperAdminAddUnit from "./screens/main/SuperAdmin/AddUnitScreen";
 import SuperAdminChurchSwitch from "./screens/main/SuperAdmin/ChurchSwitchScreen";
+import UserRoles from "./screens/main/SuperAdmin/UserRoles";
 import UnitLeaderDashboard from "./screens/main/UnitLeader/UnitLeaderDashboard";
 import MemberList from "./screens/main/MemberList";
 import SoulHarvested from "./screens/main/SoulHarvested";
@@ -62,6 +63,10 @@ import HomeScreen from "./screens/main/HomeScreen";
 import FinanceHistory from "./screens/main/FinanceHistory";
 import RecoveredAddicts from "./screens/main/RecoveredAddicts";
 import AssignUnitControl from "./screens/main/AssignUnitControl";
+import MinistryDashboard from "./screens/main/MinistryAdmin/MinistryDashboard";
+import StudentsList from "./screens/main/StudentsList";
+import TakeAttendance from "./screens/main/TakeAttendance";
+import JoinChurchScreen from "./screens/main/JoinChurchScreen";
 import WorkPlansList from "./screens/main/WorkPlansList";
 import WorkPlanDetail from "./screens/main/WorkPlanDetail";
 import AdminWorkPlansList from "./screens/main/AdminWorkPlansList";
@@ -181,6 +186,10 @@ export default function App() {
               element={<SuperAdminProfileDetail />}
             />
             <Route
+              path="/sa/user-roles/:userId"
+              element={<UserRoles />}
+            />
+            <Route
               path="/sa/finance-summary"
               element={<SuperAdminFinanceSummary />}
             />
@@ -259,6 +268,9 @@ export default function App() {
             {/* UL shortcuts */}
             <Route path="/manage-unit" element={<UnitLeaderManageUnit />} />
             <Route path="/ul/manage-unit" element={<UnitLeaderManageUnit />} />
+            <Route path="/ul/approve-members" element={<Approvals />} />
+            <Route path="/ul/work-plans" element={<WorkPlansList />} />
+            <Route path="/church-switch" element={<SuperAdminChurchSwitch />} />
             {/* Finance admin */}
             <Route
               path="/admin-finance/summary"
@@ -290,8 +302,16 @@ export default function App() {
 
             {/* Attendance Recording */}
             <Route path="/attendance/record" element={<AttendanceRecord />} />
+            <Route path="/attendance/records" element={<AttendanceRecord />} />
             <Route path="/attendance/main-church" element={<AttendanceRecord />} />
             <Route path="/attendance/ys" element={<AttendanceRecord />} />
+            <Route path="/attendance/students" element={<StudentsList />} />
+            <Route path="/attendance/take" element={<TakeAttendance />} />
+
+            {/* Ministry & Join */}
+            <Route path="/ministry/dashboard" element={<MinistryDashboard />} />
+            <Route path="/ministry-dashboard" element={<MinistryDashboard />} />
+            <Route path="/join-church" element={<JoinChurchScreen />} />
 
             <Route path="/reports" element={<Reports />} />
             <Route path="/support" element={<SupportScreen />} />

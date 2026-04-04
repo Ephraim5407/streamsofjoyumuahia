@@ -722,6 +722,31 @@ export default function MemberListScreen() {
                               Security Operations
                             </label>
                             <div className="space-y-3">
+                              {viewer?.activeRole === "SuperAdmin" && (
+                                <button
+                                  onClick={() =>
+                                    navigate(
+                                      `/sa/user-roles/${extractId(
+                                        selectedMember._id,
+                                      )}`,
+                                    )
+                                  }
+                                  className="w-full h-14 flex items-center justify-between px-8 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-[20px] text-[#00204a] dark:text-white hover:text-[#349DC5] hover:border-[#349DC5]/20 transition-all font-black text-[9px] uppercase tracking-widest group"
+                                >
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-[#00204a] flex items-center justify-center text-white shrink-0">
+                                      <User size={20} />
+                                    </div>
+                                    <span className="text-sm font-bold text-[#00204a] dark:text-white">
+                                      View Active Roles
+                                    </span>
+                                  </div>
+                                  <ChevronRight
+                                    size={18}
+                                    className="text-gray-300 group-hover:text-[#349DC5]"
+                                  />
+                                </button>
+                              )}
                               <button className="w-full h-14 flex items-center justify-between px-8 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-[20px] text-gray-400 hover:text-[#349DC5] hover:border-[#349DC5]/20 transition-all font-black text-[9px] uppercase tracking-widest group">
                                 Disable Account
                                 <Clock size={16} className="text-gray-300 group-hover:text-[#349DC5]" />
