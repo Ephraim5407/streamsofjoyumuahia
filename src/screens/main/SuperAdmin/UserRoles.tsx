@@ -51,8 +51,9 @@ function buildRoleContextLines(role: string, item: any, isMulti: boolean, user: 
   const safeName = (field: any, isUnitField: boolean = false): string | null => {
     if (!field) return null;
     if (typeof field === 'object' && field.name) return field.name;
-    if (isUnitField && typeof field === 'string' && units) {
-        const found = units.find((u: any) => u._id === field);
+    const searchId = typeof field === 'object' ? String(field._id || '') : String(field);
+    if (isUnitField && searchId && units) {
+        const found = units.find((u: any) => String(u._id) === searchId);
         if (found && found.name) return found.name;
     }
     return null;
