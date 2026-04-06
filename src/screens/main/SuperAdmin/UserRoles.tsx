@@ -61,6 +61,7 @@ function buildRoleContextLines(role: string, item: any, isMulti: boolean, user: 
 
   if (role === "SuperAdmin") {
     if (isMulti) {
+      lines.push({ icon: Globe, label: "Destinations", value: "Global System Management" });
       const churchNames: string[] = [];
       const userChurch = safeName(user.church);
       if (userChurch) churchNames.push(userChurch);
@@ -71,36 +72,31 @@ function buildRoleContextLines(role: string, item: any, isMulti: boolean, user: 
         });
       }
       if (churchNames.length) {
-        lines.push({ icon: Building2, label: "Churches", value: churchNames.join(", ") });
-      }
-      const ministryNames: string[] = [];
-      (user.roles || []).forEach((r: any) => {
-        if (r.ministryName && !ministryNames.includes(r.ministryName)) ministryNames.push(r.ministryName);
-      });
-      if (ministryNames.length) {
-        lines.push({ icon: Church, label: "Ministries", value: ministryNames.join(", ") });
+        lines.push({ icon: Building2, label: "Access Sites", value: churchNames.join(", ") });
       }
     } else {
       const churchName = safeName(item.church) || safeName(user.church);
-      if (churchName) lines.push({ icon: Building2, label: "Church", value: churchName });
-      if (item.ministryName) lines.push({ icon: Church, label: "Ministry", value: item.ministryName });
+      const path = [churchName, item.ministryName].filter(Boolean).join('  •  ');
+      if (path) lines.push({ icon: Church, label: "Scope", value: path });
+      else lines.push({ icon: Globe, label: "Scope", value: "Single Church Scope" });
     }
-    if (!lines.length) lines.push({ icon: Globe, label: "Scope", value: "Global Access" });
 
   } else if (role === "MinistryAdmin") {
-    if (item.ministryName) lines.push({ icon: Church, label: "Ministry", value: item.ministryName });
-    const churchName = safeName(item.church);
-    if (churchName) lines.push({ icon: Building2, label: "Church", value: churchName });
-    if (!lines.length) lines.push({ icon: Globe, label: "Scope", value: "Ministry-Wide Access" });
+    const churchName = safeName(item.church) || safeName(user.church) || 'Unknown Church';
+    const ministryName = item.ministryName || 'Unknown Ministry';
+    lines.push({ icon: Church, label: "Destination", value: `${churchName}  >  ${ministryName}` });
 
   } else if (role === "UnitLeader" || role === "Member") {
-    const unitName = safeName(item.unit, true);
-    if (unitName) {
-      lines.push({ icon: Building2, label: "Unit", value: unitName });
-      const churchName = safeName(item.unit?.church);
-      if (churchName) lines.push({ icon: Church, label: "Church", value: churchName });
+    const unitObj = typeof item.unit === 'object' ? item.unit : units.find((u: any) => String(u._id) === String(item.unit));
+    const unitName = safeName(item.unit, true) || 'Unassigned / Loading...';
+    const churchName = safeName(unitObj?.church) || safeName(item.church) || safeName(user?.church);
+    const minName = unitObj?.ministryName;
+
+    const parts = [churchName, minName, unitName].filter(Boolean);
+    if (parts.length > 0) {
+      lines.push({ icon: Building2, label: "Destination", value: parts.join('  >  ') });
     } else {
-      lines.push({ icon: Globe, label: "Unit", value: "Unassigned / Loading..." });
+      lines.push({ icon: Building2, label: "Destination", value: unitName });
     }
   }
 

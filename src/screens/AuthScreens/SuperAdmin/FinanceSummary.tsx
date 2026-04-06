@@ -81,6 +81,7 @@ export default function AdminFinanceSummary() {
   const [incomes, setIncomes] = useState<IncomeRecord[]>([]);
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [expandedSection, setExpandedSection] = useState<"income" | "expense" | null>(null);
+  const [showForeignModal, setShowForeignModal] = useState(false);
 
   const getCurrentMinistry = useCallback(() => {
     const params = new URLSearchParams(location.search);
@@ -153,9 +154,16 @@ export default function AdminFinanceSummary() {
     const tIncNGN = filteredIncomes.reduce((s, i) => s + parseSafeNumber(i.totalAmount || i.amount), 0);
     const tExpNGN = filteredExpenses.reduce((s, i) => s + parseSafeNumber(i.amount), 0);
     const net = tIncNGN - tExpNGN;
-    const usd = filteredIncomes.reduce((s, i) => s + parseSafeNumber(i.donorName), 0) - filteredExpenses.reduce((s, e) => s + parseSafeNumber(e.totalDollar), 0);
-    const gbp = filteredIncomes.reduce((s, i) => s + parseSafeNumber(i.department), 0) - filteredExpenses.reduce((s, e) => s + parseSafeNumber(e.totalPound), 0);
-    const eur = filteredIncomes.reduce((s, i) => s + parseSafeNumber(i.eventName), 0) - filteredExpenses.reduce((s, e) => s + parseSafeNumber(e.totalEuro), 0);
+    const usdInc = filteredIncomes.reduce((s, i) => s + parseSafeNumber(i.donorName), 0);
+    const usdExp = filteredExpenses.reduce((s, e) => s + parseSafeNumber(e.totalDollar), 0);
+    const gbpInc = filteredIncomes.reduce((s, i) => s + parseSafeNumber(i.department), 0);
+    const gbpExp = filteredExpenses.reduce((s, e) => s + parseSafeNumber(e.totalPound), 0);
+    const eurInc = filteredIncomes.reduce((s, i) => s + parseSafeNumber(i.eventName), 0);
+    const eurExp = filteredExpenses.reduce((s, e) => s + parseSafeNumber(e.totalEuro), 0);
+
+    const usd = { inc: usdInc, exp: usdExp, net: usdInc - usdExp };
+    const gbp = { inc: gbpInc, exp: gbpExp, net: gbpInc - gbpExp };
+    const eur = { inc: eurInc, exp: eurExp, net: eurInc - eurExp };
 
     const monthsMap: Record<string, { name: string; income: number; expense: number }> = {};
     const proc = (arr: any[], type: "income" | "expense") =>
@@ -271,17 +279,17 @@ export default function AdminFinanceSummary() {
         <div className="bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-[40px] p-8 shadow-xl mb-12">
           <div className="flex items-center gap-4 mb-10 overflow-x-auto no-scrollbar pb-2">
             {[
-              { sym: "$", val: stats.usd, label: "USD Base" },
-              { sym: "£", val: stats.gbp, label: "GBP Base" },
-              { sym: "€", val: stats.eur, label: "EUR Base" },
+              { sym: "$", ...stats.usd, label: "USD Base", name: "USD" },
+              { sym: "£", ...stats.gbp, label: "GBP Base", name: "GBP" },
+              { sym: "€", ...stats.eur, label: "EUR Base", name: "EUR" },
             ].map((cur, i) => (
-              <div key={cur.label} className={cn(
-                "flex-none px-8 py-5 rounded-3xl border border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/2 min-w-[160px]",
+              <div key={cur.label} onClick={() => setShowForeignModal(true)} className={cn(
+                "flex-none px-8 py-5 rounded-3xl border border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/2 min-w-[160px] cursor-pointer hover:border-[#349DC5] transition-all",
                 i === 0 ? "border-[#349DC5]/30 bg-[#349DC5]/5" : ""
               )}>
                 <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">{cur.label}</p>
                 <p className="text-xl font-black text-[#00204a] dark:text-white">
-                  {cur.sym}{formatForeign(cur.val)}
+                  {cur.sym}{formatForeign(cur.net)}
                 </p>
               </div>
             ))}
@@ -379,6 +387,73 @@ export default function AdminFinanceSummary() {
           </button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showForeignModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              className="bg-white dark:bg-[#1a1c1e] w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800"
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-xs font-bold text-[#00204a] dark:text-white uppercase tracking-widest leading-none">
+                  Foreign Currency
+                </h3>
+                <button
+                  onClick={() => setShowForeignModal(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto no-scrollbar">
+                {[
+                  { name: "USD", sym: "$", ...stats.usd },
+                  { name: "GBP", sym: "£", ...stats.gbp },
+                  { name: "EUR", sym: "€", ...stats.eur },
+                ].map((c, i) => (
+                  <div key={c.name} className={cn("space-y-3 pb-6", i !== 2 ? "border-b border-gray-100 dark:border-gray-800" : "")}>
+                    <h4 className="text-[11px] font-black text-[#349DC5] uppercase tracking-widest">
+                      {c.name} TOTAL
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 font-medium">Income</span>
+                        <span className="text-[#111] dark:text-white font-bold">{c.sym}{formatForeign(c.inc)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 font-medium">Expense</span>
+                        <span className="text-[#111] dark:text-white font-bold">{c.sym}{formatForeign(c.exp)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-50 dark:border-gray-800/50">
+                        <span className="text-gray-800 dark:text-gray-200 font-bold">Net Balance</span>
+                        <span className={cn("font-bold", c.net >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                          {c.net < 0 ? "—" : ""}{c.sym}{formatForeign(Math.abs(c.net))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="px-6 py-4 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800">
+                <button
+                  onClick={() => setShowForeignModal(false)}
+                  className="w-full py-3 rounded-lg bg-[#349DC5] text-white font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

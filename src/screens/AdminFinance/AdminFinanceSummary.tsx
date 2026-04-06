@@ -55,6 +55,10 @@ const expenseColors = [
   "#4CC9F0",
 ];
 
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(" ");
+}
+
 export default function AdminFinanceSummary() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,6 +74,7 @@ export default function AdminFinanceSummary() {
   const [isSearching, setIsSearching] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showForeignModal, setShowForeignModal] = useState(false);
 
   const suggestions = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) return [];
@@ -204,9 +209,9 @@ export default function AdminFinanceSummary() {
     totalIncome,
     totalExpenses,
     netSurplus,
-    totalUSD,
-    totalGBP,
-    totalEUR,
+    usd,
+    gbp,
+    eur,
   } = useMemo(() => {
     const tInc = filteredIncomes.reduce(
       (sum, inc) => sum + parseSafeNumber(inc.totalAmount || inc.amount),
@@ -217,40 +222,25 @@ export default function AdminFinanceSummary() {
       0,
     );
     const net = tInc - tExp;
-    const usd =
-      filteredIncomes.reduce(
-        (sum, inc) => sum + parseSafeNumber(inc.donorName),
-        0,
-      ) -
-      filteredExpenses.reduce(
-        (sum, exp) => sum + parseSafeNumber(exp.totalDollar),
-        0,
-      );
-    const gbp =
-      filteredIncomes.reduce(
-        (sum, inc) => sum + parseSafeNumber(inc.department),
-        0,
-      ) -
-      filteredExpenses.reduce(
-        (sum, exp) => sum + parseSafeNumber(exp.totalPound),
-        0,
-      );
-    const eur =
-      filteredIncomes.reduce(
-        (sum, inc) => sum + parseSafeNumber(inc.eventName),
-        0,
-      ) -
-      filteredExpenses.reduce(
-        (sum, exp) => sum + parseSafeNumber(exp.totalEuro),
-        0,
-      );
+
+    const usdInc = filteredIncomes.reduce((sum, inc) => sum + parseSafeNumber(inc.donorName), 0);
+    const usdExp = filteredExpenses.reduce((sum, exp) => sum + parseSafeNumber(exp.totalDollar), 0);
+    const gbpInc = filteredIncomes.reduce((sum, inc) => sum + parseSafeNumber(inc.department), 0);
+    const gbpExp = filteredExpenses.reduce((sum, exp) => sum + parseSafeNumber(exp.totalPound), 0);
+    const eurInc = filteredIncomes.reduce((sum, inc) => sum + parseSafeNumber(inc.eventName), 0);
+    const eurExp = filteredExpenses.reduce((sum, exp) => sum + parseSafeNumber(exp.totalEuro), 0);
+
+    const usdObj = { inc: usdInc, exp: usdExp, net: usdInc - usdExp };
+    const gbpObj = { inc: gbpInc, exp: gbpExp, net: gbpInc - gbpExp };
+    const eurObj = { inc: eurInc, exp: eurExp, net: eurInc - eurExp };
+
     return {
       totalIncome: tInc,
       totalExpenses: tExp,
       netSurplus: net,
-      totalUSD: usd,
-      totalGBP: gbp,
-      totalEUR: eur,
+      usd: usdObj,
+      gbp: gbpObj,
+      eur: eurObj,
     };
   }, [filteredIncomes, filteredExpenses]);
 
@@ -489,28 +479,31 @@ export default function AdminFinanceSummary() {
                 </span>
                 <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white opacity-10" />
               </div>
-              <div className="bg-white dark:bg-[#1e1e1e] rounded-xl p-5 shadow-sm border border-[#f3f4f6] dark:border-[#333]">
-                <span className="text-[11px] font-bold tracking-wider text-[#6B7280] dark:text-gray-400 block mb-4 border-b border-[#f3f4f6] dark:border-[#333] pb-2">
-                  FOREIGN CURRENCY BALANCES
-                </span>
+              <div onClick={() => setShowForeignModal(true)} className="bg-white dark:bg-[#1e1e1e] rounded-xl p-5 shadow-sm border border-[#f3f4f6] dark:border-[#333] cursor-pointer hover:border-[#349DC5] transition-all group">
+                <div className="flex justify-between items-center mb-4 border-b border-[#f3f4f6] dark:border-[#333] pb-2">
+                  <span className="text-[11px] font-bold tracking-wider text-[#6B7280] dark:text-gray-400 block uppercase">
+                    FOREIGN CURRENCY BALANCES
+                  </span>
+                  <span className="text-[10px] font-bold text-[#349DC5] uppercase tracking-widest group-hover:underline">View Details →</span>
+                </div>
                 <div className="flex flex-row justify-between items-center">
                   <div className="flex flex-col items-center flex-1">
                     <span className="text-sm font-bold text-[#111] dark:text-white mb-0.5">
-                      $ {formatForeign(totalUSD)}
+                      $ {formatForeign(usd.net)}
                     </span>
                     <span className="text-xs text-gray-500">Dollar</span>
                   </div>
                   <div className="w-[1px] h-8 bg-[#E5E7EB] dark:bg-[#444]" />
                   <div className="flex flex-col items-center flex-1">
                     <span className="text-sm font-bold text-[#111] dark:text-white mb-0.5">
-                      £ {formatForeign(totalGBP)}
+                      £ {formatForeign(gbp.net)}
                     </span>
                     <span className="text-xs text-gray-500">Pound</span>
                   </div>
                   <div className="w-[1px] h-8 bg-[#E5E7EB] dark:bg-[#444]" />
                   <div className="flex flex-col items-center flex-1">
                     <span className="text-sm font-bold text-[#111] dark:text-white mb-0.5">
-                      € {formatForeign(totalEUR)}
+                      € {formatForeign(eur.net)}
                     </span>
                     <span className="text-xs text-gray-500">Euro</span>
                   </div>
@@ -843,6 +836,72 @@ export default function AdminFinanceSummary() {
           )}
         </div>
       </div>
+      <AnimatePresence>
+        {showForeignModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              className="bg-white dark:bg-[#1a1c1e] w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-800"
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-xs font-bold text-[#00204a] dark:text-white uppercase tracking-widest leading-none">
+                  Foreign Currency
+                </h3>
+                <button
+                  onClick={() => setShowForeignModal(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto no-scrollbar">
+                {[
+                  { name: "USD", sym: "$", ...usd },
+                  { name: "GBP", sym: "£", ...gbp },
+                  { name: "EUR", sym: "€", ...eur },
+                ].map((c, i) => (
+                  <div key={c.name} className={cn("space-y-3 pb-6", i !== 2 ? "border-b border-gray-100 dark:border-gray-800" : "")}>
+                    <h4 className="text-[11px] font-black text-[#349DC5] uppercase tracking-widest">
+                      {c.name} TOTAL
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 font-medium">Income</span>
+                        <span className="text-[#111] dark:text-white font-bold">{c.sym}{formatForeign(c.inc)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 font-medium">Expense</span>
+                        <span className="text-[#111] dark:text-white font-bold">{c.sym}{formatForeign(c.exp)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-50 dark:border-gray-800/50">
+                        <span className="text-gray-800 dark:text-gray-200 font-bold">Net Balance</span>
+                        <span className={cn("font-bold", c.net >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                          {c.net < 0 ? "—" : ""}{c.sym}{formatForeign(Math.abs(c.net))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="px-6 py-4 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800">
+                <button
+                  onClick={() => setShowForeignModal(false)}
+                  className="w-full py-3 rounded-lg bg-[#349DC5] text-white font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
