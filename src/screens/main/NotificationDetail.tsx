@@ -16,6 +16,8 @@ import {
   ChevronRight,
   Smile,
   MessageSquare,
+  Mic,
+  StopCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import AsyncStorage from "../../utils/AsyncStorage";
@@ -54,10 +56,63 @@ export default function NotificationDetail() {
     Array<{ type: "image" | "file"; uri: string; name: string; blob?: Blob }>
   >([]);
   const [replyTo, setReplyTo] = useState<any>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordDuration, setRecordDuration] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordTimerRef = useRef<any>(null);
+
   const [scope, peerId] = useMemo(() => {
     const parts = convId.split(":") as ["user" | "unit", string];
     return parts;
   }, [convId]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const fileName = `voice_note_${Date.now()}.webm`;
+        setReplyAttachments((prev) => [
+          ...prev,
+          { type: "file", uri: audioUrl, name: fileName, blob: audioBlob },
+        ]);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordDuration(0);
+      recordTimerRef.current = setInterval(() => {
+        setRecordDuration((prev) => prev + 1);
+      }, 1000);
+    } catch (err) {
+      toast.error("Microphone access denied");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+    }
+  };
+
+  const formatDuration = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
   const loadMessages = useCallback(
     async (isInitial = false) => {
       if (!scope || !peerId) return;
@@ -224,7 +279,7 @@ export default function NotificationDetail() {
           </button>
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white dark:border-gray-800">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#349DC5] to-[#00204a] flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white dark:border-gray-800">
                 {initialData?.peer?.profile?.avatar ||
                 initialData?.peer?.avatar ? (
                   <img
@@ -235,22 +290,22 @@ export default function NotificationDetail() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User size={24} />
+                  <div className="text-xl font-bold uppercase">
+                    {(initialData?.peer?.firstName || initialData?.peer?.name || "U")[0]}
+                  </div>
                 )}
               </div>
+              <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-[#00204a] dark:text-white uppercase leading-none truncate max-w-[200px] sm:max-w-md">
+              <h2 className="text-xl font-bold text-[#00204a] dark:text-white leading-none truncate max-w-[200px] sm:max-w-md">
                 {initialData?.isUnit
                   ? initialData?.peer?.name
                   : `${initialData?.peer?.firstName || ""} ${initialData?.peer?.surname || ""}`.trim() ||
-                    "Message"}
+                    "Chat"}
               </h2>
-              <p className="text-[9px] font-bold text-emerald-500 uppercase mt-1.5 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-current" />
-                {initialData?.isUnit
-                  ? "Chat"
-                  : "Direct Encryption Active"}
+              <p className="text-[10px] font-bold text-emerald-500 uppercase mt-1 flex items-center gap-2">
+                Online
               </p>
             </div>
           </div>
@@ -304,6 +359,7 @@ export default function NotificationDetail() {
               key={m._id}
               message={m}
               isMine={String(m.from?._id || m.from) === meId}
+              isGroup={scope === "unit"}
               onlineIds={onlineIds}
               onReply={setReplyTo}
               onImagePreview={setPreviewUrl}
@@ -395,35 +451,58 @@ export default function NotificationDetail() {
               </label>
             </div>
             <div className="relative flex-1">
-              <textarea
-                placeholder="Relay strategic intelligence..."
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                className="w-full h-16 bg-white dark:bg-[#252525] rounded-[24px] border-2 border-gray-100 dark:border-gray-800 focus:border-primary/20 outline-none px-8 py-5 pr-20 font-bold text-sm transition-all resize-none shadow-inner"
-              />
-              <button className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-gray-300 hover:text-amber-500 transition-colors">
-                <Smile size={24} />
-              </button>
-            </div>
-            <button
-              onClick={handleSend}
-              disabled={
-                sending || (!replyText.trim() && replyAttachments.length === 0)
-              }
-              className="w-20 h-16 bg-[#00204a] text-white rounded-[24px] flex items-center justify-center shadow-md shadow-blue-900/40 hover:bg-primary transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
-            >
-              {sending ? (
-                <RefreshCw size={24} className="animate-spin" />
+              {isRecording ? (
+                <div className="w-full h-16 bg-rose-50 dark:bg-rose-900/10 rounded-[24px] border-2 border-rose-100 dark:border-rose-900/20 flex items-center px-8 gap-4">
+                  <div className="w-3 h-3 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="flex-1 font-bold text-rose-500 uppercase text-xs tracking-wider">
+                    Recording Voice Note... {formatDuration(recordDuration)}
+                  </span>
+                  <button onClick={() => { setIsRecording(false); if (recordTimerRef.current) clearInterval(recordTimerRef.current); mediaRecorderRef.current?.stop(); }} className="p-2 text-rose-500 hover:bg-rose-100 rounded-xl transition-colors">
+                    <Trash2 size={20} />
+                  </button>
+                </div>
               ) : (
-                <Send size={24} />
+                <>
+                  <textarea
+                    placeholder="Type a message..."
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                    className="w-full h-16 bg-white dark:bg-[#252525] rounded-[24px] border-2 border-gray-100 dark:border-gray-800 focus:border-[#349DC5]/20 outline-none px-8 py-5 pr-20 font-bold text-sm transition-all resize-none shadow-inner"
+                  />
+                  <button className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-gray-300 hover:text-[#349DC5] transition-colors">
+                    <Mic size={24} onClick={startRecording} className="cursor-pointer" />
+                  </button>
+                </>
               )}
-            </button>
+            </div>
+            {isRecording ? (
+              <button
+                onClick={stopRecording}
+                className="w-20 h-16 bg-rose-500 text-white rounded-[24px] flex items-center justify-center shadow-md shadow-rose-900/40 hover:bg-rose-600 transition-all active:scale-95"
+              >
+                <StopCircle size={28} />
+              </button>
+            ) : (
+              <button
+                onClick={handleSend}
+                disabled={
+                  sending || (!replyText.trim() && replyAttachments.length === 0)
+                }
+                className="w-20 h-16 bg-[#00204a] text-white rounded-[24px] flex items-center justify-center shadow-md shadow-blue-900/40 hover:bg-[#349DC5] transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
+              >
+                {sending ? (
+                  <RefreshCw size={24} className="animate-spin" />
+                ) : (
+                  <Send size={24} />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

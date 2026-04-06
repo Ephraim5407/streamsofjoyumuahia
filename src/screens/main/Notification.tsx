@@ -49,7 +49,7 @@ function TabButton({ active, label, onClick, icon: Icon }: any) {
       )}
     >
       <Icon size={18} />
-      <span className="hidden sm:inline">{label}</span>
+      <span>{label}</span>
     </button>
   );
 }
@@ -232,13 +232,13 @@ export default function Notification() {
         <TabButton
           active={activeTab === "messages"}
           onClick={() => setActiveTab("messages")}
-          label="COMMUNICATIONS"
+          label="Messages"
           icon={MessageSquare}
         />
         <TabButton
           active={activeTab === "events"}
           onClick={() => setActiveTab("events")}
-          label="STRATEGIC FEEDS"
+          label="Notifications"
           icon={Bell}
         />
       </div>
@@ -290,7 +290,7 @@ export default function Notification() {
               >
                 <div
                   className={cn(
-                    "w-14 h-14 rounded-xl flex items-center justify-center shrink-0",
+                    "w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden relative",
                     isAnnouncement
                       ? "bg-amber-50 text-amber-500"
                       : isEvent
@@ -305,11 +305,16 @@ export default function Notification() {
                   ) : item.peer?.profile?.avatar ? (
                     <img
                       src={item.peer.profile.avatar}
-                      className="w-full h-full object-cover rounded-xl"
+                      className="w-full h-full object-cover"
                       alt="Avatar"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.peer?.firstName || "U")}&background=random`;
+                      }}
                     />
                   ) : (
-                    <User size={24} />
+                    <div className="w-full h-full bg-gradient-to-br from-[#349DC5] to-[#00204a] flex items-center justify-center text-white font-bold text-xl">
+                      {(item.peer?.firstName || item.peer?.name || "U")[0]}
+                    </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
