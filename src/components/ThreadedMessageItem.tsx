@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 import {
   User,
   File,
@@ -56,6 +58,8 @@ export default function ThreadedMessageItem({
   onImagePreview,
 }: ThreadedMessageItemProps) {
   const [playing, setPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [progress, setProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const isOnline = onlineIds.includes(message.from._id);
@@ -74,17 +78,61 @@ export default function ThreadedMessageItem({
       : msgDate.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
   })();
 
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   const toggleAudio = (url: string) => {
     if (!audioRef.current) {
-      audioRef.current = new Audio(url);
-      audioRef.current.onended = () => setPlaying(false);
+      const audio = new Audio();
+      audioRef.current = audio;
+
+      audio.onplay = () => setPlaying(true);
+      audio.onpause = () => setPlaying(false);
+      audio.onended = () => {
+        setPlaying(false);
+        setProgress(0);
+      };
+      audio.onloadedmetadata = () => {
+        if (audio.duration && isFinite(audio.duration)) {
+          setDuration(audio.duration);
+        }
+      };
+      audio.ontimeupdate = () => {
+        setProgress(audio.currentTime);
+      };
+      audio.onerror = () => {
+        setPlaying(false);
+        toast.error("Audio format failure or restricted access");
+      };
     }
+
+    const audio = audioRef.current;
+
+    if (audio.src !== url) {
+      audio.src = url;
+      audio.load();
+      setProgress(0);
+      setDuration(0);
+    }
+
     if (playing) {
-      audioRef.current.pause();
+      audio.pause();
     } else {
-      audioRef.current.play();
+      audio.play().catch((err) => {
+        console.error("Playback error:", err);
+        setPlaying(false);
+        // Fallback: If it was a browser click-to-play issue, try again contextually
+        if (err.name === 'NotAllowedError') {
+          toast.error("Click again to authorize playback");
+        }
+      });
     }
-    setPlaying(!playing);
   };
 
   return (
@@ -128,14 +176,14 @@ export default function ThreadedMessageItem({
               e.preventDefault();
               onLongPress(message);
             }}
-            className={`relative p-4 rounded-[20px] shadow-sm transition-all hover:shadow-md ${isMine ? "bg-[#349DC5] text-white rounded-br-lg" : "bg-white dark:bg-[#1e1e1e] text-[#00204a] dark:text-gray-200 border border-gray-100 dark:border-gray-800 rounded-bl-lg"}`}
+            className={`relative p-4 rounded-[20px] shadow-sm transition-all hover:shadow-md ${isMine ? "bg-[#349DC5] !text-white rounded-br-lg" : "bg-white dark:bg-[#1e1e1e] text-[#00204a] dark:text-gray-200 border border-gray-100 dark:border-gray-800 rounded-bl-lg"}`}
           >
             {/* Reply Reference */}
             {message.replyTo && (
               <div
-                className={`mb-4 p-3 rounded-xl text-xs border-l-4 overflow-hidden bg-opacity-10 ${isMine ? "bg-white/20 border-white/30 text-white/70" : "bg-gray-100 dark:bg-gray-800 border-blue-500 text-gray-500"}`}
+                className={`mb-4 p-3 rounded-xl text-xs border-l-4 overflow-hidden bg-opacity-10 ${isMine ? "bg-white/20 border-white/30 !text-white/80" : "bg-gray-100 dark:bg-gray-800 border-blue-500 text-gray-500"}`}
               >
-                <p className="font-bold mb-1 opacity-60">
+                <p className={`font-bold mb-1 opacity-80 ${isMine ? '!text-white' : ''}`}>
                   @{message.replyTo.from?.firstName || 'Unknown'}
                 </p>
                 <p className="truncate">{message.replyTo.text}</p>
@@ -149,7 +197,7 @@ export default function ThreadedMessageItem({
               </p>
             )}
             {message.text && (
-              <p className={`text-[15px] font-medium leading-relaxed whitespace-pre-wrap ${isMine ? "text-white" : "text-[#111]  dark:text-gray-100"}`}>
+              <p className={`text-[15px] font-medium leading-relaxed whitespace-pre-wrap ${isMine ? "!text-white" : "text-[#111] dark:text-gray-100"}`}>
                 {message.text}
               </p>
             )}
@@ -162,8 +210,8 @@ export default function ThreadedMessageItem({
                     /\.(jpg|jpeg|png|gif|webp)$/i.test(file.url);
                   const isAudio =
                     file.type?.startsWith("audio") ||
-                    /\.(m4a|mp3|wav|ogg|aac)$/i.test(file.url) ||
-                    file.name?.includes("voice_note");
+                    /\.(m4a|mp3|wav|ogg|aac|webm)$/i.test(file.url) ||
+                    file.name?.toLowerCase().includes("voice_note");
 
                   if (isImg) {
                     return (
@@ -185,19 +233,29 @@ export default function ThreadedMessageItem({
                     return (
                       <div
                         key={i}
-                        className={`flex items-center gap-4 p-3 rounded-2xl min-w-[220px] ${isMine ? "bg-white/10" : "bg-gray-50 dark:bg-gray-800"}`}
+                        className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-3xl w-full sm:min-w-[280px] max-w-full ${isMine ? "bg-white/10" : "bg-gray-50/50 dark:bg-gray-800/50"}`}
                       >
                         <button
                           onClick={() => toggleAudio(file.url)}
-                          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shrink-0 ${isMine ? "bg-white/20 hover:bg-white/30 text-white" : "bg-[#349DC5] text-white"}`}
+                          className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all shrink-0 shadow-sm ${isMine ? "bg-white text-[#349DC5] hover:scale-110" : "bg-[#349DC5] text-white hover:scale-110"}`}
                         >
-                          {playing ? <Pause size={24} /> : <Play size={24} />}
+                          {playing ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
                         </button>
-                        <div className="flex-1 space-y-1">
-                          <div className="h-1 bg-current opacity-20 rounded-full w-full" />
-                          <div className="flex justify-between items-center opacity-60 text-[10px] font-bold uppercase">
-                            <span>Voice Note</span>
-                            <Volume2 size={12} />
+                        <div className="flex-1 space-y-2 min-w-0">
+                          <div className="relative h-1.5 sm:h-2 bg-black/5 dark:bg-white/5 rounded-full w-full overflow-hidden">
+                             <motion.div 
+                               initial={{ width: 0 }}
+                               animate={{ width: `${duration ? (progress / duration) * 100 : 0}%` }}
+                               transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+                               className={`absolute inset-y-0 left-0 ${isMine ? 'bg-white' : 'bg-[#349DC5]'}`}
+                             />
+                          </div>
+                          <div className={`flex justify-between items-center opacity-60 text-[9px] font-black uppercase tracking-tighter ${isMine ? 'text-white' : 'text-[#349DC5]'}`}>
+                            <div className="flex items-center gap-2">
+                               <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                               <span>Voice Memo Synchronized</span>
+                            </div>
+                            <Volume2 size={14} />
                           </div>
                         </div>
                       </div>
@@ -242,11 +300,11 @@ export default function ThreadedMessageItem({
             )}
             {/* Timestamp inside bubble */}
             <div className={`flex items-center gap-2 mt-2 ${isMine ? "justify-end" : "justify-start"}`}>
-              <span className={`text-[10px] font-semibold tabular-nums ${isMine ? "text-white/60" : "text-gray-400"}`}>
+              <span className={`text-[10px] font-semibold tabular-nums ${isMine ? "!text-white/70" : "text-gray-400"}`}>
                 {formattedTime}
               </span>
               {message.pending && (
-                <div className="w-2.5 h-2.5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-50" />
+                <div className={`w-2.5 h-2.5 border-2 border-current border-t-transparent rounded-full animate-spin ${isMine ? 'text-white/50' : 'opacity-50'}`} />
               )}
             </div>
           </div>

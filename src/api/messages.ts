@@ -117,6 +117,7 @@ export async function replyMessage(
 
 export async function uploadMessageFile(file: {
   uri: string;
+  blob?: Blob;
   name?: string;
   type?: string;
 }): Promise<
@@ -130,11 +131,25 @@ export async function uploadMessageFile(file: {
   try {
     const form = new FormData();
     const filename = file.name || "upload";
-    form.append("file", {
-      uri: file.uri,
-      name: filename,
-      type: file.type || "application/octet-stream",
-    } as any);
+    
+    let fileToUpload: any = file.blob;
+    if (!fileToUpload && file.uri.startsWith('blob:')) {
+      // If we only have a blob URI, fetch the blob
+      const res = await fetch(file.uri);
+      fileToUpload = await res.blob();
+    }
+
+    if (fileToUpload) {
+      form.append("file", fileToUpload, filename);
+    } else {
+      // Fallback for RN or other cases if needed, though this is WebPWA
+      form.append("file", {
+        uri: file.uri,
+        name: filename,
+        type: file.type || "application/octet-stream",
+      } as any);
+    }
+
     const res = await apiClient.post("/api/upload/message", form, {
       headers: { "Content-Type": "multipart/form-data" },
     });

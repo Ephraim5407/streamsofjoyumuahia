@@ -21,6 +21,8 @@ async function getCandidates(): Promise<string[]> {
   if (!list.includes("https://streamsofjoyumuahia-api-n6na.onrender.com"))
     list.push("https://streamsofjoyumuahia-api-n6na.onrender.com/");
   // Local dev fallbacks
+  if (!list.includes("http://localhost:4000")) list.push("http://localhost:4000");
+  if (!list.includes("http://127.0.0.1:4000")) list.push("http://127.0.0.1:4000");
 
   return Array.from(new Set(list));
 }

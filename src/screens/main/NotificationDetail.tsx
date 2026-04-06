@@ -19,6 +19,7 @@ import {
   Mic,
   StopCircle,
 } from "lucide-react";
+import bgChat from "../../assets/bg_chat.jpg";
 import toast from "react-hot-toast";
 import AsyncStorage from "../../utils/AsyncStorage";
 import {
@@ -53,14 +54,18 @@ export default function NotificationDetail() {
   const [onlineIds] = useState<string[]>([]);
   const [replyText, setReplyText] = useState("");
   const [replyAttachments, setReplyAttachments] = useState<
-    Array<{ type: "image" | "file"; uri: string; name: string; blob?: Blob }>
+    Array<{ type: "image" | "file" | "audio"; uri: string; name: string; blob?: Blob }>
   >([]);
   const [replyTo, setReplyTo] = useState<any>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
   const [recordDuration, setRecordDuration] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordTimerRef = useRef<any>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const [visualData, setVisualData] = useState<number[]>([]);
   const [conversationInfo, setConversationInfo] = useState<Item | null>(initialData);
 
   const [scope, peerId] = useMemo(() => {
@@ -71,7 +76,24 @@ export default function NotificationDetail() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+        ? 'audio/webm;codecs=opus' 
+        : MediaRecorder.isTypeSupported('audio/webm') 
+          ? 'audio/webm' 
+          : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+            ? 'audio/ogg;codecs=opus'
+            : 'audio/mp4';
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      (mediaRecorder as any).dataset = { initialized: 'true', shouldSend: 'false' };
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -80,50 +102,70 @@ export default function NotificationDetail() {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const metadata = (mediaRecorder as any).dataset;
+        if (metadata.handled) return;
+        metadata.handled = 'true';
+
+        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType });
+        if (audioBlob.size < 1000 && metadata.shouldSend === 'true') {
+           // Too short, skip
+           return;
+        }
+
         const audioUrl = URL.createObjectURL(audioBlob);
-        const fileName = `voice_note_${Date.now()}.webm`;
-        setReplyAttachments((prev) => [
-          ...prev,
-          { type: "file", uri: audioUrl, name: fileName, blob: audioBlob },
-        ]);
+        const ext = mediaRecorder.mimeType.includes('webm') ? 'webm' : mediaRecorder.mimeType.includes('ogg') ? 'ogg' : 'm4a';
+        const fileName = `voice_note_${Date.now()}.${ext}`;
+        
+        const voiceNote = { 
+          type: "audio" as const, 
+          uri: audioUrl, 
+          name: fileName, 
+          blob: audioBlob,
+          mimeType: mediaRecorder.mimeType 
+        };
+        
+        if (metadata.shouldSend === 'true') {
+           await sendInstantVoiceNote(voiceNote);
+        } else if (metadata.shouldSend === 'false') {
+           setReplyAttachments((prev) => [...prev, voiceNote as any]);
+        }
+        
         stream.getTracks().forEach((track) => track.stop());
+        if (audioCtx.state !== 'closed') audioCtx.close();
+        analyserRef.current = null;
+        if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       };
 
-      mediaRecorder.start();
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      const updateVisualizer = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const levels = Array.from(dataArray).map(v => v / 255);
+        setVisualData(levels);
+        animationFrameRef.current = requestAnimationFrame(updateVisualizer);
+      };
+      updateVisualizer();
+
+      mediaRecorder.start(100);
       setIsRecording(true);
+      setIsLocked(false);
       setRecordDuration(0);
       recordTimerRef.current = setInterval(() => {
         setRecordDuration((prev) => prev + 1);
       }, 1000);
     } catch (err) {
-      toast.error("Microphone access denied");
+      toast.error("Microphone access denied or not supported");
     }
   };
 
   const stopRecording = (shouldSend = false) => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const fileName = `voice_note_${Date.now()}.webm`;
-        
-        const voiceNote = { type: "file" as const, uri: audioUrl, name: fileName, blob: audioBlob };
-        
-        if (shouldSend) {
-          await sendInstantVoiceNote(voiceNote);
-        } else {
-          setReplyAttachments((prev) => [...prev, voiceNote]);
-        }
-        
-        // Cleanup stream
-        if (mediaRecorderRef.current?.stream) {
-          mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-        }
-      };
-      
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      (mediaRecorderRef.current as any).dataset.shouldSend = String(shouldSend);
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setIsLocked(false);
       if (recordTimerRef.current) clearInterval(recordTimerRef.current);
     }
   };
@@ -154,24 +196,29 @@ export default function NotificationDetail() {
       setMessages((prev) => [...prev, optimisticMsg]);
 
       const up = await uploadMessageFile(voiceNote);
-      if (up.success && up.data?.ok && up.data.url) {
-        payload.attachments = [{
-          url: up.data.url,
-          name: voiceNote.name,
-          type: "file",
-          public_id: up.data.public_id,
-          resource_type: up.data.resource_type,
-        }];
-        const sentRes = await sendMessage(payload);
-        if (sentRes?.success && sentRes?.data?.message) {
-          const serverMsg = sentRes.data.message;
-          setMessages((prev) => prev.map(m => String(m._id) === String(tempId) ? serverMsg : m));
-        }
+      if (!up.success || !up.data?.ok || !up.data.url) {
+        throw new Error(up.error || "Upload failed");
       }
-      eventBus.emit("SOJ_MESSAGE");
-    } catch (e) {
+
+      payload.attachments = [{
+        url: up.data.url,
+        name: voiceNote.name,
+        type: "audio",
+        public_id: up.data.public_id,
+        resource_type: up.data.resource_type,
+      }];
+
+      const sentRes = await sendMessage(payload);
+      if (!sentRes.success || !sentRes.data?.message) {
+        throw new Error(sentRes.error || "Broadcast failed");
+      }
+
+      const serverMsg = sentRes.data.message;
+      setMessages((prev) => prev.map(m => String(m._id) === String(tempId) ? serverMsg : m));
+      eventBus.emit("SOJ_MESSAGE", { message: serverMsg });
+    } catch (e: any) {
       setMessages((prev) => prev.filter(m => String(m._id) !== String(tempId)));
-      toast.error("Voice Note Failed");
+      toast.error(e.message || "Voice Note Failed");
     } finally {
       setSending(false);
     }
@@ -193,6 +240,15 @@ export default function NotificationDetail() {
         
         if (res?.data?.conversation) {
           setConversationInfo(res.data.conversation);
+        } else if (res?.data?.peer) {
+          // Fallback if conversation object is null (new chat)
+          setConversationInfo({
+            id: convId,
+            peer: res.data.peer,
+            isUnit: scope === "unit",
+            latest: { text: "", createdAt: new Date().toISOString() },
+            unread: 0
+          });
         }
         try {
           await markRead(scope, peerId);
@@ -307,11 +363,11 @@ export default function NotificationDetail() {
             String(m._id) === String(tempId) ? serverMsg : m,
           );
         });
+        eventBus.emit("SOJ_MESSAGE", { message: serverMsg });
       }
       setReplyText("");
       setReplyAttachments([]);
       setReplyTo(null);
-      eventBus.emit("SOJ_MESSAGE");
     } catch (e) {
       setMessages((prev) =>
         prev.filter((m) => String(m._id) !== String(tempId)),
@@ -341,8 +397,8 @@ export default function NotificationDetail() {
     msg?: any;
   }>({ visible: false });
   return (
-    <div className="h-screen flex flex-col bg-gray-50 dark:bg-[#121212] overflow-hidden">
-      <header className="fixed top-0 inset-x-0 z-20 bg-white dark:bg-[#1e1e1e] border-b border-gray-100 dark:border-gray-800 shadow-sm px-6 h-24 flex items-center justify-between">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-[#121212] overflow-hidden relative">
+      <header className="z-20 bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 shadow-sm px-4 sm:px-8 h-20 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-6">
           <button
             onClick={() => navigate(-1)}
@@ -352,7 +408,7 @@ export default function NotificationDetail() {
           </button>
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#349DC5] to-[#00204a] flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white dark:border-gray-800">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-[#349DC5] to-[#00204a] flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white dark:border-gray-800">
                 {conversationInfo?.peer?.profile?.avatar ||
                 conversationInfo?.peer?.avatar ? (
                   <img
@@ -368,16 +424,16 @@ export default function NotificationDetail() {
                   </div>
                 )}
               </div>
-              <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-[#00204a] dark:text-white leading-none truncate max-w-[200px] sm:max-w-md">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg sm:text-xl font-bold text-[#00204a] dark:text-white leading-tight truncate">
                 {conversationInfo?.isUnit
                   ? conversationInfo?.peer?.name
                   : `${conversationInfo?.peer?.firstName || ""} ${conversationInfo?.peer?.surname || ""}`.trim() ||
                     "Chat"}
               </h2>
-              <p className="text-[10px] font-bold text-emerald-500 uppercase mt-1 flex items-center gap-2">
+              <p className="text-[10px] font-bold text-emerald-500 uppercase mt-1 flex items-center gap-1.5">
                 Online
               </p>
             </div>
@@ -386,24 +442,29 @@ export default function NotificationDetail() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => loadMessages(true)}
-            className="p-4 rounded-2xl text-gray-400 hover:text-primary transition-all"
+            className="p-2 sm:p-4 rounded-2xl text-gray-400 hover:text-primary transition-all"
           >
-            <RefreshCw size={24} className={loading ? "animate-spin" : ""} />
+            <RefreshCw size={20} className={loading ? "animate-spin" : "sm:size-6"} />
           </button>
-          <button className="p-4 rounded-2xl text-gray-400 hover:text-rose-500 transition-all">
-            <Trash2 size={24} />
+          <button className="p-2 sm:p-4 rounded-2xl text-gray-400 hover:text-rose-500 transition-all">
+            <Trash2 size={20} className="sm:size-6" />
           </button>
         </div>
       </header>
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 pt-32 pb-40 hide-scrollbar scroll-smooth"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(0,32,74,0.02) 1.5px, transparent 0)",
-          backgroundSize: "24px 24px",
-        }}
+        className="flex-1 overflow-y-auto px-4 sm:px-6 pt-4 pb-32 sm:pb-40 hide-scrollbar scroll-smooth relative"
       >
+        <div 
+          className="fixed inset-0 opacity-[0.08] dark:opacity-[0.05] pointer-events-none z-[1]"
+          style={{
+            backgroundImage: `url(${bgChat})`,
+            backgroundSize: "280px", 
+            backgroundRepeat: "repeat",
+            backgroundPosition: "center",
+          }}
+        />
+        <div className="absolute inset-0 bg-white/5 dark:bg-black/5 pointer-events-none" />
         <div className="max-w-4xl mx-auto space-y-2">
           <div className="text-center py-12">
             <div className="w-24 h-24 bg-blue-50 dark:bg-gray-800 rounded-[40px] flex items-center justify-center mx-auto mb-6 text-primary/30">
@@ -441,7 +502,7 @@ export default function NotificationDetail() {
           ))}
         </div>
       </div>
-      <div className="fixed bottom-0 inset-x-0 z-30 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-3xl border-t border-gray-100 dark:border-gray-800 p-6 sm:p-10">
+      <div className="z-30 bg-white/90 dark:bg-[#1e1e1e]/90 backdrop-blur-3xl border-t border-gray-100 dark:border-gray-800 p-4 sm:p-6 lg:p-8 shrink-0">
         <div className="max-w-4xl mx-auto">
           <AnimatePresence>
             {replyTo && (
@@ -483,6 +544,10 @@ export default function NotificationDetail() {
                       src={a.uri}
                       className="w-12 h-12 object-cover rounded-xl"
                     />
+                  ) : a.type === "audio" ? (
+                    <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/40 rounded-xl flex items-center justify-center text-primary">
+                       <Mic size={20} />
+                    </div>
                   ) : (
                     <File size={24} className="text-primary" />
                   )}
@@ -504,45 +569,86 @@ export default function NotificationDetail() {
             </div>
           )}
           <div className="relative flex items-center gap-4">
-            <div className="flex shrink-0 gap-2">
-              <label className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-[24px] flex items-center justify-center text-gray-400 hover:text-primary cursor-pointer transition-all active:scale-90">
-                <Camera size={24} />
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handleFileChange(e, "image")}
-                />
-              </label>
-              <label className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-[24px] flex items-center justify-center text-gray-400 hover:text-primary cursor-pointer transition-all active:scale-90">
-                <Paperclip size={24} />
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => handleFileChange(e, "file")}
-                />
-              </label>
-            </div>
-            <div className="relative flex-1">
-              {isRecording ? (
-                <div className="w-full h-16 bg-blue-50 dark:bg-blue-900/10 rounded-[24px] border-2 border-blue-100 dark:border-blue-900/20 flex items-center px-8 gap-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-3 h-3 rounded-full bg-rose-500 animate-pulse" />
-                    <span className="font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-wider">
-                      Recording... {formatDuration(recordDuration)}
-                    </span>
-                    <span className="text-[10px] text-gray-400 font-bold uppercase ml-4">
-                      Release to send
+            {isRecording ? (
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="flex-1 h-16 bg-[#F0F2F5] dark:bg-[#202C33] rounded-[32px] flex items-center px-4 gap-4"
+              >
+                <button 
+                  onClick={() => stopRecording(false)}
+                  className="p-3 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 rounded-full transition-all"
+                >
+                  <Trash2 size={24} />
+                </button>
+                
+                <div className="flex items-center gap-2 flex-1 px-2 border-l border-gray-300 dark:border-gray-700 min-w-0">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                    <span className="font-bold text-[#00204a] dark:text-gray-200 text-[13px] tabular-nums">
+                      {formatDuration(recordDuration)}
                     </span>
                   </div>
-                  <button onClick={() => { setIsRecording(false); if (recordTimerRef.current) clearInterval(recordTimerRef.current); mediaRecorderRef.current?.stop(); }} className="p-3 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-2xl transition-colors">
-                    <Trash2 size={24} />
-                  </button>
+                  
+                  {/* Waveform Visualizer */}
+                  <div className="flex-1 flex items-center gap-[2px] h-6 px-1 overflow-hidden opacity-50">
+                    {visualData.slice(0, 30).map((lvl, i) => (
+                      <motion.div
+                        key={i}
+                        animate={{ height: `${Math.max(15, lvl * 100)}%` }}
+                        transition={{ type: "spring", damping: 20, stiffness: 400 }}
+                        className="w-[2px] bg-[#349DC5] rounded-full"
+                      />
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {!isLocked ? (
+                    <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-3 text-gray-400">
+                       <span className="text-[9px] font-bold uppercase tracking-wider animate-pulse hidden sm:inline">Slide to lock</span>
+                       <button 
+                        onClick={() => setIsLocked(true)}
+                        className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full hover:text-primary transition-all active:scale-125"
+                       >
+                         <ChevronRight size={16} className="-rotate-90" />
+                       </button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => stopRecording(true)}
+                      className="w-11 h-11 bg-[#349DC5] text-white rounded-full flex items-center justify-center shadow-lg active:scale-95"
+                    >
+                      <Send size={20} className="ml-0.5" />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            ) : (
+              <>
+                <div className="flex shrink-0 gap-1.5 sm:gap-2">
+                  <label className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-800 rounded-[20px] sm:rounded-[24px] flex items-center justify-center text-gray-400 hover:text-primary cursor-pointer transition-all active:scale-90">
+                    <Camera size={20} className="sm:size-[24px]" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, "image")}
+                    />
+                  </label>
+                  <label className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 dark:bg-gray-800 rounded-[20px] sm:rounded-[24px] flex items-center justify-center text-gray-400 hover:text-primary cursor-pointer transition-all active:scale-90">
+                    <Paperclip size={20} className="sm:size-[24px]" />
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => handleFileChange(e, "file")}
+                    />
+                  </label>
+                </div>
+
+                <div className="relative flex-1">
                   <textarea
-                    placeholder="Type a message..."
+                    placeholder="Type..."
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     onKeyDown={(e) => {
@@ -551,36 +657,36 @@ export default function NotificationDetail() {
                         handleSend();
                       }
                     }}
-                    className="w-full h-16 bg-white dark:bg-[#252525] rounded-[24px] border-2 border-gray-100 dark:border-gray-800 focus:border-[#349DC5]/20 outline-none px-8 py-5 pr-20 font-bold text-sm transition-all resize-none shadow-inner hide-scrollbar overflow-hidden"
+                    className="w-full h-12 sm:h-16 bg-white dark:bg-[#252525] rounded-[20px] sm:rounded-[24px] border-2 border-gray-100 dark:border-gray-800 focus:border-[#349DC5]/20 outline-none px-4 sm:px-8 py-3 sm:py-5 pr-12 sm:pr-20 font-bold text-sm transition-all resize-none shadow-inner hide-scrollbar overflow-hidden"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   />
-                  <button className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-gray-300 hover:text-[#349DC5] transition-colors">
-                    <Mic size={24} onClick={startRecording} className="cursor-pointer" />
+                  <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 p-3 text-gray-300 pointer-events-none">
+                    <Mic size={18} className="sm:size-[22px] opacity-20" />
+                  </div>
+                </div>
+
+                {(!replyText.trim() && replyAttachments.length === 0) ? (
+                  <button
+                    onMouseDown={startRecording}
+                    onMouseUp={() => !isLocked && stopRecording(true)}
+                    className="w-16 sm:w-20 h-14 sm:h-16 bg-[#00204a] text-white rounded-[20px] sm:rounded-[24px] flex items-center justify-center shadow-lg hover:bg-[#349DC5] transition-all active:scale-95"
+                  >
+                    <Mic size={22} className="sm:size-[28px]" />
                   </button>
-                </>
-              )}
-            </div>
-            {!replyText.trim() && replyAttachments.length === 0 ? (
-              <button
-                onMouseDown={startRecording}
-                onMouseUp={() => stopRecording(true)}
-                onMouseLeave={() => isRecording && stopRecording(false)}
-                className={`w-20 h-16 rounded-[24px] flex items-center justify-center transition-all active:scale-95 shadow-lg ${isRecording ? 'bg-rose-500 text-white shadow-rose-500/20 animate-pulse' : 'bg-[#00204a] text-white shadow-blue-900/40 hover:bg-[#349DC5]'}`}
-              >
-                <Mic size={28} />
-              </button>
-            ) : (
-              <button
-                onClick={handleSend}
-                disabled={sending}
-                className="w-20 h-16 bg-[#00204a] text-white rounded-[24px] flex items-center justify-center shadow-md shadow-blue-900/40 hover:bg-[#349DC5] transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
-              >
-                {sending ? (
-                  <RefreshCw size={24} className="animate-spin" />
                 ) : (
-                  <Send size={24} />
+                  <button
+                    onClick={handleSend}
+                    disabled={sending}
+                    className="w-16 sm:w-20 h-14 sm:h-16 bg-[#00204a] text-white rounded-[20px] sm:rounded-[24px] flex items-center justify-center shadow-md shadow-blue-900/40 hover:bg-[#349DC5] transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {sending ? (
+                      <RefreshCw size={20} className="sm:size-[24px] animate-spin" />
+                    ) : (
+                      <Send size={20} className="sm:size-[24px]" />
+                    )}
+                  </button>
                 )}
-              </button>
+              </>
             )}
           </div>
         </div>
@@ -620,12 +726,12 @@ export default function NotificationDetail() {
             >
               <div className="w-16 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full mx-auto mb-8 sm:hidden" />
               <h3 className="text-xl font-bold text-[#00204a] dark:text-white uppercase mb-8 border-b border-gray-100 dark:border-gray-800 pb-4">
-                Operational Pulse
+                Message Options
               </h3>
               <div className="space-y-3">
                 <ActionItem
                   icon={Trash2}
-                  label="Purge Unit Sequence"
+                  label="Delete"
                   color="text-rose-500"
                   onClick={async () => {
                     if (messageAction.msg?._id) {
@@ -637,7 +743,7 @@ export default function NotificationDetail() {
                 />
                 <ActionItem
                   icon={MessageSquare}
-                  label="Strategic Reply"
+                  label="Reply"
                   onClick={() => {
                     setReplyTo(messageAction.msg);
                     setMessageAction({ visible: false });

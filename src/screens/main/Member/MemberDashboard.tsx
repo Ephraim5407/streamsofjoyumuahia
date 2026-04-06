@@ -258,7 +258,7 @@ export default function DashboardMember() {
           <div className="flex items-center gap-6">
             <div
               onClick={() => navigate("/profile")}
-              className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center border-2 border-white/20 cursor-pointer overflow-hidden shadow-lg"
+              className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 cursor-pointer overflow-hidden shadow-lg group relative"
             >
               {profile?.profile?.avatar ? (
                 <img

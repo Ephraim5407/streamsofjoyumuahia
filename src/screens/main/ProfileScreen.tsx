@@ -347,7 +347,7 @@ export default function UniversalProfileScreen() {
             className="relative group cursor-pointer"
             onClick={handlePickAvatar}
           >
-            <div className="relative w-36 h-36 rounded-2xl border-[6px] border-white dark:border-[#1a1c1e] shadow-lg overflow-hidden bg-slate-100">
+            <div className="relative w-36 h-36 rounded-full border-[6px] border-white dark:border-[#1a1c1e] shadow-lg overflow-hidden bg-slate-100">
               {avatarPreview ? (
                 <img
                   src={avatarPreview}
