@@ -61,6 +61,7 @@ export default function NotificationDetail() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordTimerRef = useRef<any>(null);
+  const [conversationInfo, setConversationInfo] = useState<Item | null>(initialData);
 
   const [scope, peerId] = useMemo(() => {
     const parts = convId.split(":") as ["user" | "unit", string];
@@ -100,11 +101,79 @@ export default function NotificationDetail() {
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = (shouldSend = false) => {
     if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const fileName = `voice_note_${Date.now()}.webm`;
+        
+        const voiceNote = { type: "file" as const, uri: audioUrl, name: fileName, blob: audioBlob };
+        
+        if (shouldSend) {
+          await sendInstantVoiceNote(voiceNote);
+        } else {
+          setReplyAttachments((prev) => [...prev, voiceNote]);
+        }
+        
+        // Cleanup stream
+        if (mediaRecorderRef.current?.stream) {
+          mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        }
+      };
+      
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+    }
+  };
+
+  const sendInstantVoiceNote = async (voiceNote: any) => {
+    setSending(true);
+    const tempId = "temp-" + Date.now();
+    try {
+      const payload: any = {
+        subject: "",
+        text: "",
+        attachments: [],
+      };
+      if (scope === "user") payload.toUserId = peerId;
+      else payload.toUnitId = peerId;
+
+      const optimisticMsg: any = {
+        _id: tempId,
+        from: { _id: meId },
+        to: scope === "user" ? { _id: peerId } : undefined,
+        toUnit: scope === "unit" ? { _id: peerId } : undefined,
+        text: "",
+        attachments: [{ url: voiceNote.uri, name: voiceNote.name, type: "file" }],
+        reactions: [],
+        createdAt: new Date().toISOString(),
+        pending: true,
+      };
+      setMessages((prev) => [...prev, optimisticMsg]);
+
+      const up = await uploadMessageFile(voiceNote);
+      if (up.success && up.data?.ok && up.data.url) {
+        payload.attachments = [{
+          url: up.data.url,
+          name: voiceNote.name,
+          type: "file",
+          public_id: up.data.public_id,
+          resource_type: up.data.resource_type,
+        }];
+        const sentRes = await sendMessage(payload);
+        if (sentRes?.success && sentRes?.data?.message) {
+          const serverMsg = sentRes.data.message;
+          setMessages((prev) => prev.map(m => String(m._id) === String(tempId) ? serverMsg : m));
+        }
+      }
+      eventBus.emit("SOJ_MESSAGE");
+    } catch (e) {
+      setMessages((prev) => prev.filter(m => String(m._id) !== String(tempId)));
+      toast.error("Voice Note Failed");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -121,12 +190,16 @@ export default function NotificationDetail() {
         const res = await fetchConversation(scope, peerId);
         const msgs = res?.data?.messages || [];
         setMessages(Array.isArray(msgs) ? msgs : []);
+        
+        if (res?.data?.conversation) {
+          setConversationInfo(res.data.conversation);
+        }
         try {
           await markRead(scope, peerId);
           eventBus.emit("SOJ_CONVERSATIONS_REFRESH");
         } catch {}
       } catch (e) {
-        toast.error("Failed to load strategic comms");
+        toast.error("Failed to load conversation");
       } finally {
         if (isInitial) setLoading(false);
       }
@@ -280,18 +353,18 @@ export default function NotificationDetail() {
           <div className="flex items-center gap-4">
             <div className="relative">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#349DC5] to-[#00204a] flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white dark:border-gray-800">
-                {initialData?.peer?.profile?.avatar ||
-                initialData?.peer?.avatar ? (
+                {conversationInfo?.peer?.profile?.avatar ||
+                conversationInfo?.peer?.avatar ? (
                   <img
                     src={
-                      initialData.peer.profile?.avatar ||
-                      initialData.peer.avatar
+                      conversationInfo.peer.profile?.avatar ||
+                      conversationInfo.peer.avatar
                     }
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="text-xl font-bold uppercase">
-                    {(initialData?.peer?.firstName || initialData?.peer?.name || "U")[0]}
+                    {(conversationInfo?.peer?.firstName || conversationInfo?.peer?.name || "U")[0]}
                   </div>
                 )}
               </div>
@@ -299,9 +372,9 @@ export default function NotificationDetail() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-[#00204a] dark:text-white leading-none truncate max-w-[200px] sm:max-w-md">
-                {initialData?.isUnit
-                  ? initialData?.peer?.name
-                  : `${initialData?.peer?.firstName || ""} ${initialData?.peer?.surname || ""}`.trim() ||
+                {conversationInfo?.isUnit
+                  ? conversationInfo?.peer?.name
+                  : `${conversationInfo?.peer?.firstName || ""} ${conversationInfo?.peer?.surname || ""}`.trim() ||
                     "Chat"}
               </h2>
               <p className="text-[10px] font-bold text-emerald-500 uppercase mt-1 flex items-center gap-2">
@@ -324,7 +397,7 @@ export default function NotificationDetail() {
       </header>
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 pt-32 pb-40 custom-scrollbar scroll-smooth"
+        className="flex-1 overflow-y-auto px-6 pt-32 pb-40 hide-scrollbar scroll-smooth"
         style={{
           backgroundImage:
             "radial-gradient(rgba(0,32,74,0.02) 1.5px, transparent 0)",
@@ -452,13 +525,18 @@ export default function NotificationDetail() {
             </div>
             <div className="relative flex-1">
               {isRecording ? (
-                <div className="w-full h-16 bg-rose-50 dark:bg-rose-900/10 rounded-[24px] border-2 border-rose-100 dark:border-rose-900/20 flex items-center px-8 gap-4">
-                  <div className="w-3 h-3 rounded-full bg-rose-500 animate-pulse" />
-                  <span className="flex-1 font-bold text-rose-500 uppercase text-xs tracking-wider">
-                    Recording Voice Note... {formatDuration(recordDuration)}
-                  </span>
-                  <button onClick={() => { setIsRecording(false); if (recordTimerRef.current) clearInterval(recordTimerRef.current); mediaRecorderRef.current?.stop(); }} className="p-2 text-rose-500 hover:bg-rose-100 rounded-xl transition-colors">
-                    <Trash2 size={20} />
+                <div className="w-full h-16 bg-blue-50 dark:bg-blue-900/10 rounded-[24px] border-2 border-blue-100 dark:border-blue-900/20 flex items-center px-8 gap-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-3 h-3 rounded-full bg-rose-500 animate-pulse" />
+                    <span className="font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-wider">
+                      Recording... {formatDuration(recordDuration)}
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-bold uppercase ml-4">
+                      Release to send
+                    </span>
+                  </div>
+                  <button onClick={() => { setIsRecording(false); if (recordTimerRef.current) clearInterval(recordTimerRef.current); mediaRecorderRef.current?.stop(); }} className="p-3 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-2xl transition-colors">
+                    <Trash2 size={24} />
                   </button>
                 </div>
               ) : (
@@ -473,7 +551,8 @@ export default function NotificationDetail() {
                         handleSend();
                       }
                     }}
-                    className="w-full h-16 bg-white dark:bg-[#252525] rounded-[24px] border-2 border-gray-100 dark:border-gray-800 focus:border-[#349DC5]/20 outline-none px-8 py-5 pr-20 font-bold text-sm transition-all resize-none shadow-inner"
+                    className="w-full h-16 bg-white dark:bg-[#252525] rounded-[24px] border-2 border-gray-100 dark:border-gray-800 focus:border-[#349DC5]/20 outline-none px-8 py-5 pr-20 font-bold text-sm transition-all resize-none shadow-inner hide-scrollbar overflow-hidden"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                   />
                   <button className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-gray-300 hover:text-[#349DC5] transition-colors">
                     <Mic size={24} onClick={startRecording} className="cursor-pointer" />
@@ -481,19 +560,19 @@ export default function NotificationDetail() {
                 </>
               )}
             </div>
-            {isRecording ? (
+            {!replyText.trim() && replyAttachments.length === 0 ? (
               <button
-                onClick={stopRecording}
-                className="w-20 h-16 bg-rose-500 text-white rounded-[24px] flex items-center justify-center shadow-md shadow-rose-900/40 hover:bg-rose-600 transition-all active:scale-95"
+                onMouseDown={startRecording}
+                onMouseUp={() => stopRecording(true)}
+                onMouseLeave={() => isRecording && stopRecording(false)}
+                className={`w-20 h-16 rounded-[24px] flex items-center justify-center transition-all active:scale-95 shadow-lg ${isRecording ? 'bg-rose-500 text-white shadow-rose-500/20 animate-pulse' : 'bg-[#00204a] text-white shadow-blue-900/40 hover:bg-[#349DC5]'}`}
               >
-                <StopCircle size={28} />
+                <Mic size={28} />
               </button>
             ) : (
               <button
                 onClick={handleSend}
-                disabled={
-                  sending || (!replyText.trim() && replyAttachments.length === 0)
-                }
+                disabled={sending}
                 className="w-20 h-16 bg-[#00204a] text-white rounded-[24px] flex items-center justify-center shadow-md shadow-blue-900/40 hover:bg-[#349DC5] transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
               >
                 {sending ? (

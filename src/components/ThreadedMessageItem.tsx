@@ -149,7 +149,7 @@ export default function ThreadedMessageItem({
               </p>
             )}
             {message.text && (
-              <p className="text-[15px] font-medium leading-relaxed whitespace-pre-wrap">
+              <p className={`text-[15px] font-medium leading-relaxed whitespace-pre-wrap ${isMine ? "text-white" : "text-[#111]  dark:text-gray-100"}`}>
                 {message.text}
               </p>
             )}
@@ -240,26 +240,21 @@ export default function ThreadedMessageItem({
                 ))}
               </div>
             )}
+            {/* Timestamp inside bubble */}
+            <div className={`flex items-center gap-2 mt-2 ${isMine ? "justify-end" : "justify-start"}`}>
+              <span className={`text-[10px] font-semibold tabular-nums ${isMine ? "text-white/60" : "text-gray-400"}`}>
+                {formattedTime}
+              </span>
+              {message.pending && (
+                <div className="w-2.5 h-2.5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-50" />
+              )}
+            </div>
           </div>
-          {/* Metadata (Time & Pending) */}
-          <div
-            className={`flex items-center gap-3 mt-2 ${isMine ? "flex-row-reverse mr-1" : "ml-1"}`}
-          >
-            <span className="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1.5 tabular-nums">
-              <Clock size={10} /> {formattedTime}
-            </span>
-            {message.pending && (
-              <div className="flex items-center gap-1.5 grayscale opacity-50">
-                <div className="w-2.5 h-2.5 border-2 border-[#349DC5] border-t-transparent rounded-full animate-spin" />
-                <span className="text-[9px] font-bold text-[#349DC5] uppercase">
-                  Syncing
-                </span>
-              </div>
-            )}
-            {/* Reply Button (visible on hover) */}
+          {/* Reply button on hover */}
+          <div className={`flex items-center mt-1 ${isMine ? "justify-end mr-1" : "ml-1"}`}>
             <button
               onClick={() => onReply(message)}
-              className={`flex items-center gap-1.5 text-[9px] font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity ${isMine ? "text-[#349DC5]" : "text-blue-500"}`}
+              className={`flex items-center gap-1 text-[9px] font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity ${isMine ? "text-[#349DC5]" : "text-blue-500"}`}
             >
               Reply <MessageSquare size={10} />
             </button>
