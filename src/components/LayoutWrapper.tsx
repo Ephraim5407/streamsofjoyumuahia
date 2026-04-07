@@ -71,7 +71,7 @@ export default function LayoutWrapper({
     if (!hideNav) {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Session missing. Please log in.");
+        toast.success("welcome back");
         navigate("/welcome", { replace: true });
       }
     }
