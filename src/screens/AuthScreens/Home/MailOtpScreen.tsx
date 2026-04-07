@@ -334,7 +334,7 @@ export default function MailOtpScreen() {
         </button>
       </div>
 
-      <div className="flex-1 w-full max-w-md mx-auto px-6 pb-12 flex flex-col items-center">
+      <div className="flex-1 w-full max-w-md mx-auto px-6 pb-32 flex flex-col items-center">
         {/* Icon */}
         <motion.div 
           initial={{ scale: 0.9, opacity: 0 }}

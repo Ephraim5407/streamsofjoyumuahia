@@ -706,11 +706,11 @@ export default function RegularRegistrationForm() {
   }
 
   return (
-    <div className="w-full min-h-[100dvh] bg-gray-50 dark:bg-[#080a0c] flex flex-col items-center justify-start sm:py-10">
-      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] min-h-[100dvh] sm:min-h-0 sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] relative flex flex-col border border-gray-100 dark:border-gray-800">
+    <div className="w-full h-[100dvh] bg-gray-50 dark:bg-[#080a0c] flex flex-col items-center justify-start sm:py-10">
+      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] h-full sm:h-auto sm:min-h-0 sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] relative flex flex-col border border-gray-100 dark:border-gray-800 overflow-hidden">
         
-        {/* Header - Reduced height and modernized */}
-        <div className="sticky top-0 z-50 bg-[#2CA6FF] px-6 py-4 flex items-center gap-4 shadow-[0_4px_20px_rgba(44,166,255,0.2)]">
+        {/* Header - Fixed at the top */}
+        <div className="shrink-0 bg-[#2CA6FF] px-6 py-4 flex items-center gap-4 shadow-[0_4px_20px_rgba(44,166,255,0.2)] z-50">
           <button
             onClick={() => (step === 1 ? navigate(-1) : setStep(1))}
             className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90"
@@ -727,21 +727,23 @@ export default function RegularRegistrationForm() {
           </div>
         </div>
 
-        {/* Progress bar - Clean and subtle */}
-        <div className="flex gap-1.5 px-6 pt-6 mb-2">
-          {[1, 2].map((s) => (
-            <div
-              key={s}
-              className="flex-1 h-1.5 rounded-full transition-all duration-500 ease-out"
-              style={{ 
-                backgroundColor: step >= s ? PRIMARY : "#F2F4F7",
-                opacity: step >= s ? 1 : 0.4
-              }}
-            />
-          ))}
-        </div>
+        {/* Scrollable Content Container */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {/* Progress bar */}
+          <div className="flex gap-1.5 px-6 pt-6 mb-2">
+            {[1, 2].map((s) => (
+              <div
+                key={s}
+                className="flex-1 h-1.5 rounded-full transition-all duration-500 ease-out"
+                style={{ 
+                  backgroundColor: step >= s ? PRIMARY : "#F2F4F7",
+                  opacity: step >= s ? 1 : 0.4
+                }}
+              />
+            ))}
+          </div>
 
-        <div className="px-6 pb-44 flex-1">
+          <div className="px-6 pb-44">
           {" "}
           {/* ═══════════════ STEP 1 ═══════════════ */}{" "}
           {step === 1 && (
@@ -1122,5 +1124,6 @@ export default function RegularRegistrationForm() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
