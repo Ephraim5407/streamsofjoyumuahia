@@ -109,3 +109,13 @@ div, span, button, input {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+@keyframes loading-bar {
+  0% { width: 0%; transform: translateX(-100%); }
+  50% { width: 70%; transform: translateX(0); }
+  100% { width: 100%; transform: translateX(100%); }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}

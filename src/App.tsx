@@ -140,8 +140,25 @@ export default function App() {
 
   if (!appIsReady) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white dark:bg-dark-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex h-[100dvh] w-screen flex-col items-center justify-center bg-[#2CA6FF]">
+        <div className="relative flex items-center justify-center">
+          {/* Circular logo background */}
+          <div className="absolute w-32 h-32 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] animate-pulse" />
+          <img
+            src="/icon_app.png"
+            alt="Streams of Joy"
+            className="w-24 h-24 relative object-contain drop-shadow-sm"
+          />
+        </div>
+        
+        {/* Modern progress indicator */}
+        <div className="mt-16 w-48 h-1.5 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">
+          <div className="h-full bg-white rounded-full animate-loading-bar shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
+        </div>
+        
+        <p className="mt-6 text-white text-[14px] font-bold tracking-widest uppercase opacity-80">
+          Streams of Joy
+        </p>
       </div>
     );
   }

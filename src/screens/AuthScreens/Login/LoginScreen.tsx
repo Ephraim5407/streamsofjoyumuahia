@@ -213,7 +213,7 @@ export default function LoginScreen() {
   }, [pendingUserId, password, navigate, storedEmail, user]);
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-[#0f1218] flex flex-col items-center justify-center overflow-y-auto p-4 md:p-8">
+    <div className="min-h-[100dvh] w-full bg-white dark:bg-[#0f1218] flex flex-col items-center justify-center p-4 md:p-8">
       {/* Background Decoration */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-20 dark:opacity-10">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#349DC5] rounded-full blur-[120px]" />

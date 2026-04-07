@@ -88,7 +88,7 @@ export default function LayoutWrapper({
   }, [location.pathname, hideNav, navigate]);
   if (hideNav) {
     return (
-      <div className="flex h-screen w-full flex-col bg-background dark:bg-dark-background text-text dark:text-dark-text overflow-hidden">
+      <div className="flex min-h-[100dvh] w-full flex-col bg-background dark:bg-dark-background text-text dark:text-dark-text">
         {children}
       </div>
     );

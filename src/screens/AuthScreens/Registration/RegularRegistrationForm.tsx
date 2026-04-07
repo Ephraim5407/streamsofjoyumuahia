@@ -706,8 +706,8 @@ export default function RegularRegistrationForm() {
   }
 
   return (
-    <div className="min-h-[100dvh] w-full bg-gray-50 dark:bg-[#080a0c] flex flex-col items-center justify-start overflow-y-auto">
-      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] min-h-[100dvh] sm:min-h-0 sm:my-10 sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] overflow-hidden relative flex flex-col border border-gray-100 dark:border-gray-800">
+    <div className="w-full bg-gray-50 dark:bg-[#080a0c] flex flex-col items-center justify-start sm:py-10">
+      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] min-h-[100dvh] sm:min-h-0 sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] relative flex flex-col border border-gray-100 dark:border-gray-800">
         
         {/* Header - Reduced height and modernized */}
         <div className="sticky top-0 z-50 bg-[#2CA6FF] px-6 py-4 flex items-center gap-4 shadow-[0_4px_20px_rgba(44,166,255,0.2)]">
