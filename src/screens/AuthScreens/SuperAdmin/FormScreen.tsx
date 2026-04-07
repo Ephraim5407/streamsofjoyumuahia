@@ -108,7 +108,7 @@ export default function SuperAdminFormScreen() {
           email: form.email,
         }),
       );
-      navigate("/mail-otp");
+      navigate("/verify-email");
     } catch {
       toast.error("Registration failed. Please try again.");
     }

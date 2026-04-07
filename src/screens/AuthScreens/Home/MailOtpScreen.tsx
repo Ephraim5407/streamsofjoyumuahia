@@ -205,7 +205,7 @@ export default function MailOtpScreen() {
                 replace: true,
               });
           } else {
-            navigate("/register/regular", { state: { userId, email: cleaned } });
+            navigate("/register/complete", { state: { userId, email: cleaned } });
           }
         }
       } else if (status === "sent" || status === "sentDev") {

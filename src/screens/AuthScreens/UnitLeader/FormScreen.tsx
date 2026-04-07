@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 // @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "../../../utils/AsyncStorage";
 const PRIMARY = "#349DC5";
 const passRules = {
   minLength: (v: string) => v.length >= 8,
@@ -89,7 +89,7 @@ export default function UnitLeaderFormScreen() {
         "user",
         JSON.stringify({ ...form, role: "leader" }),
       );
-      navigate("/mail-otp");
+      navigate("/verify-email");
     }
   };
   const pickImage = () => {
