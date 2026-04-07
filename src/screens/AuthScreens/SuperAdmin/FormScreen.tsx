@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, Camera, ChevronLeft, Check } from "lucide-react";
 import toast from "react-hot-toast";
 // @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "../../../utils/AsyncStorage";
 const passwordRules = [
   { test: (v: string) => v.length >= 6, label: "Minimum 6 characters" },
   { test: (v: string) => /[A-Za-z]/.test(v), label: "At least one letter" },

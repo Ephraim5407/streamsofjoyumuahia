@@ -5,7 +5,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { BASE_URl } from "../../../api/users";
 // @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "../../../utils/AsyncStorage";
 const rules = {
   length: (v: string) => v.length >= 8,
   upper: (v: string) => /[A-Z]/.test(v),
@@ -16,13 +16,7 @@ const rules = {
 export default function SuperAdminRegistrationScreen() {
   const navigate = useNavigate();
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const userId = params.get("userId") || "";
-  const email = params.get("email") || "";
-  const prefillJson = params.get("prefills");
-  const prefills = prefillJson
-    ? JSON.parse(decodeURIComponent(prefillJson))
-    : {};
+  const { userId, email, prefills = {} } = (location.state as any) || {};
   const [form, setForm] = useState({
     title: prefills.title || "",
     surname: prefills.surname || "",

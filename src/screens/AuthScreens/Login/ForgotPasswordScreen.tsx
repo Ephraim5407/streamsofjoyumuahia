@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { Eye, EyeOff, X, Lock } from "lucide-react";
 // @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "../../../utils/AsyncStorage";
 import { BASE_URl } from "../../../api/users";
 const PRIMARY = "#349DC5";
 const OTP_LENGTH = 6;

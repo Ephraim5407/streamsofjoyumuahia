@@ -263,7 +263,7 @@ export default function MailOtpScreen() {
                 replace: true,
               });
           } else {
-            navigate("/register/super-admin", {
+            navigate("/sa/registration", {
               state: {
                 userId: serverUserId,
                 prefills: params.prefills,
@@ -281,7 +281,7 @@ export default function MailOtpScreen() {
                 replace: true,
               });
           } else {
-            navigate("/register/regular", {
+            navigate("/register/complete", {
               state: {
                 userId: serverUserId,
                 email,
@@ -303,8 +303,8 @@ export default function MailOtpScreen() {
   const handleKeyPress = (key: string) => {
     if (key === "backspace") {
       const lastFilled = [...otp].reverse().findIndex((v) => v !== "");
-      const idx = OTP_LENGTH - 1 - lastFilled;
-      if (idx >= 0) {
+      if (lastFilled !== -1) {
+        const idx = OTP_LENGTH - 1 - lastFilled;
         const n = [...otp];
         n[idx] = "";
         setOtp(n);
@@ -326,18 +326,22 @@ export default function MailOtpScreen() {
     infoType === "success" ? "#10B981" : infoType === "error" ? "#EF4444" : "#64748B";
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-[#0f1218] flex flex-col pb-8 overflow-y-auto">
+    <div className="w-full min-h-screen bg-white dark:bg-[#0f1218] flex flex-col overflow-x-hidden overflow-y-auto">
       {/* Back button */}
-      <div className="px-6 pt-12 relative">
-        <button onClick={() => navigate(-1)} className="p-1">
-          <ArrowLeft size={24} color="#333" />
+      <div className="px-6 pt-10 relative shrink-0">
+        <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors">
+          <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
         </button>
       </div>
 
-      <div className="flex-1 px-6 pt-8 flex flex-col">
+      <div className="flex-1 w-full max-w-md mx-auto px-6 pb-12 flex flex-col items-center">
         {/* Icon */}
-        <div className="flex justify-center mb-5">
-          <div className="w-[60px] h-[60px] rounded-full bg-[#e8f5fb] dark:bg-[#1a3a4a] flex items-center justify-center shadow-md">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="flex justify-center mt-4 mb-6"
+        >
+          <div className="w-16 h-16 rounded-3xl bg-[#e8f5fb] dark:bg-[#1a3a4a] flex items-center justify-center shadow-lg shadow-[#349DC5]/10 border border-[#349DC5]/20">
             <img
               src="/mail_logo.png"
               alt="mail"
@@ -347,76 +351,75 @@ export default function MailOtpScreen() {
               }}
             />
           </div>
-        </div>
+        </motion.div>
 
-        <h1 className="text-xl font-bold text-[#222] dark:text-white text-center mb-3">
+        <h1 className="text-[28px] font-bold text-gray-900 dark:text-white text-center mb-3 tracking-tight">
           Verify Your Email
         </h1>
 
-        {!email ? (
-          <div className="mb-3">
-            <p className="text-base text-[#555] dark:text-gray-400 text-center mb-3">
+        <div className="mb-8 text-center max-w-[280px]">
+          {!email ? (
+            <p className="text-[15px] text-gray-500 dark:text-gray-400">
               Enter your email to receive an OTP.
             </p>
-            <input
-              type="email"
-              className="w-full border border-[#ccc] rounded-lg px-4 py-3 text-base bg-[#f9f9f9] dark:bg-[#1e1e1e] dark:text-white dark:border-[#333] outline-none"
-              placeholder="Enter email address"
-              autoCapitalize="none"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-        ) : (
-          <p className="text-base text-[#555] dark:text-gray-400 text-center mb-4">
-            Enter the 6-digit code sent to{" "}
-            <span className="font-bold text-[#222] dark:text-white">{email}</span>
-          </p>
-        )}
+          ) : (
+            <p className="text-[15px] text-gray-500 dark:text-gray-400">
+              Enter the 6-digit code sent to <br/>
+              <span className="font-bold text-gray-900 dark:text-white underline decoration-[#349DC5]/30 decoration-2 underline-offset-4">{email}</span>
+            </p>
+          )}
+        </div>
 
         {/* OTP boxes */}
-        <div className="flex justify-center gap-2 mb-5">
+        <div className="flex justify-center gap-3 mb-8">
           {otp.map((digit, idx) => (
-            <div
+            <motion.div
               key={idx}
-              className={`w-10 h-12 border rounded-lg flex items-center justify-center text-xl font-bold transition-all ${digit ? "border-[#349DC5] bg-[#e8f5fb] dark:bg-[#1a3a4a] text-[#349DC5]" : "border-[#ccc] bg-[#f9f9f9] dark:bg-[#1e1e1e] dark:border-[#333] text-[#222] dark:text-white"}`}
+              initial={false}
+              animate={{ 
+                scale: digit ? 1.05 : 1,
+                borderColor: digit ? "#349DC5" : "transparent"
+              }}
+              className={`w-11 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold transition-all border-2 ${digit ? "bg-[#e8f5fb] dark:bg-[#1a3a4a] text-[#349DC5]" : "bg-gray-100 dark:bg-white/5 border-transparent text-gray-900 dark:text-white"}`}
             >
               {digit || ""}
-            </div>
+            </motion.div>
           ))}
         </div>
+
+        {/* Info message */}
+        {info ? (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[14px] text-center mb-6 font-semibold"
+            style={{ color: infoColor }}
+          >
+            {info}
+          </motion.p>
+        ) : null}
 
         {/* Verify Button */}
         <motion.button
           onClick={handleVerify}
           disabled={loading || verifying}
-          whileTap={{ scale: 0.97 }}
-          className="w-full bg-[#349DC5] rounded-lg py-3.5 text-white font-bold text-base disabled:opacity-60 mb-4 shadow-md"
+          whileTap={{ scale: 0.98 }}
+          className="w-full bg-[#349DC5] h-14 rounded-[20px] text-white font-bold text-[17px] shadow-xl shadow-[#349DC5]/20 hover:opacity-90 active:opacity-100 disabled:opacity-50 transition-all mb-8 flex items-center justify-center gap-3"
         >
           {verifying ? (
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{" "}
-              Verifying...
-            </div>
+            <>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Verifying...</span>
+            </>
           ) : (
             "Verify OTP"
           )}
         </motion.button>
 
-        {/* Info message */}
-        {info ? (
-          <p
-            className="text-sm text-center mb-3 font-medium"
-            style={{ color: infoColor }}
-          >
-            {info}
-          </p>
-        ) : null}
-
         {/* Keypad */}
-        <div className="mb-5">
+        <div className="w-full max-w-[320px] mb-8 space-y-3">
           {keypadLayout.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex justify-evenly my-1.5">
+            <div key={rowIndex} className="flex justify-between gap-3">
               {row.map((key, idx) => {
                 const isBlue = key === "submit";
                 const isGray = ["backspace", "space", "-"].includes(key);
@@ -424,14 +427,14 @@ export default function MailOtpScreen() {
                   <button
                     key={idx}
                     onClick={() => handleKeyPress(key)}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-medium transition-all active:scale-90 ${isBlue ? "bg-[#349DC5] text-white shadow-md" : isGray ? "bg-[#e0e0e0] dark:bg-[#2a2a2a] text-[#333] dark:text-white" : "bg-[#f2f2f2] dark:bg-[#1e1e1e] text-[#222] dark:text-white"}`}
+                    className={`h-14 flex-1 rounded-2xl flex items-center justify-center text-xl font-bold transition-all active:scale-[0.9] hover:bg-opacity-80 ${isBlue ? "bg-[#349DC5] text-white shadow-lg shadow-[#349DC5]/20" : isGray ? "bg-gray-100 dark:bg-white/5 text-gray-500" : "bg-gray-50 dark:bg-white/10 text-gray-900 dark:text-white"}`}
                   >
                     {key === "backspace" ? (
-                      <Delete size={22} />
+                      <Delete size={22} className="text-gray-900 dark:text-white" />
                     ) : key === "submit" ? (
                       <ArrowRight size={22} color="white" />
                     ) : key === "space" || key === "-" ? (
-                      <span className="text-gray-400">–</span>
+                      <div className="w-4 h-1 bg-gray-300 dark:bg-white/20 rounded-full" />
                     ) : (
                       key
                     )}
@@ -443,17 +446,21 @@ export default function MailOtpScreen() {
         </div>
 
         {/* Resend button */}
-        <div className="flex justify-center">
+        <div className="w-full flex flex-col items-center gap-4">
+          <div className="h-[1px] w-full bg-gray-100 dark:bg-white/5" />
           <button
             onClick={sendMailOtp}
             disabled={loading || verifying || !email || cooldown > 0}
-            className="py-2 px-6 rounded-lg bg-[#e6f2fa] dark:bg-[#1a3a4a] disabled:opacity-50"
+            className="flex flex-col items-center transition-all active:scale-95 disabled:opacity-50"
           >
-            <span className="text-[#349DC5] font-bold text-sm">
+            <span className="text-gray-500 dark:text-gray-400 text-sm mb-1">
+              {cooldown > 0 ? "You can request a new code in" : "Didn't receive the code?"}
+            </span>
+            <span className="text-[#349DC5] font-black text-base uppercase tracking-wider underline underline-offset-4 decoration-2">
               {loading
                 ? "Sending..."
                 : cooldown > 0
-                  ? `Resend in ${cooldown}s`
+                  ? `${cooldown} Seconds`
                   : sent
                     ? "Resend OTP"
                     : "Send OTP"}
@@ -464,3 +471,4 @@ export default function MailOtpScreen() {
     </div>
   );
 }
+

@@ -25,35 +25,38 @@ function GradientModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6"
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.85, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.85, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="bg-white dark:bg-[#1e1e1e] rounded-3xl p-6 w-full max-w-sm shadow-md relative"
+            className="bg-white dark:bg-[#1A1F26] rounded-[28px] p-8 w-full max-w-sm shadow-2xl relative border border-white/10"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background: `linear-gradient(135deg, #fff 0%, #e8f5fb 100%)`,
-            }}
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/10 flex items-center justify-center"
+              className="absolute top-5 right-5 w-9 h-9 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
             >
-              <X size={14} />
+              <X size={18} className="text-gray-500 dark:text-gray-400" />
             </button>
-            <p className="text-sm font-medium text-[#333] text-center mt-2 leading-relaxed">
-              {message}
-            </p>
-            <button
-              onClick={onClose}
-              className="w-full mt-5 py-3 bg-[#349DC5] text-white font-bold rounded-xl text-sm"
-            >
-              OK
-            </button>
+            <div className="flex flex-col items-center pt-2">
+              <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-5">
+                <X size={32} className="text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Attention</h3>
+              <p className="text-[15px] font-medium text-gray-600 dark:text-gray-300 text-center leading-relaxed">
+                {message}
+              </p>
+              <button
+                onClick={onClose}
+                className="w-full mt-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-bold rounded-2xl text-[16px] hover:opacity-90 active:scale-[0.98] transition-all"
+              >
+                Got it
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       )}
@@ -73,7 +76,6 @@ export default function WelcomeScreen() {
   const didNavigateRef = useRef(false);
   const checkedRecoveryRef = useRef(false);
 
-  /* Load stored user for welcome back message */
   useEffect(() => {
     (async () => {
       try {
@@ -83,7 +85,6 @@ export default function WelcomeScreen() {
     })();
   }, []);
 
-  /* Auto-routing: check token / stored user state / pending email */
   useEffect(() => {
     if (didNavigateRef.current) return;
     const checkAuthAndNavigate = async () => {
@@ -121,11 +122,7 @@ export default function WelcomeScreen() {
           const pendingEmail = await AsyncStorage.getItem("pendingEmail");
           const pendingUserId = await AsyncStorage.getItem("pendingUserId");
           if (pendingEmail) {
-            const cleaned = pendingEmail
-              .trim()
-              .toLowerCase()
-              .replace(/\s+/g, "")
-              .replace(/[.,;:]+$/, "");
+            const cleaned = pendingEmail.trim().toLowerCase().replace(/\s+/g, "").replace(/[.,;:]+$/, "");
             try {
               const controller = new AbortController();
               const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -136,14 +133,14 @@ export default function WelcomeScreen() {
               );
               clearTimeout(timeoutId);
               if (resp.data?.ok && resp.data.exists) {
-                const { registrationCompleted, hasPassword, approved } =
-                  resp.data;
+                const { registrationCompleted, hasPassword, approved } = resp.data;
                 didNavigateRef.current = true;
                 if (!registrationCompleted || !hasPassword) {
                   navigate("/verify-email", {
                     state: {
                       email: cleaned,
                       userId: resp.data.userId || pendingUserId,
+                      sendOtp: true
                     },
                     replace: true,
                   });
@@ -189,11 +186,7 @@ export default function WelcomeScreen() {
       setModalVisible(true);
     }, 17000);
     try {
-      const cleaned = email
-        .trim()
-        .toLowerCase()
-        .replace(/[\s]+/g, "")
-        .replace(/[.,;:]+$/, "");
+      const cleaned = email.trim().toLowerCase().replace(/[\s]+/g, "").replace(/[.,;:]+$/, "");
       await AsyncStorage.setItem("pendingEmail", cleaned);
       const resp = await axios.post(`${BASE_URl}/api/users/lookup-email`, {
         email: cleaned,
@@ -245,99 +238,109 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-[#0f1218] flex flex-col items-center justify-center overflow-y-auto">
+    <div className="min-h-screen w-full bg-[#f8fafc] dark:bg-[#0f1218] flex flex-col items-center justify-center overflow-x-hidden">
       <GradientModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         message={modalMessage}
       />
-      <div className="w-full max-w-sm px-8 py-12 flex flex-col items-center">
-        {/* Animated logo */}
-        <motion.div
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="w-[160px] h-[138px] flex items-center justify-center mb-10"
-        >
-          <img
-            src="/icon_app.png"
-            alt="Streams of Joy"
-            className="w-full h-full object-contain drop-shadow"
-          />
-        </motion.div>
-
-        {/* Title */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.7 }}
-          className="text-center mb-10"
-        >
-          <h1 className="text-[32px] font-bold text-[#349DC5] text-center leading-tight">
-            {storedUser?.firstName
-              ? `Welcome back, ${storedUser?.title ? storedUser.title + " " : ""}${storedUser.firstName}!`
-              : "Welcome!"}
-          </h1>
-          <p className="text-base text-[#64748B] dark:text-gray-400 text-center mt-3 leading-relaxed">
-            Sign in to your account to continue your spiritual journey.
-          </p>
-        </motion.div>
-
-        {/* Form */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.35, duration: 0.7 }}
-          className="w-full"
-        >
-          {/* Email input */}
-          <div className="mb-6">
-            <div
-              className="flex items-center h-[60px] rounded-2xl border-[1.5px] px-4 transition-all duration-200"
-              style={{
-                borderColor: inputFocused ? PRIMARY_BLUE : "#E0E0E0",
-                boxShadow: inputFocused
-                  ? `0 4px 14px rgba(52,157,197,0.15)`
-                  : "none",
-                backgroundColor: "#FFF",
-              }}
-            >
-              <Mail size={20} color={PRIMARY_BLUE} className="mr-3 shrink-0" />
-              <input
-                type="email"
-                className="flex-1 text-base font-medium text-[#1E293B] outline-none bg-transparent placeholder:text-[#999]"
-                placeholder="Enter Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setInputFocused(true)}
-                onBlur={() => setInputFocused(false)}
-                onKeyDown={(e) => e.key === "Enter" && continueButtonPress()}
-                autoComplete="email"
+      
+      <div className="w-full max-w-lg px-6 py-12 flex flex-col items-center relative z-10">
+        <div className="w-full max-w-sm">
+          {/* Logo Section */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex justify-center mb-12"
+          >
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-[#349DC5]/20 rounded-full blur-2xl group-hover:bg-[#349DC5]/30 transition-all duration-700" />
+              <img
+                src="/icon_app.png"
+                alt="Streams of Joy"
+                className="w-32 h-32 object-contain relative drop-shadow-xl"
               />
             </div>
-          </div>
+          </motion.div>
 
-          {/* Continue Button */}
-          <motion.button
-            onClick={continueButtonPress}
-            disabled={loading}
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.02 }}
-            className="w-full h-[60px] rounded-2xl flex items-center justify-center font-bold text-lg text-white disabled:opacity-75 transition-all py-4"
-            style={{
-              background: `linear-gradient(90deg, ${PRIMARY_BLUE} 0%, ${LIGHT_BLUE} 100%)`,
-              boxShadow: "0 8px 20px rgba(52,157,197,0.30)",
-            }}
+          {/* Heading */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="text-center mb-10"
           >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <span className="flex items-center gap-2">
-                Continue <ArrowRight size={18} />
-              </span>
-            )}
-          </motion.button>
-        </motion.div>
+            <h1 className="text-[34px] font-black text-gray-900 dark:text-white leading-[1.1] tracking-tight">
+              {storedUser?.firstName
+                ? `Welcome back, ${storedUser?.title ? storedUser.title + " " : ""}${storedUser.firstName}!`
+                : "Welcome!"}
+            </h1>
+            <p className="text-[17px] text-gray-500 dark:text-gray-400 mt-4 leading-relaxed font-medium">
+              Sign in to your account to continue your spiritual journey.
+            </p>
+          </motion.div>
+
+          {/* Form Container */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="space-y-6"
+          >
+            <div className="relative">
+              <div
+                className={`flex items-center h-[64px] rounded-[20px] border-[2px] px-5 transition-all duration-300 bg-white dark:bg-[#1A1F26] ${
+                  inputFocused 
+                  ? "border-[#349DC5] shadow-[0_0_0_4px_rgba(52,157,197,0.1)]" 
+                  : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                }`}
+              >
+                <Mail 
+                  size={22} 
+                  className={`mr-4 transition-colors duration-300 ${inputFocused ? "text-[#349DC5]" : "text-gray-400"}`} 
+                />
+                <input
+                  type="email"
+                  className="flex-1 text-[17px] font-semibold text-gray-900 dark:text-white outline-none bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
+                  onKeyDown={(e) => e.key === "Enter" && continueButtonPress()}
+                  autoComplete="email"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={continueButtonPress}
+              disabled={loading}
+              className="group relative w-full h-[64px] bg-[#349DC5] text-white rounded-[20px] font-bold text-[18px] shadow-xl shadow-[#349DC5]/25 overflow-hidden transition-all active:scale-[0.98] disabled:opacity-70"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-[#349DC5] to-[#7DC3E8] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="flex items-center justify-center relative z-10 gap-3">
+                {loading ? (
+                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>Continue</span>
+                    <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </div>
+            </button>
+          </motion.div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-10 left-0 right-0 text-center pointer-events-none">
+        <p className="text-[14px] text-gray-400 dark:text-gray-500 font-medium">
+          © 2026 Streams of Joy International
+        </p>
       </div>
     </div>
   );
 }
+

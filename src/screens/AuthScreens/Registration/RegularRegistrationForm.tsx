@@ -24,7 +24,7 @@ import {
 } from "../../../api/locations";
 import { BASE_URl } from "../../../api/users";
 // @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage"; // ─── Config ──────────────────────────────────────────────────────────────────
+import AsyncStorage from "../../../utils/AsyncStorage"; // ─── Config ──────────────────────────────────────────────────────────────────
 const PRIMARY = "#2CA6FF";
 const passwordRules = [
   { test: (v: string) => v.length >= 6, label: "Minimum 6 characters" },
@@ -311,7 +311,7 @@ function PasswordRules({ password }: { password: string }) {
 export default function RegularRegistrationForm() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userId, prefills } = (location.state as any) || {};
+  const { userId, prefills, email: initialEmail } = (location.state as any) || {};
   const [step, setStep] = useState<1 | 2>(1);
   /* Step 1 */ const [title, setTitle] = useState("");
   const [surname, setSurname] = useState(prefills?.surname || "");

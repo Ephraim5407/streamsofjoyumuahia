@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { Clock, ArrowRight } from "lucide-react";
 // @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "../../utils/AsyncStorage";
 import { BASE_URl } from "../../api/users";
 export default function AwaitingApprovalScreen() {
   const navigate = useNavigate();
