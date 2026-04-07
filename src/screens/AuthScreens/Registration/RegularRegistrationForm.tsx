@@ -88,12 +88,14 @@ function LabelInput({
   onBlur,
 }: any) {
   return (
-    <div className="mb-3.5">
-      <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1">
+    <div className="mb-4">
+      <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
         {label}
       </label>
       {sublabel && (
-        <p className="text-[11px] text-[#667085] mb-1 leading-4">{sublabel}</p>
+        <p className="text-[11.5px] text-[#667085] dark:text-gray-400 mb-2 leading-4">
+          {sublabel}
+        </p>
       )}
       <input
         type={type}
@@ -101,7 +103,7 @@ function LabelInput({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         placeholder={placeholder}
-        className="w-full h-11 border border-[#D0D5DD] dark:border-[#444] rounded-lg px-3.5 text-sm text-[#101828] dark:text-white bg-white dark:bg-[#1e1e1e] outline-none focus:border-[#2CA6FF] focus:ring-2 focus:ring-[#2CA6FF]/20 transition-all placeholder:text-[#98A2B3]"
+        className="w-full h-12 border border-[#D0D5DD] dark:border-[#333] rounded-xl px-4 text-sm text-[#101828] dark:text-white bg-white dark:bg-[#1a1c23] outline-none focus:border-[#2CA6FF] focus:ring-4 focus:ring-[#2CA6FF]/10 transition-all placeholder:text-[#98A2B3] shadow-sm hover:border-[#2CA6FF]/50"
       />
     </div>
   );
@@ -127,57 +129,70 @@ function Select({
   }, []);
   const selected = options?.find((o: any) => (o.value ?? o) === value);
   return (
-    <div className="mb-3.5 relative" ref={ref}>
-      <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1">
+    <div className="mb-4 relative" ref={ref}>
+      <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
         {label}
       </label>
       {sublabel && (
-        <p className="text-[11px] text-[#667085] mb-1 leading-4">{sublabel}</p>
+        <p className="text-[11.5px] text-[#667085] dark:text-gray-400 mb-2 leading-4">
+          {sublabel}
+        </p>
       )}
       <button
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setOpen((o) => !o)}
-        className={`w-full h-11 border border-[#D0D5DD] dark:border-[#444] rounded-lg px-3.5 text-sm text-left flex items-center justify-between bg-white dark:bg-[#1e1e1e] ${disabled ? "opacity-50" : "focus:border-[#2CA6FF]"} transition-colors`}
+        className={`w-full h-12 border border-[#D0D5DD] dark:border-[#333] rounded-xl px-4 text-sm text-left flex items-center justify-between bg-white dark:bg-[#1a1c23] ${disabled ? "opacity-50 grayscale cursor-not-allowed" : "focus:border-[#2CA6FF] focus:ring-4 focus:ring-[#2CA6FF]/10"} transition-all shadow-sm hover:border-[#2CA6FF]/50`}
       >
         <span
           className={
-            selected ? "text-[#101828] dark:text-white" : "text-[#98A2B3]"
+            selected ? "text-[#101828] dark:text-white font-medium" : "text-[#98A2B3]"
           }
         >
           {selected ? (selected.label ?? selected) : placeholder}
         </span>
-        <ChevronDown size={16} className="text-gray-400 shrink-0" />
+        <ChevronDown 
+          size={18} 
+          className={`text-gray-400 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} 
+        />
       </button>
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-[#1e1e1e] border border-[#D0D5DD] dark:border-[#444] rounded-xl shadow z-50 max-h-52 overflow-y-auto"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-[#1c1f26] border border-[#D0D5DD] dark:border-[#333] rounded-xl shadow-xl z-[60] max-h-60 overflow-y-auto overflow-x-hidden backdrop-blur-xl"
           >
-            {options?.map((opt: any) => {
-              const val = opt.value ?? opt;
-              const lbl = opt.label ?? opt;
-              const isSelected = val === value;
-              return (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => {
-                    onChange(val);
-                    setOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-[#EEF6FB] dark:hover:bg-gray-800 transition-colors ${isSelected ? "bg-[#EEF6FB] dark:bg-gray-800 font-semibold text-[#2CA6FF]" : "text-[#101828] dark:text-gray-200"}`}
-                >
-                  {lbl}
-                  {isSelected && (
-                    <Check size={14} className="ml-auto text-[#2CA6FF]" />
-                  )}
-                </button>
-              );
-            })}
+            <div className="p-1.5">
+              {options?.map((opt: any) => {
+                const val = opt.value ?? opt;
+                const lbl = opt.label ?? opt;
+                const isSelected = val === value;
+                return (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => {
+                      onChange(val);
+                      setOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3.5 py-3 text-sm text-left rounded-lg transition-all ${
+                      isSelected 
+                        ? "bg-[#2CA6FF]/10 dark:bg-[#2CA6FF]/20 font-bold text-[#2CA6FF]" 
+                        : "text-[#344054] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    }`}
+                  >
+                    <span className="flex-1">{lbl}</span>
+                    {isSelected && (
+                      <div className="w-5 h-5 rounded-full bg-[#2CA6FF] flex items-center justify-center">
+                        <Check size={12} className="text-white" strokeWidth={4} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -202,14 +217,14 @@ function MultiSelect({ label, value, onChange, options }: any) {
         : [...(value as string[]), opt],
     );
   return (
-    <div className="mb-3.5 relative" ref={ref}>
-      <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1">
+    <div className="mb-4 relative" ref={ref}>
+      <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
         {label}
       </label>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full min-h-11 border border-[#D0D5DD] dark:border-[#444] rounded-lg px-3.5 py-2 text-sm text-left flex flex-wrap items-center gap-1.5 bg-white dark:bg-[#1e1e1e]"
+        className="w-full min-h-12 border border-[#D0D5DD] dark:border-[#333] rounded-xl px-4 py-2.5 text-sm text-left flex flex-wrap items-center gap-2 bg-white dark:bg-[#1a1c23] transition-all shadow-sm hover:border-[#2CA6FF]/50"
       >
         {(value as string[]).length === 0 ? (
           <span className="text-[#98A2B3]">Select fields</span>
@@ -217,7 +232,7 @@ function MultiSelect({ label, value, onChange, options }: any) {
           (value as string[]).map((v: string) => (
             <span
               key={v}
-              className="inline-flex items-center gap-1 bg-[#EEF6FB] text-[#0A6375] text-xs px-2 py-0.5 rounded-full font-semibold"
+              className="inline-flex items-center gap-1.5 bg-[#EEF6FB] dark:bg-[#2CA6FF]/10 text-[#2CA6FF] text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm"
             >
               {v}
               <button
@@ -226,35 +241,45 @@ function MultiSelect({ label, value, onChange, options }: any) {
                   e.stopPropagation();
                   toggle(v);
                 }}
+                className="hover:bg-[#2CA6FF] hover:text-white rounded-full p-0.5 transition-colors"
               >
-                <X size={10} />
+                <X size={10} strokeWidth={4} />
               </button>
             </span>
           ))
         )}
-        <ChevronDown size={14} className="text-gray-400 ml-auto shrink-0" />
+        <ChevronDown size={18} className={`text-gray-400 ml-auto shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-[#1e1e1e] border border-[#D0D5DD] dark:border-[#444] rounded-xl shadow z-50 max-h-52 overflow-y-auto"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-[#1c1f26] border border-[#D0D5DD] dark:border-[#333] rounded-2xl shadow-2xl z-[60] max-h-60 overflow-y-auto backdrop-blur-xl"
           >
-            {options.map((opt: string) => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => toggle(opt)}
-                className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-[#EEF6FB] dark:hover:bg-gray-800 transition-colors ${(value as string[]).includes(opt) ? "bg-[#EEF6FB] dark:bg-gray-800 font-semibold text-[#2CA6FF]" : "text-[#101828] dark:text-gray-200"}`}
-              >
-                {opt}
-                {(value as string[]).includes(opt) && (
-                  <Check size={14} className="ml-auto text-[#2CA6FF]" />
-                )}
-              </button>
-            ))}
+            <div className="p-1.5">
+              {options.map((opt: string) => {
+                const isSelected = (value as string[]).includes(opt);
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => toggle(opt)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-left rounded-lg transition-all ${
+                      isSelected 
+                        ? "bg-[#2CA6FF]/10 dark:bg-[#2CA6FF]/20 font-bold text-[#2CA6FF]" 
+                        : "text-[#344054] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#2CA6FF] border-[#2CA6FF]' : 'border-gray-300 dark:border-gray-600'}`}>
+                      {isSelected && <Check size={10} color="white" strokeWidth={5} />}
+                    </div>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -264,23 +289,27 @@ function MultiSelect({ label, value, onChange, options }: any) {
 function PasswordInput({ label, value, onChange, placeholder }: any) {
   const [show, setShow] = useState(false);
   return (
-    <div className="mb-3.5">
-      <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1">
+    <div className="mb-4">
+      <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
         {label}
       </label>
-      <div className="flex items-center border border-[#D0D5DD] dark:border-[#444] rounded-lg bg-white dark:bg-[#1e1e1e] pr-3 focus-within:border-[#2CA6FF] transition-colors">
+      <div className="flex items-center border border-[#D0D5DD] dark:border-[#333] rounded-xl bg-white dark:bg-[#1a1c23] pr-3 focus-within:border-[#2CA6FF] focus-within:ring-4 focus-within:ring-[#2CA6FF]/10 transition-all shadow-sm group hover:border-[#2CA6FF]/50">
         <input
           type={show ? "text" : "password"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 h-11 px-3.5 text-sm text-[#101828] dark:text-white bg-transparent outline-none placeholder:text-[#98A2B3]"
+          className="flex-1 h-12 px-4 text-sm text-[#101828] dark:text-white bg-transparent outline-none placeholder:text-[#98A2B3]"
         />
-        <button type="button" onClick={() => setShow((s) => !s)}>
+        <button 
+          type="button" 
+          onClick={() => setShow((s) => !s)}
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        >
           {show ? (
-            <EyeOff size={18} className="text-gray-400" />
+            <EyeOff size={20} className="text-gray-400 group-focus-within:text-[#2CA6FF]" />
           ) : (
-            <Eye size={18} className="text-gray-400" />
+            <Eye size={20} className="text-gray-400 group-focus-within:text-[#2CA6FF]" />
           )}
         </button>
       </div>
@@ -655,36 +684,64 @@ export default function RegularRegistrationForm() {
       setSubmitting(false);
     }
   };
+
+  if (!userId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-gray-50 dark:bg-[#080a0c]">
+        <div className="text-center p-8 bg-white dark:bg-[#0f1218] rounded-3xl shadow-xl max-w-sm w-full border border-gray-100 dark:border-gray-800">
+          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="text-[#2CA6FF]" size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Registration Expired</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">We couldn't find your registration session. Please start again from the welcome screen.</p>
+          <button
+            onClick={() => navigate("/welcome", { replace: true })}
+            className="w-full py-3 bg-[#2CA6FF] text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all active:scale-[0.98]"
+          >
+            Start Over
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen w-full bg-gray-50 dark:bg-black/95 flex flex-col items-center justify-start overflow-y-auto sm:py-10">
-      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] min-h-screen sm:min-h-0 sm:rounded-2xl sm:shadow-2xl overflow-hidden relative pb-16">
-        {" "}
-        {/* Header */}{" "}
-        <div className="sticky top-0 z-20 bg-[#2CA6FF] px-5 pt-10 sm:pt-5 pb-4 flex items-center gap-3">
-          {" "}
+    <div className="min-h-[100dvh] w-full bg-gray-50 dark:bg-[#080a0c] flex flex-col items-center justify-start overflow-y-auto">
+      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] min-h-[100dvh] sm:min-h-0 sm:my-10 sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] overflow-hidden relative flex flex-col border border-gray-100 dark:border-gray-800">
+        
+        {/* Header - Reduced height and modernized */}
+        <div className="sticky top-0 z-50 bg-[#2CA6FF] px-6 py-4 flex items-center gap-4 shadow-[0_4px_20px_rgba(44,166,255,0.2)]">
           <button
             onClick={() => (step === 1 ? navigate(-1) : setStep(1))}
-            className="p-1"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90"
           >
-            {" "}
-            <ChevronLeft size={24} color="white" />{" "}
-          </button>{" "}
-          <h1 className="text-[16px] font-semibold text-white flex-1">
-            Please complete your registration.
-          </h1>{" "}
-        </div>{" "}
-        {/* Progress segments */}{" "}
-        <div className="flex gap-2.5 px-5 pt-4 mb-5">
-          {" "}
+            <ChevronLeft size={24} color="white" strokeWidth={3} />
+          </button>
+          <div className="flex-1">
+            <h1 className="text-[17px] font-bold text-white leading-tight">
+              {step === 1 ? "Personal Details" : "Final Steps"}
+            </h1>
+            <p className="text-[11px] text-white/80 font-medium tracking-tight">
+              Step {step} of 2
+            </p>
+          </div>
+        </div>
+
+        {/* Progress bar - Clean and subtle */}
+        <div className="flex gap-1.5 px-6 pt-6 mb-2">
           {[1, 2].map((s) => (
             <div
               key={s}
-              className="flex-1 h-1 rounded-full transition-all duration-300"
-              style={{ backgroundColor: step >= s ? PRIMARY : "#E4E7EC" }}
+              className="flex-1 h-1.5 rounded-full transition-all duration-500 ease-out"
+              style={{ 
+                backgroundColor: step >= s ? PRIMARY : "#F2F4F7",
+                opacity: step >= s ? 1 : 0.4
+              }}
             />
-          ))}{" "}
-        </div>{" "}
-        <div className="px-5 pb-24">
+          ))}
+        </div>
+
+        <div className="px-6 pb-24 flex-1">
           {" "}
           {/* ═══════════════ STEP 1 ═══════════════ */}{" "}
           {step === 1 && (
@@ -874,34 +931,33 @@ export default function RegularRegistrationForm() {
                 onChange={setLandmark}
                 placeholder="Enter landmark or bus stop"
               />{" "}
-              {/* Date of Birth */}{" "}
-              <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
-                Date of Birth <span className="text-[#D92D20]">*</span>
-              </label>{" "}
-              <div className="grid grid-cols-3 gap-2 mb-3.5">
-                {" "}
+              {/* Date of Birth */}
+              <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-2 mt-1">
+                Date of Birth <span className="text-[#D92D20] font-bold">*</span>
+              </label>
+              <div className="grid grid-cols-3 gap-3 mb-4">
                 <Select
                   label=""
                   value={dobDay}
                   onChange={setDobDay}
                   options={days}
                   placeholder="Day"
-                />{" "}
+                />
                 <Select
                   label=""
                   value={dobMonth}
                   onChange={setDobMonth}
                   options={months}
                   placeholder="Month"
-                />{" "}
+                />
                 <Select
                   label=""
                   value={dobYear}
                   onChange={setDobYear}
                   options={years}
                   placeholder="Year"
-                />{" "}
-              </div>{" "}
+                />
+              </div>
               <LabelInput
                 label="Occupation"
                 value={occupation}
@@ -921,32 +977,30 @@ export default function RegularRegistrationForm() {
                 onChange={setWorkFields}
                 options={WORK_FIELD_OPTIONS}
               />{" "}
-              {/* Specific fields chip input */}{" "}
-              <div className="mb-3.5">
-                {" "}
-                <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1">
-                  Specific field(s) <span className="text-[#D92D20]">*</span>
-                </label>{" "}
-                <div className="border border-[#D0D5DD] dark:border-[#444] rounded-lg px-3 py-2 min-h-11 flex flex-wrap items-center gap-1.5 bg-white dark:bg-[#1e1e1e]">
-                  {" "}
+              {/* Specific fields chip input */}
+              <div className="mb-4">
+                <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
+                  Specific field(s) <span className="text-[#D92D20] font-bold">*</span>
+                </label>
+                <div className="border border-[#D0D5DD] dark:border-[#333] rounded-xl px-4 py-2.5 min-h-12 flex flex-wrap items-center gap-2 bg-white dark:bg-[#1a1c23] shadow-sm hover:border-[#2CA6FF]/50 transition-all">
                   {specificFields
                     .split(",")
                     .filter(Boolean)
                     .map((f, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-1 bg-[#EEF6FB] text-[#0A6375] text-xs px-2 py-0.5 rounded-full font-semibold"
+                        className="inline-flex items-center gap-1.5 bg-[#EEF6FB] dark:bg-[#2CA6FF]/10 text-[#2CA6FF] text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm"
                       >
-                        {" "}
-                        {f.trim()}{" "}
+                        {f.trim()}
                         <button
                           type="button"
                           onClick={() => removeSpecificField(idx)}
+                          className="hover:bg-[#2CA6FF] hover:text-white rounded-full p-0.5 transition-colors"
                         >
-                          <X size={10} />
-                        </button>{" "}
+                          <X size={10} strokeWidth={4} />
+                        </button>
                       </span>
-                    ))}{" "}
+                    ))}
                   <input
                     type="text"
                     value={currSpecificInput}
@@ -959,12 +1013,16 @@ export default function RegularRegistrationForm() {
                     }}
                     placeholder={specificFields ? "" : "Type & press Enter"}
                     className="flex-1 min-w-[120px] h-7 text-sm bg-transparent outline-none text-[#101828] dark:text-white placeholder:text-[#98A2B3]"
-                  />{" "}
-                  <button type="button" onClick={addSpecificField}>
-                    <Plus size={20} className="text-[#2CA6FF]" />
-                  </button>{" "}
-                </div>{" "}
-              </div>{" "}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={addSpecificField}
+                    className="p-1 hover:bg-[#2CA6FF]/10 rounded-full transition-colors"
+                  >
+                    <Plus size={22} className="text-[#2CA6FF]" strokeWidth={3} />
+                  </button>
+                </div>
+              </div>
               <Select
                 label="Marital Status"
                 value={maritalStatus}
@@ -972,85 +1030,96 @@ export default function RegularRegistrationForm() {
                 options={MARITAL_OPTIONS}
                 placeholder="Marital status"
               />{" "}
-              {/* Profile photo */}{" "}
-              <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-2 mt-1">
-                Add Profile Photo <span className="text-[#D92D20]">*</span>
-              </label>{" "}
-              <div className="flex items-center gap-4 mb-4">
-                {" "}
+              {/* Profile photo */}
+              <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-3 mt-2">
+                Add Profile Photo <span className="text-[#D92D20] font-bold">*</span>
+              </label>
+              <div className="flex items-center gap-5 mb-6 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
                 {localAvatarPreview ? (
-                  <img
-                    src={localAvatarPreview}
-                    alt="avatar"
-                    className="w-20 h-20 rounded-full object-cover border-2 border-[#2CA6FF]"
-                  />
-                ) : (
-                  <div className="w-20 h-20 rounded-full bg-[#EEF6FB] border-2 border-dashed border-[#2CA6FF] flex items-center justify-center">
-                    {" "}
-                    <Camera size={28} className="text-[#2CA6FF]" />{" "}
+                  <div className="relative">
+                    <img
+                      src={localAvatarPreview}
+                      alt="avatar"
+                      className="w-20 h-20 rounded-full object-cover border-4 border-white dark:border-[#1a1c23] shadow-lg"
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-[#2CA6FF] rounded-full flex items-center justify-center border-2 border-white dark:border-[#1a1c23]">
+                      <Check size={14} color="white" strokeWidth={4} />
+                    </div>
                   </div>
-                )}{" "}
-                <button
-                  type="button"
-                  onClick={handlePickAvatar}
-                  className="px-4 py-2 rounded-lg border border-[#2CA6FF] text-[#2CA6FF] text-sm font-semibold hover:bg-[#EEF6FB] transition-colors"
-                >
-                  {" "}
-                  {localAvatarPreview ? "Change Photo" : "Upload Photo"}{" "}
-                </button>{" "}
-              </div>{" "}
-              {/* Terms */}{" "}
-              <div className="flex items-start gap-2.5 mb-5">
-                {" "}
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-white dark:bg-[#1a1c23] shadow-inner flex items-center justify-center border-2 border-dashed border-[#2CA6FF]/40">
+                    <Camera size={32} className="text-[#2CA6FF]/50" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="text-[12px] text-gray-500 dark:text-gray-400 mb-2">
+                    JPG, PNG or GIF (Max. 5MB)
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handlePickAvatar}
+                    className="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-[#2CA6FF] text-[#2CA6FF] text-[13px] font-bold hover:bg-[#2CA6FF] hover:text-white transition-all shadow-sm active:scale-95"
+                  >
+                    {localAvatarPreview ? "Change Photo" : "Upload Photo"}
+                  </button>
+                </div>
+              </div>
+              {/* Terms */}
+              <div className="flex items-start gap-3 mb-8 p-4 bg-blue-50/30 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-900/20">
                 <button
                   type="button"
                   onClick={() => setAgree((a) => !a)}
-                  className={`w-[18px] h-[18px] rounded border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${agree ? "bg-[#2CA6FF] border-[#2CA6FF]" : "border-[#D0D5DD] dark:border-[#444]"}`}
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                    agree 
+                      ? "bg-[#2CA6FF] border-[#2CA6FF] shadow-[0_4px_10px_rgba(44,166,255,0.4)]" 
+                      : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                  }`}
                 >
-                  {" "}
-                  {agree && (
-                    <Check size={11} color="white" strokeWidth={3} />
-                  )}{" "}
-                </button>{" "}
-                <p className="text-[11.5px] text-[#344054] dark:text-gray-400 leading-4">
-                  {" "}
+                  {agree && <Check size={14} color="white" strokeWidth={4} />}
+                </button>
+                <p className="text-[12px] text-[#344054] dark:text-gray-400 leading-relaxed font-medium">
                   I agree to the{" "}
-                  <span className="text-[#2CA6FF] font-semibold cursor-pointer">
+                  <span className="text-[#2CA6FF] font-bold underline cursor-pointer hover:text-[#1a88d6]">
                     Terms & Conditions
                   </span>{" "}
                   and{" "}
-                  <span className="text-[#2CA6FF] font-semibold cursor-pointer">
+                  <span className="text-[#2CA6FF] font-bold underline cursor-pointer hover:text-[#1a88d6]">
                     Privacy Policy
                   </span>{" "}
-                  of Streams of Joy International Ministries.{" "}
-                </p>{" "}
-              </div>{" "}
+                  of Streams of Joy Ministries.
+                </p>
+              </div>
+
               {error && (
-                <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 text-sm text-red-600">
-                  {error}
-                </div>
-              )}{" "}
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 px-5 py-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 flex items-center gap-3"
+                >
+                  <X className="text-red-500 shrink-0" size={20} />
+                  <p className="text-[13px] text-red-600 dark:text-red-400 font-semibold">{error}</p>
+                </motion.div>
+              )}
+
               <motion.button
                 onClick={submit}
                 disabled={submitting}
-                whileTap={{ scale: 0.97 }}
-                className="w-full h-12 rounded-lg font-semibold text-[15px] text-white disabled:opacity-60 shadow-md"
+                whileTap={{ scale: 0.98 }}
+                className="w-full h-14 rounded-2xl font-bold text-[16px] text-white disabled:opacity-50 shadow-[0_10px_25px_rgba(44,166,255,0.4)] transition-all hover:shadow-[0_15px_30px_rgba(44,166,255,0.5)] flex items-center justify-center gap-3 mb-4"
                 style={{ backgroundColor: PRIMARY }}
               >
-                {" "}
                 {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    {" "}
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{" "}
-                    Submitting…{" "}
-                  </span>
+                  <>
+                    <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Processing...</span>
+                  </>
                 ) : (
-                  "Complete Registration"
-                )}{" "}
-              </motion.button>{" "}
+                  <span>Complete Registration</span>
+                )}
+              </motion.button>
             </div>
-          )}{" "}
-        </div>{" "}
+          )}
+        </div>
       </div>
     </div>
   );
