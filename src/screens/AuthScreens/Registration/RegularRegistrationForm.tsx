@@ -403,17 +403,17 @@ export default function RegularRegistrationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const allRulesOk = passwordRules.every((r) => r.test(password));
+  const passwordsMatch = password.length > 0 && confirm.length > 0 && password === confirm;
   const canNext = Boolean(
     title &&
     surname &&
     firstName &&
     churchId &&
-    activeRole &&
-    (activeRole === "UnitLeader" ? unitLead : true) &&
     gender &&
+    phone &&
     phoneStatus === "free" &&
     allRulesOk &&
-    password === confirm,
+    passwordsMatch,
   );
   /* Build worker (ministry) options from selected church */ const workerOptions =
     useMemo(() => {
@@ -423,6 +423,33 @@ export default function RegularRegistrationForm() {
         .map((m) => ({ label: m.name, value: m.name }))
         .sort((a, b) => a.label.localeCompare(b.label));
     }, [churchId, churches]);
+  /* Auto phone-check: declared first so the useEffect below can call it */
+  const handleCheckPhone = async () => {
+    if (!phone) {
+      setPhoneStatus("unknown");
+      return;
+    }
+    setPhoneStatus("checking");
+    try {
+      const res = await checkPhone(phone);
+      setPhoneStatus(res.exists ? "exists" : "free");
+    } catch {
+      setPhoneStatus("unknown");
+    }
+  };
+
+  /* Auto phone-check after user stops typing (800ms debounce) */
+  useEffect(() => {
+    if (!phone) {
+      setPhoneStatus("unknown");
+      return;
+    }
+    const timer = setTimeout(() => {
+      handleCheckPhone();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [phone]);
+
   /* DOB options */ const days = useMemo(
       () =>
         Array.from({ length: 31 }, (_, i) => {
@@ -551,19 +578,6 @@ export default function RegularRegistrationForm() {
       }
     })();
   }, [country, state]);
-  const handleCheckPhone = async () => {
-    if (!phone) {
-      setPhoneStatus("unknown");
-      return;
-    }
-    setPhoneStatus("checking");
-    try {
-      const res = await checkPhone(phone);
-      setPhoneStatus(res.exists ? "exists" : "free");
-    } catch {
-      setPhoneStatus("unknown");
-    }
-  };
   const handlePickAvatar = () => {
     const input = document.createElement("input");
     input.type = "file";
