@@ -407,11 +407,9 @@ export default function RegularRegistrationForm() {
     title &&
     surname &&
     firstName &&
-    middleName &&
     churchId &&
-    workerSelection &&
     activeRole &&
-    (activeRole === "UnitLeader" ? unitLead && unitMember : unitMember) &&
+    (activeRole === "UnitLeader" ? unitLead : true) &&
     gender &&
     phoneStatus === "free" &&
     allRulesOk &&
@@ -705,10 +703,10 @@ export default function RegularRegistrationForm() {
 
   return (
     <div className="w-full h-[100dvh] bg-gray-50 dark:bg-[#080a0c] flex flex-col items-center justify-start sm:py-10">
-      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] h-full sm:h-auto sm:min-h-0 sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] relative flex flex-col border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] h-full sm:h-auto sm:min-h-0 sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] flex flex-col border border-gray-100 dark:border-gray-800" style={{ minHeight: '100dvh' }}>
 
-        {/* Header - Fixed at the top */}
-        <div className="shrink-0 bg-[#2CA6FF] px-6 py-4 flex items-center gap-4 shadow-[0_4px_20px_rgba(44,166,255,0.2)] z-50">
+        {/* Header - Fixed at top, never moves */}
+        <div className="shrink-0 bg-[#2CA6FF] px-6 py-4 flex items-center gap-4 shadow-[0_4px_20px_rgba(44,166,255,0.2)] z-50" style={{ position: 'sticky', top: 0 }}>
           <button
             onClick={() => (step === 1 ? navigate(-1) : setStep(1))}
             className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90"
@@ -726,7 +724,7 @@ export default function RegularRegistrationForm() {
         </div>
 
         {/* Scrollable Content Container */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           {/* Progress bar */}
           <div className="flex gap-1.5 px-6 pt-6 mb-2">
             {[1, 2].map((s) => (
@@ -741,7 +739,7 @@ export default function RegularRegistrationForm() {
             ))}
           </div>
 
-          <div className="px-6 pb-44">
+          <div className="px-6 pb-28">
             {" "}
             {/* ═══════════════ STEP 1 ═══════════════ */}{" "}
             {step === 1 && (
