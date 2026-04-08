@@ -409,6 +409,7 @@ export default function RegularRegistrationForm() {
     surname &&
     firstName &&
     churchId &&
+    (activeRole !== "UnitLeader" || unitLead) &&
     gender &&
     phone &&
     phoneStatus === "free" &&
@@ -624,11 +625,15 @@ export default function RegularRegistrationForm() {
       !occupation ||
       !employmentStatus ||
       workFields.length === 0 ||
-      !specificFields ||
+      (activeRole === "UnitLeader" && !unitLead) ||
       !maritalStatus ||
       !localAvatarFile
     ) {
-      setError("Please fill all required fields and add a profile photo.");
+      setError(
+        activeRole === "UnitLeader" && !unitLead
+          ? "Please select the unit you lead in Step 1."
+          : "Please fill all required fields and add a profile photo."
+      );
       return;
     }
     if (!agree) {

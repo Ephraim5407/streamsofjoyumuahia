@@ -47,6 +47,13 @@ html, body {
   flex-direction: column;
 }
 
+/* Paint the root container with the splash bg until React renders,
+   preventing any dark/white flash before the splash screen appears */
+#root:empty {
+  background: #2CA6FF;
+  min-height: 100dvh;
+}
+
 div, span, button, input {
   box-sizing: border-box;
 }

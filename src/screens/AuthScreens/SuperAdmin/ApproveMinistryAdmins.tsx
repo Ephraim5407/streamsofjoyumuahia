@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { ChevronLeft, X } from "lucide-react";
 import { BASE_URl } from "../../../api/users";
-// @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "../../../utils/AsyncStorage";
+
 const PRIMARY = "#349DC5";
 interface PendingUser {
   _id: string;

@@ -5,8 +5,7 @@ import toast from "react-hot-toast";
 import { ChevronLeft, ChevronDown, UserCog } from "lucide-react";
 import axios from "axios";
 import { BASE_URl } from "../../../api/users";
-// @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "../../../utils/AsyncStorage";
 const PRIMARY = "#349DC5";
 const TITLES = [
   "Mr",

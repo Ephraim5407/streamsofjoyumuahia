@@ -5,8 +5,7 @@ import axios from "axios";
 import { ChevronLeft, X, ShieldCheck, UserCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { BASE_URl } from "../../../api/users";
-// @ts-ignore
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "../../../utils/AsyncStorage";
 const PRIMARY = "#349DC5";
 const AVATAR = "https://www.w3schools.com/w3images/avatar2.png";
 interface PendingUser {

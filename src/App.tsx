@@ -128,7 +128,7 @@ export default function App() {
     // Simulate App Bootstrap Gate / Splash Screen sequence
     const initApp = async () => {
       // Intialize push notifications, socket connection here.
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       setAppIsReady(true);
     };
     initApp();

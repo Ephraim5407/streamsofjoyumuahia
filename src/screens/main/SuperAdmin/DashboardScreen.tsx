@@ -38,17 +38,17 @@ function cn(...inputs: any[]) {
 }
 
 const MANAGEMENT_ROUTES = [
-  { title: "Unit Dashboards", desc: "Global unit management and oversight", route: "/sa/unit-dashboards", icon: <LayoutGrid /> },
-  { title: "Financial Summary", desc: "Consolidated financial overview", route: "/sa/finance-summary", icon: <PieChart /> },
-  { title: "Events & Announcements", desc: "Manage church events and updates", route: "/sa/events-announcements", icon: <Calendar /> },
-  { title: "Profile Admin", desc: "Manage your administrative profile", route: "/sa/profile", icon: <User /> },
-  { title: "Notifications", desc: "System notifications and alerts", route: "/notifications", icon: <Bell /> },
-  { title: "Income History", desc: "Detailed revenue and donation records", route: "/admin-finance/income", icon: <TrendingUp /> },
-  { title: "Expense History", desc: "Detailed expenditure records", route: "/admin-finance/expenses", icon: <Receipt /> },
-  { title: "Admin Finance Summary", desc: "Strategic financial briefing", route: "/admin-finance/summary", icon: <Shield /> },
-  { title: "Ministry Dashboard", desc: "Ministry admin operational console", route: "/sa/dashboard", icon: <LayoutGrid /> },
-  { title: "Workers Demographics", desc: "Personnel intelligence and data", route: "/member-list", icon: <Users /> },
-  { title: "First-Timers & New Members", desc: "Growth and pipeline management", route: "/member-list", icon: <UserCheck /> },
+  { title: "Unit Dashboards", desc: "Global unit management and oversight", route: "/sa/unit-dashboards", icon: <LayoutGrid size={20} /> },
+  { title: "Financial Summary", desc: "Consolidated financial overview", route: "/sa/finance-summary", icon: <PieChart size={20} /> },
+  { title: "Events & Announcements", desc: "Manage church events and updates", route: "/sa/events-announcements", icon: <Calendar size={20} /> },
+  { title: "Profile Admin", desc: "Manage your administrative profile", route: "/sa/profile", icon: <User size={20} /> },
+  { title: "Notifications", desc: "System notifications and alerts", route: "/notifications", icon: <Bell size={20} /> },
+  { title: "Income History", desc: "Detailed revenue and donation records", route: "/admin-finance/income", icon: <TrendingUp size={20} /> },
+  { title: "Expense History", desc: "Detailed expenditure records", route: "/admin-finance/expenses", icon: <Receipt size={20} /> },
+  { title: "Admin Finance Summary", desc: "Strategic financial briefing", route: "/admin-finance/summary", icon: <Shield size={20} /> },
+  { title: "Ministry Dashboard", desc: "Ministry admin operational console", route: "/sa/dashboard", icon: <LayoutGrid size={20} /> },
+  { title: "Workers Demographics", desc: "Personnel intelligence and data", route: "/member-list", icon: <Users size={20} /> },
+  { title: "First-Timers & New Members", desc: "Growth and pipeline management", route: "/member-list", icon: <UserCheck size={20} /> },
 ];
 
 export default function SuperAdminDashboard() {
@@ -138,81 +138,80 @@ export default function SuperAdminDashboard() {
   if (loading) return null;
 
   return (
-    <div className="flex-1 bg-gray-50 dark:bg-[#0f1218] min-h-screen pb-32">
-      {/* Search Header Area */}
-      <div className="bg-[#00204a] px-6 py-12 pb-20">
-        <div className="max-w-7xl mx-auto flex flex-col gap-10">
-          <div className="flex flex-col gap-10">
-            {/* Identity & Main Actions Container */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div 
-                  onClick={() => navigate("/sa/profile")}
-                  className="w-16 h-16 rounded-2xl bg-[#349DC5] border-4 border-white/10 shadow-xl overflow-hidden cursor-pointer active:scale-95 transition-all"
-                >
-                  {profile?.profile?.avatar ? (
-                    <img src={profile.profile.avatar} className="w-full h-full object-cover" alt="Admin" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white">
-                      <Shield size={30} />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-white leading-tight uppercase tracking-tight">
-                    {profile?.firstName ? `Welcome, ${profile?.title ? profile.title + ' ' : ''}${profile.firstName}` : "Super Admin"}
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                    <span className="text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">
-                      Global HQ Authority
-                    </span>
+    <div className="flex-1 bg-gray-50 dark:bg-[#0f1218] min-h-screen pb-24 md:pb-10">
+      {/* Hero Header */}
+      <div className="bg-[#00204a] px-4 sm:px-6 pt-6 sm:pt-10 pb-14 sm:pb-20">
+        <div className="max-w-7xl mx-auto flex flex-col gap-5 sm:gap-8">
+          {/* Identity Row */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div 
+                onClick={() => navigate("/sa/profile")}
+                className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#349DC5] border-2 sm:border-4 border-white/10 shadow-lg overflow-hidden cursor-pointer active:scale-95 transition-all shrink-0"
+              >
+                {profile?.profile?.avatar ? (
+                  <img src={profile.profile.avatar} className="w-full h-full object-cover" alt="Admin" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white">
+                    <Shield size={22} />
                   </div>
+                )}
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-sm sm:text-lg md:text-2xl font-black text-white leading-tight uppercase tracking-tight truncate">
+                  {profile?.firstName ? `Welcome, ${profile?.title ? profile.title + ' ' : ''}${profile.firstName}` : "Super Admin"}
+                </h2>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="text-white/40 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.15em]">
+                    Global HQ Authority
+                  </span>
                 </div>
               </div>
-              
-              {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
-                <button 
-                  onClick={() => AppEventBus.emit("openRoleSwitcher")}
-                  className="hidden sm:flex items-center gap-3 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl transition-all active:scale-95"
-                >
-                  <LayoutGrid size={18} className="text-[#349DC5]" />
-                  <span className="text-[10px] font-black uppercase tracking-widest leading-none">Switch Role</span>
-                </button>
-              )}
             </div>
-
-            {/* Intelligence Actions & Tactical Switches */}
-            <div className="flex items-center gap-3 flex-wrap">
-              {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
-                <button 
-                  onClick={() => AppEventBus.emit("openRoleSwitcher")}
-                  className="w-14 h-14 rounded-2xl bg-white text-[#00204a] flex items-center justify-center shadow-lg active:scale-95 transition-all border-2 border-white/20"
-                  title="Switch Role"
-                >
-                  <LayoutGrid size={22} className="text-[#349DC5]" />
-                </button>
-              )}
-              
-              <button
-                onClick={() => fetchData(true)}
-                className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-white/60 hover:bg-white/10 transition-all active:scale-95"
+            
+            {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
+              <button 
+                onClick={() => AppEventBus.emit("openRoleSwitcher")}
+                className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl transition-all active:scale-95 shrink-0"
               >
-                <RefreshCw size={22} className={refreshing ? "animate-spin text-[#349DC5]" : "text-white"} />
+                <LayoutGrid size={16} className="text-[#349DC5]" />
+                <span className="text-[9px] font-bold uppercase tracking-widest leading-none">Switch Role</span>
               </button>
-              
-              <button
-                onClick={() => navigate("/notifications")}
-                className="flex-1 sm:flex-none h-14 px-6 bg-white/5 text-white rounded-2xl border border-white/10 hover:bg-white/10 transition-all active:scale-95 flex items-center justify-center gap-3"
-              >
-                <Bell size={20} className="text-[#349DC5]" />
-                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Notifications</span>
-              </button>
-            </div>
+            )}
           </div>
 
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
+              <button 
+                onClick={() => AppEventBus.emit("openRoleSwitcher")}
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white text-[#00204a] flex items-center justify-center shadow-lg active:scale-95 transition-all border border-white/20 sm:hidden"
+                title="Switch Role"
+              >
+                <LayoutGrid size={18} className="text-[#349DC5]" />
+              </button>
+            )}
+            
+            <button
+              onClick={() => fetchData(true)}
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-white/60 hover:bg-white/10 transition-all active:scale-95"
+            >
+              <RefreshCw size={18} className={refreshing ? "animate-spin text-[#349DC5]" : "text-white"} />
+            </button>
+            
+            <button
+              onClick={() => navigate("/notifications")}
+              className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-5 bg-white/5 text-white rounded-xl sm:rounded-2xl border border-white/10 hover:bg-white/10 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Bell size={16} className="text-[#349DC5]" />
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider leading-none">Notifications</span>
+            </button>
+          </div>
+
+          {/* Search */}
           <div className="relative max-w-2xl group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-[#349DC5] transition-colors" size={20} />
+            <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-[#349DC5] transition-colors" size={18} />
             <input
               type="text"
               placeholder="Search members, units, or events..."
@@ -222,7 +221,7 @@ export default function SuperAdminDashboard() {
                 setIsSearchVisible(true);
               }}
               onFocus={() => setIsSearchVisible(true)}
-              className="w-full h-16 pl-14 pr-6 bg-white/10 border-2 border-transparent focus:border-[#349DC5] rounded-xl text-sm font-bold text-white placeholder:text-white/20 transition-all outline-none"
+              className="w-full h-11 sm:h-14 pl-10 sm:pl-12 pr-4 bg-white/10 border-2 border-transparent focus:border-[#349DC5] rounded-xl text-xs sm:text-sm font-semibold text-white placeholder:text-white/20 transition-all outline-none"
             />
             <AnimatePresence>
               {isSearchVisible && searchQuery && (
@@ -232,9 +231,9 @@ export default function SuperAdminDashboard() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 right-0 mt-3 z-[110] bg-white dark:bg-[#1a1c1e] rounded-xl shadow-2xl border border-gray-100 dark:border-white/5 max-h-[400px] overflow-y-auto custom-scrollbar"
+                    className="absolute top-full left-0 right-0 mt-2 z-[110] bg-white dark:bg-[#1a1c1e] rounded-xl shadow-2xl border border-gray-100 dark:border-white/5 max-h-[320px] overflow-y-auto custom-scrollbar"
                   >
-                    <div className="p-3">
+                    <div className="p-2">
                       {filteredRoutes.length > 0 ? (
                         filteredRoutes.map((r, i) => (
                           <button
@@ -243,20 +242,20 @@ export default function SuperAdminDashboard() {
                               navigate(r.route);
                               setIsSearchVisible(false);
                             }}
-                            className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left group"
+                            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left group"
                           >
-                            <div className="w-10 h-10 rounded-lg bg-[#349DC5]/10 text-[#349DC5] flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-[#349DC5]/10 text-[#349DC5] flex items-center justify-center shrink-0">
                               {r.icon}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-[#00204a] dark:text-white uppercase leading-none">{r.title}</h4>
-                              <p className="text-[10px] font-bold text-gray-400 uppercase mt-1 truncate">{r.desc}</p>
+                              <h4 className="text-xs font-bold text-[#00204a] dark:text-white uppercase leading-none">{r.title}</h4>
+                              <p className="text-[9px] font-semibold text-gray-400 uppercase mt-0.5 truncate">{r.desc}</p>
                             </div>
-                            <ChevronRight size={18} className="text-gray-200 group-hover:text-[#349DC5]" />
+                            <ChevronRight size={14} className="text-gray-200 group-hover:text-[#349DC5] shrink-0" />
                           </button>
                         ))
                       ) : (
-                        <div className="p-8 text-center text-gray-400 text-xs font-bold uppercase">No matching intelligence</div>
+                        <div className="p-6 text-center text-gray-400 text-xs font-bold uppercase">No matching results</div>
                       )}
                     </div>
                   </motion.div>
@@ -267,126 +266,117 @@ export default function SuperAdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 -mt-8">
-        {/* Key Metrics Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden group">
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-8">
-                <Users className="text-[#349DC5]" size={20} />
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Number of Workers</span>
-              </div>
-              <h3 className="text-5xl font-bold text-[#00204a] dark:text-white leading-none">
-                {summary?.totals?.workersTotal || "—"}
-              </h3>
-              <p className="text-[9px] font-bold text-gray-300 uppercase mt-4">Active Personnel Registry</p>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 -mt-6 sm:-mt-8">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 mb-6 sm:mb-10">
+          <div className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 md:p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-6">
+              <Users className="text-[#349DC5]" size={14} />
+              <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">Workers</span>
             </div>
+            <h3 className="text-lg sm:text-2xl md:text-4xl font-bold text-[#00204a] dark:text-white leading-none">
+              {summary?.totals?.workersTotal || "—"}
+            </h3>
+            <p className="text-[7px] sm:text-[9px] font-semibold text-gray-300 uppercase mt-1 sm:mt-3 hidden sm:block">Active Personnel</p>
           </div>
 
-          <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden group">
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-8">
-                <Flame className="text-rose-500" size={20} />
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                  No. of Soul Harvested
-                </p>
-              </div>
-              <h3 className="text-5xl font-bold text-[#00204a] dark:text-white leading-none">
-                {summary?.totals?.soulsWon || "—"}
-              </h3>
-              <p className="text-[9px] font-bold text-gray-300 uppercase mt-4">Total Soul Harvested Globally</p>
+          <div className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 md:p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-6">
+              <Flame className="text-rose-500" size={14} />
+              <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">Souls</span>
             </div>
+            <h3 className="text-lg sm:text-2xl md:text-4xl font-bold text-[#00204a] dark:text-white leading-none">
+              {summary?.totals?.soulsWon || "—"}
+            </h3>
+            <p className="text-[7px] sm:text-[9px] font-semibold text-gray-300 uppercase mt-1 sm:mt-3 hidden sm:block">Total Harvested</p>
           </div>
 
-          <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden group">
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-8">
-                <Calendar className="text-emerald-500" size={20} />
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Average Attendance</span>
-              </div>
-              <h3 className="text-5xl font-bold text-[#00204a] dark:text-white leading-none">
-                {avgAttendance || "—"}
-              </h3>
-              <p className="text-[9px] font-bold text-gray-300 uppercase mt-4">Main Church Deployment Average</p>
+          <div className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 md:p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-6">
+              <Calendar className="text-emerald-500" size={14} />
+              <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">Attendance</span>
             </div>
+            <h3 className="text-lg sm:text-2xl md:text-4xl font-bold text-[#00204a] dark:text-white leading-none">
+              {avgAttendance || "—"}
+            </h3>
+            <p className="text-[7px] sm:text-[9px] font-semibold text-gray-300 uppercase mt-1 sm:mt-3 hidden sm:block">Average</p>
           </div>
         </div>
 
-        {/* Global Treasury Briefing */}
-        <section className="mb-14">
-          <div className="flex items-center gap-4 mb-8">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">Financial Summary</h3>
+        {/* Financial Summary */}
+        <section className="mb-6 sm:mb-12">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider leading-none whitespace-nowrap">Financial Summary</h3>
             <div className="h-px flex-1 bg-gray-100 dark:bg-white/5" />
           </div>
 
           <div
             onClick={() => navigate("/admin-finance/summary")}
-            className="bg-[#00204a] p-10 rounded-xl text-white shadow-xl cursor-pointer group relative overflow-hidden"
+            className="bg-[#00204a] p-4 sm:p-6 md:p-8 rounded-xl text-white shadow-xl cursor-pointer group relative overflow-hidden active:scale-[0.99] transition-transform"
           >
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-10">
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-4 mb-6">
-                  <Wallet size={20} className="text-cyan-400" />
-                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">High-Value Asset Pool</span>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
+                <Wallet size={16} className="text-cyan-400" />
+                <span className="text-[8px] sm:text-[10px] font-bold text-white/40 uppercase tracking-wider">Total Balance</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl md:text-4xl font-bold leading-none tabular-nums text-white mb-4 sm:mb-6">
+                ₦{(finTotals?.balance || 0).toLocaleString()}
+              </h3>
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 pt-3 sm:pt-4 border-t border-white/10">
+                <div>
+                  <p className="text-[8px] sm:text-[10px] font-bold text-white/30 uppercase mb-1 sm:mb-2">Income</p>
+                  <h4 className="text-sm sm:text-lg md:text-xl font-bold text-emerald-400 tabular-nums">₦{(finTotals?.totalIncome || 0).toLocaleString()}</h4>
                 </div>
-                <h3 className="text-5xl font-bold leading-none tabular-nums text-white">
-                  ₦{(finTotals?.balance || 0).toLocaleString()}
-                </h3>
-                <p className="text-[10px] font-bold text-cyan-400 uppercase mt-4 tracking-widest">Global Liquid Reserve Balance</p>
-              </div>
-              <div className="flex flex-col justify-end">
-                <p className="text-[10px] font-bold text-white/30 uppercase mb-4 tracking-widest">Total Income</p>
-                <h4 className="text-2xl font-bold text-emerald-400">₦{(finTotals?.totalIncome || 0).toLocaleString()}</h4>
-              </div>
-              <div className="flex flex-col justify-end">
-                <p className="text-[10px] font-bold text-white/30 uppercase mb-4 tracking-widest">Total Expenditure</p>
-                <h4 className="text-2xl font-bold text-rose-400">₦{(finTotals?.totalExpense || 0).toLocaleString()}</h4>
+                <div>
+                  <p className="text-[8px] sm:text-[10px] font-bold text-white/30 uppercase mb-1 sm:mb-2">Expenditure</p>
+                  <h4 className="text-sm sm:text-lg md:text-xl font-bold text-rose-400 tabular-nums">₦{(finTotals?.totalExpense || 0).toLocaleString()}</h4>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Tactical Management Suite */}
-        <section className="mb-14">
-          <div className="flex items-center justify-between mb-8 px-2">
+        {/* Management Console */}
+        <section className="mb-6 sm:mb-12">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div>
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">Management Console</h3>
-              <p className="text-[10px] text-gray-400 font-bold uppercase mt-2">Administrative Control Panel</p>
+              <h3 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider leading-none">Management Console</h3>
+              <p className="text-[8px] sm:text-[10px] text-gray-400 font-semibold uppercase mt-1">Admin Control Panel</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
             {MANAGEMENT_ROUTES.map((m, i) => (
               <button
                 key={i}
                 onClick={() => navigate(m.route)}
-                className="bg-white dark:bg-[#1a1c1e] p-7 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 hover:border-[#349DC5]/20 group transition-all text-left flex flex-col h-full"
+                className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 hover:border-[#349DC5]/20 group transition-all text-left flex flex-col h-full active:scale-95"
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-[#349DC5] group-hover:text-white transition-all mb-6 shadow-inner">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:bg-[#349DC5] group-hover:text-white transition-all mb-2 sm:mb-4">
                   {m.icon}
                 </div>
-                <h4 className="text-[11px] font-bold text-[#00204a] dark:text-white uppercase leading-tight mb-2">{m.title}</h4>
-                <p className="text-[9px] font-bold text-gray-300 uppercase leading-relaxed mt-auto">{m.desc}</p>
+                <h4 className="text-[9px] sm:text-[10px] md:text-[11px] font-bold text-[#00204a] dark:text-white uppercase leading-tight mb-1">{m.title}</h4>
+                <p className="text-[7px] sm:text-[8px] md:text-[9px] font-semibold text-gray-300 uppercase leading-relaxed mt-auto hidden sm:block">{m.desc}</p>
               </button>
             ))}
           </div>
         </section>
 
-        {/* Global Strategy Feed */}
-        <section>
-          <div className="flex items-center justify-between mb-8 px-2">
+        {/* Upcoming Events */}
+        <section className="pb-4">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div>
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">Upcoming Events</h3>
-              <p className="text-[10px] text-gray-400 font-bold uppercase mt-2">Active Church Events</p>
+              <h3 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider leading-none">Upcoming Events</h3>
+              <p className="text-[8px] sm:text-[10px] text-gray-400 font-semibold uppercase mt-1">Active Church Events</p>
             </div>
             <button
               onClick={() => navigate("/sa/events-announcements")}
-              className="text-[10px] font-bold text-[#349DC5] uppercase hover:underline"
+              className="text-[9px] sm:text-[10px] font-bold text-[#349DC5] uppercase hover:underline"
             >
-              View All Events
+              View All
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
             {allEvents.length > 0 ? (
               allEvents.map((ev) => (
                 <div
@@ -395,29 +385,29 @@ export default function SuperAdminDashboard() {
                     setSelectedEvent(ev);
                     setEventModalOpen(true);
                   }}
-                  className="bg-white dark:bg-[#1a1c1e] p-6 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 hover:border-[#349DC5]/20 group cursor-pointer transition-all flex flex-col h-full"
+                  className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 hover:border-[#349DC5]/20 group cursor-pointer transition-all flex flex-col h-full active:scale-95"
                 >
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/10 rounded-xl flex flex-col items-center justify-center text-[#349DC5] group-hover:bg-[#349DC5] group-hover:text-white transition-all shrink-0">
-                      <span className="text-[8px] font-bold uppercase leading-none mb-1 opacity-60">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 bg-blue-50 dark:bg-blue-900/10 rounded-lg sm:rounded-xl flex flex-col items-center justify-center text-[#349DC5] group-hover:bg-[#349DC5] group-hover:text-white transition-all shrink-0">
+                      <span className="text-[7px] sm:text-[8px] font-bold uppercase leading-none mb-0.5 opacity-60">
                         {ev._d.toLocaleDateString(undefined, { month: "short" })}
                       </span>
-                      <span className="text-xl font-bold leading-none">{ev._d.getDate()}</span>
+                      <span className="text-sm sm:text-lg font-bold leading-none">{ev._d.getDate()}</span>
                     </div>
-                    <h4 className="font-bold text-[#00204a] dark:text-white uppercase leading-tight line-clamp-2 min-h-[2.5rem]">
+                    <h4 className="font-bold text-[10px] sm:text-xs text-[#00204a] dark:text-white uppercase leading-tight line-clamp-2">
                       {ev.title}
                     </h4>
                   </div>
-                  <div className="mt-auto pt-4 border-t border-gray-50 dark:border-white/5 flex items-center gap-3 text-gray-300">
-                    <MapPin size={14} />
-                    <span className="text-[10px] font-bold text-gray-400 uppercase truncate">
+                  <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-50 dark:border-white/5 flex items-center gap-1.5">
+                    <MapPin size={11} className="text-gray-300 shrink-0" />
+                    <span className="text-[8px] sm:text-[10px] font-semibold text-gray-400 uppercase truncate">
                       {ev.venue || "Global Base"}
                     </span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="col-span-full py-20 text-center bg-white dark:bg-[#1a1c1e] rounded-xl border-2 border-dashed border-gray-100 dark:border-white/5 text-gray-300 uppercase font-bold text-xs">
+              <div className="col-span-full py-12 sm:py-16 text-center bg-white dark:bg-[#1a1c1e] rounded-xl border-2 border-dashed border-gray-100 dark:border-white/5 text-gray-300 uppercase font-bold text-[10px] sm:text-xs">
                 No upcoming events logged
               </div>
             )}
@@ -425,40 +415,41 @@ export default function SuperAdminDashboard() {
         </section>
       </div>
 
+      {/* Event Detail Modal */}
       <AnimatePresence>
         {eventModalOpen && selectedEvent && (
           <div
-            className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-[#00204a]/70 backdrop-blur-md"
+            className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center bg-[#00204a]/70 backdrop-blur-md"
             onClick={() => setEventModalOpen(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-xl bg-white dark:bg-[#1a1c1e] rounded-xl overflow-hidden shadow-2xl"
+              className="w-full max-w-xl bg-white dark:bg-[#1a1c1e] rounded-t-2xl sm:rounded-xl overflow-hidden shadow-2xl"
             >
-              <div className="bg-[#00204a] p-10 text-white relative h-40 flex flex-col justify-end">
-                <Shield size={80} className="absolute -top-4 -right-4 opacity-10 rotate-12" />
-                <h3 className="text-2xl font-bold uppercase mb-2">{selectedEvent.title}</h3>
-                <p className="text-[10px] font-bold text-white/40 uppercase">
+              <div className="bg-[#00204a] p-5 sm:p-8 text-white relative h-28 sm:h-36 flex flex-col justify-end">
+                <Shield size={60} className="absolute -top-3 -right-3 opacity-10 rotate-12" />
+                <h3 className="text-lg sm:text-xl font-bold uppercase mb-1 leading-tight">{selectedEvent.title}</h3>
+                <p className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase">
                   {new Date(selectedEvent.date).toLocaleString()}
                 </p>
               </div>
-              <div className="p-10">
-                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed mb-10">
+              <div className="p-5 sm:p-8">
+                <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium leading-relaxed mb-6 sm:mb-8">
                   {selectedEvent.description || "No event details available."}
                 </p>
-                <div className="flex gap-4">
+                <div className="flex gap-2.5 sm:gap-3">
                   <button
                     onClick={() => setEventModalOpen(false)}
-                    className="flex-1 h-14 bg-gray-50 dark:bg-white/5 text-gray-400 rounded-xl font-bold text-xs uppercase"
+                    className="flex-1 h-10 sm:h-12 bg-gray-50 dark:bg-white/5 text-gray-400 rounded-xl font-bold text-[10px] sm:text-xs uppercase active:scale-95 transition-transform"
                   >
                     Close
                   </button>
                   <button
                     onClick={() => setEventModalOpen(false)}
-                    className="flex-[2] h-14 bg-[#349DC5] text-white rounded-xl font-bold text-xs uppercase shadow-md"
+                    className="flex-[2] h-10 sm:h-12 bg-[#349DC5] text-white rounded-xl font-bold text-[10px] sm:text-xs uppercase shadow-md active:scale-95 transition-transform"
                   >
                     Share Event
                   </button>
@@ -468,7 +459,6 @@ export default function SuperAdminDashboard() {
           </div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }
