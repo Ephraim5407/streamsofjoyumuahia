@@ -11,6 +11,16 @@ import toast from "react-hot-toast";
 
 const token = () => localStorage.getItem("token");
 
+interface Activity {
+  title?: string;
+  description?: string;
+  resources?: string[] | string;
+  resourcesArr?: string[];
+}
+interface PlanItem {
+  title?: string;
+  activities?: Activity[];
+}
 interface WorkPlanSummary {
   _id: string;
   title: string;
@@ -20,19 +30,19 @@ interface WorkPlanSummary {
   startDate?: string;
   endDate?: string;
   generalGoal?: string;
-  plans?: { activities?: any[] }[];
+  plans?: PlanItem[];
   local?: boolean;
   successRate?: number;
   successCategory?: "low" | "good" | "perfect";
 }
 
-const statusColors: Record<string, { bg: string, color: string }> = {
-  draft: { bg: "bg-slate-100 dark:bg-slate-800", color: "text-slate-500" },
-  pending: { bg: "bg-amber-100 dark:bg-amber-900/40", color: "text-amber-600 dark:text-amber-500" },
-  approved: { bg: "bg-teal-100 dark:bg-teal-900/40", color: "text-teal-600 dark:text-teal-400" },
-  rejected: { bg: "bg-red-100 dark:bg-red-900/40", color: "text-red-600 dark:text-red-400" },
-  ignored: { bg: "bg-slate-200 dark:bg-slate-700", color: "text-slate-600 dark:text-slate-300" },
-  completed: { bg: "bg-indigo-100 dark:bg-indigo-900/40", color: "text-indigo-600 dark:text-indigo-400" },
+const statusColors: Record<string, string> = {
+  draft: "#334155",
+  pending: "#b45309",
+  approved: "#0f766e",
+  rejected: "#dc2626",
+  ignored: "#6b7280",
+  completed: "#4338ca",
 };
 
 const filters = [
@@ -143,7 +153,40 @@ export default function WorkPlansList() {
   };
 
   const publishDraft = async (draft: WorkPlanSummary) => {
-    toast.error("Draft publishing is handled via New Work Plan screen on WebPWA");
+    try {
+      const headers: any = { "Content-Type": "application/json", Authorization: `Bearer ${token()}` };
+      const uRes = await axios.get(`${BASE_URl}/api/users/me`, { headers }).catch(() => null);
+      let activeUnitId = null;
+      if (uRes?.data?.ok) {
+        const u = uRes.data.user;
+        activeUnitId = u.activeUnitId;
+        if (!activeUnitId) {
+          const match = (u.roles || []).find((r: any) => r.role === u.activeRole && r.unit);
+          activeUnitId = match ? match.unit : null;
+        }
+      }
+      if (activeUnitId) headers["x-active-unit"] = activeUnitId;
+      const body: any = {
+        title: draft.title,
+        startDate: draft.startDate || null,
+        endDate: draft.endDate || null,
+        generalGoal: draft.generalGoal || "",
+        status: "pending",
+        plans: (draft.plans || []).map((p: any) => ({
+          title: p.title,
+          activities: (p.activities || []).map((a: any) => ({
+            title: a.title,
+            description: a.description,
+            resources: a.resourcesArr || a.resources || [],
+          })),
+        })),
+      };
+      await axios.put(`${BASE_URl}/api/workplans/${draft._id}`, body, { headers });
+      toast.success("Draft published — pending review");
+      load();
+    } catch (e: any) {
+      toast.error(e.response?.data?.error || "Publish failed");
+    }
   };
 
   const Stars = ({ rate }: { rate: number }) => (
@@ -161,20 +204,21 @@ export default function WorkPlansList() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#111] pb-24 relative overflow-hidden">
+    <div className="min-h-screen bg-white pb-24 relative">
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 pt-10 sticky top-0 z-20">
+      <div className="bg-white pt-10 sticky top-0 z-20 border-b border-[#e2e8ef]">
         <div className="flex items-center justify-between px-4 mb-3">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-500">
-              <ArrowLeft size={20} />
-            </button>
-            <h1 className="text-base font-black text-[#00204a] dark:text-white flex-1 text-center pr-10">Work Plans</h1>
-          </div>
+          <button onClick={() => navigate(-1)} className="p-1" style={{ padding: 4 }}>
+            <ArrowLeft size={24} color="#111" />
+          </button>
+          <h1 className="text-base font-semibold text-[#0f172a] flex-1 text-center">Work Plans</h1>
           {userRole !== "SuperAdmin" && canCreate && (
-             <button onClick={() => navigate("/work-plans/new")} className="w-10 h-10 rounded-2xl bg-[#349DC5] flex items-center justify-center text-white shrink-0 absolute right-4">
-               <Plus size={20} />
-             </button>
+            <button 
+              onClick={() => navigate("/work-plans/new")} 
+              className="w-10 h-10 rounded-full bg-[#349DC5] flex items-center justify-center text-white shrink-0"
+            >
+              <Plus size={22} />
+            </button>
           )}
         </div>
         
@@ -206,17 +250,19 @@ export default function WorkPlansList() {
         ) : error ? (
           <p className="text-red-500 text-sm font-bold p-4">{error}</p>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center py-20 gap-4 text-center px-4">
-            <div className="w-20 h-20 rounded-full bg-blue-50 dark:bg-white/5 flex items-center justify-center mb-2">
-              <Search size={32} className="text-[#349DC5]" />
+          <div className="flex flex-col items-center py-16 gap-4 text-center px-4">
+            <div className="w-[30vw] h-[30vw] max-w-[120px] max-h-[120px] rounded-full bg-[#e7f5fa] flex items-center justify-center mb-2">
+              <div className="w-[20vw] h-[20vw] max-w-[80px] max-h-[80px] rounded-full bg-white border border-[#c8e3ee] flex items-center justify-center">
+                <Search size={28} className="text-[#349DC5]" />
+              </div>
             </div>
-            <p className="text-lg font-black text-[#00204a] dark:text-white">No work plans yet</p>
-            <p className="text-sm font-medium text-gray-500 leading-relaxed">
-              {userRole === "Member" ? "Work plans are created by unit leaders. Once a plan is available, you'll be able to view and follow all activities." : "Create your first work plan to start organizing your goals and activities."}
+            <p className="text-lg font-bold text-[#0f172a]">No work plans yet</p>
+            <p className="text-sm text-[#64748b] leading-5 max-w-[75vw]">
+              {userRole === "Member" ? "Work plans are created by unit leaders. Once a plan is available, you'll be able to view and follow all activities." : "Create your first work plan to start organizing\nyour goals and activities."}
             </p>
             {canCreate && (
-              <button onClick={() => navigate("/work-plans/new")} className="mt-4 px-6 py-4 bg-[#349DC5] text-white rounded-2xl font-black text-xs uppercase tracking-wider shadow-xl shadow-[#349DC5]/20">
-                Create First Plan
+              <button onClick={() => navigate("/work-plans/new")} className="mt-6 px-6 py-3.5 rounded-xl font-semibold text-white text-sm" style={{ backgroundColor: "#349DC5" }}>
+                Create your first plan
               </button>
             )}
           </div>
@@ -227,44 +273,60 @@ export default function WorkPlansList() {
             <button onClick={() => setActiveFilter("all")} className="text-[#349DC5] text-sm font-black uppercase tracking-wider mt-2">Clear Filter</button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredItems.map(item => {
               const plansCount = item.plans?.length || 0;
               const activitiesCount = (item.plans || []).reduce((a, p) => a + (p.activities?.length || 0), 0);
               const ownerId = typeof item.owner === "string" ? item.owner : item.owner?._id;
               const hasDates = item.startDate && item.endDate;
               const displayedTitle = hasDates
-                ? `${new Date(item.startDate as string).toLocaleString("en-GB", { month: "short", year: "numeric" })} – ${new Date(item.endDate as string).toLocaleString("en-GB", { month: "short", year: "numeric" })} Work Plan`
+                ? `${new Date(item.startDate as string).toLocaleString("default", { month: "short" })} ${new Date(item.startDate as string).getFullYear()} – ${new Date(item.endDate as string).toLocaleString("default", { month: "short" })} ${new Date(item.endDate as string).getFullYear()} Work Plan`
                 : item.title;
-              const sc = statusColors[item.status] || statusColors.draft;
+              const statusBg = statusColors[item.status] || "#334155";
 
               return (
-                <motion.div 
-                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                <div
                   key={item._id}
-                  className="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-200 dark:border-white/10 p-4 shadow-sm relative overflow-visible"
+                  onClick={() => navigate(`/work-plans/${item._id}`)}
+                  className="bg-white border border-[#dbe3ef] rounded-[10px] p-3.5 mb-4 relative overflow-visible cursor-pointer"
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="text-sm font-bold text-[#0f172a] dark:text-white flex-1 pr-6 cursor-pointer" onClick={() => navigate(`/work-plans/${item._id}`)}>{displayedTitle}</p>
+                  <div className="flex items-start justify-between">
+                    <p className="text-sm font-bold text-[#0f172a] flex-1 pr-6">{displayedTitle}</p>
                     {ownerId === currentUserId && (
-                      <button onClick={() => setMenuFor(menuFor === item._id ? null : item._id)} className="absolute top-3 right-2 p-2">
-                        <MoreVertical size={18} className="text-gray-400" />
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === item._id ? null : item._id); }} 
+                        className="absolute top-3 right-2 p-1"
+                      >
+                        <MoreVertical size={18} className="text-[#0f172a]" />
                       </button>
                     )}
                   </div>
-                  
-                  {item.generalGoal && <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">{item.generalGoal}</p>}
-                  
-                  <div className="flex items-center mb-3">
-                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${sc.bg} ${sc.color}`}>
+
+                  {item.generalGoal && (
+                    <p className="text-[12px] text-[#334155] mt-1">
+                      General goal: {item.generalGoal}
+                    </p>
+                  )}
+
+                  <div className="flex items-center mt-2.5">
+                    <span 
+                      className="px-2.5 py-1 rounded-xl text-[11px] font-semibold capitalize text-white"
+                      style={{ backgroundColor: statusBg }}
+                    >
                       {item.status}
                     </span>
                   </div>
 
-                  <div className="flex items-center flex-wrap gap-2 mb-2">
-                    <span className="px-3 py-1 bg-[#0f89b8] text-white rounded-full text-[11px] font-bold shadow-sm">Plans: {plansCount}</span>
-                    <span className="px-3 py-1 bg-[#0f89b8] text-white rounded-full text-[11px] font-bold shadow-sm">Activities: {activitiesCount}</span>
-                    <span className="ml-auto px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 rounded-full text-[11px] font-black">{item.successRate ?? item.progressPercent ?? 0}%</span>
+                  <div className="flex items-center mt-3 gap-2">
+                    <span className="px-3 py-1.5 rounded-2xl text-[11px] font-semibold text-white" style={{ backgroundColor: "#0f89b8" }}>Plans: {plansCount}</span>
+                    <span className="px-3 py-1.5 rounded-2xl text-[11px] font-semibold text-white" style={{ backgroundColor: "#0f89b8" }}>Activities: {activitiesCount}</span>
+                    {typeof item.successRate === "number" ? (
+                      <span className="px-3 py-1.5 rounded-2xl text-[11px] font-semibold text-[#4338ca]" style={{ backgroundColor: "#eef2ff" }}>{item.successRate}%</span>
+                    ) : (
+                      typeof item.progressPercent === "number" && (
+                        <span className="px-3 py-1.5 rounded-2xl text-[11px] font-semibold text-white" style={{ backgroundColor: "#0f89b8" }}>{item.progressPercent}%</span>
+                      )
+                    )}
                   </div>
 
                   {typeof item.successRate === "number" && <Stars rate={item.successRate} />}
@@ -274,26 +336,27 @@ export default function WorkPlansList() {
                     {menuFor === item._id && (
                       <motion.div 
                         initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                        className="absolute top-12 right-2 bg-white dark:bg-[#2a2a2a] rounded-xl shadow-xl border border-gray-100 dark:border-white/10 z-30 min-w-[140px] overflow-hidden"
+                        className="absolute top-8 right-2 bg-white rounded-lg shadow-lg border border-[#e2e8f0] z-30 min-w-[130px] overflow-hidden py-1"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <button onClick={() => { setMenuFor(null); navigate(`/work-plans/${item._id}`); }} className="flex items-center gap-2 w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 text-sm font-bold text-[#00204a] dark:text-white">
-                          <Eye size={14} className="text-gray-400" /> View
+                        <button onClick={() => { setMenuFor(null); navigate(`/work-plans/${item._id}`); }} className="flex items-center w-full text-left px-3.5 py-2.5 hover:bg-gray-50 text-[12.5px] font-medium text-[#0f172a]">
+                          View
                         </button>
-                        <button onClick={() => { setMenuFor(null); navigate(`/work-plans/new?edit=${item._id}`); }} className="flex items-center gap-2 w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 text-sm font-bold text-[#00204a] dark:text-white border-t border-gray-50 dark:border-white/5">
-                          <Edit3 size={14} className="text-gray-400" /> Edit
+                        <button onClick={() => { setMenuFor(null); navigate(`/work-plans/new?edit=${item._id}`); }} className="flex items-center w-full text-left px-3.5 py-2.5 hover:bg-gray-50 text-[12.5px] font-medium text-[#0f172a] border-t border-gray-50">
+                          {item.local ? "Edit Draft" : "Edit"}
                         </button>
                         {item.status === "draft" && (
-                           <button onClick={() => { setMenuFor(null); publishDraft(item); }} className="flex items-center gap-2 w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 text-sm font-bold text-teal-600 border-t border-gray-50 dark:border-white/5">
-                            <CheckCircle2 size={14} /> Publish
+                          <button onClick={() => { setMenuFor(null); publishDraft(item); }} className="flex items-center w-full text-left px-3.5 py-2.5 hover:bg-gray-50 text-[12.5px] font-medium text-[#0f766e] border-t border-gray-50">
+                            Publish
                           </button>
                         )}
-                        <button onClick={() => { setMenuFor(null); setShowDeleteModal(item); }} className="flex items-center gap-2 w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/10 text-sm font-bold text-red-500 border-t border-gray-50 dark:border-white/5">
-                          <Trash2 size={14} /> Delete
+                        <button onClick={() => { setMenuFor(null); setShowDeleteModal(item); }} className="flex items-center w-full text-left px-3.5 py-2.5 hover:bg-red-50 text-[12.5px] font-medium text-red-500 border-t border-gray-50">
+                          {item.local ? "Discard" : "Delete"}
                         </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </motion.div>
+                </div>
               );
             })}
           </div>
@@ -302,26 +365,32 @@ export default function WorkPlansList() {
 
       {menuFor && <div className="fixed inset-0 z-20" onClick={() => setMenuFor(null)} />}
 
-      <AnimatePresence>
-        {showDeleteModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !deleting && setShowDeleteModal(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white dark:bg-[#1e1e1e] w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center">
-              <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
-                <Trash2 size={24} className="text-red-500" />
-              </div>
-              <h3 className="text-xl font-black text-[#00204a] dark:text-white mb-2">Delete Work Plan</h3>
-              <p className="text-sm font-medium text-gray-500 mb-6 px-2">This action cannot be undone. Delete "{showDeleteModal.title || "Untitled"}"?</p>
-              <div className="flex gap-3">
-                <button disabled={deleting} onClick={() => setShowDeleteModal(null)} className="flex-1 py-4 rounded-2xl border border-gray-200 dark:border-white/10 text-xs font-black text-gray-400 uppercase tracking-wider">Cancel</button>
-                <button disabled={deleting} onClick={() => doDelete(showDeleteModal._id)} className="flex-1 py-4 bg-red-600 text-white rounded-2xl text-xs font-black uppercase tracking-wider disabled:opacity-50">
-                  {deleting ? "Deleting..." : "Delete"}
-                </button>
-              </div>
-            </motion.div>
+      {/* Delete Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ padding: "8vw" }}>
+          <div className="absolute inset-0 bg-black/45" onClick={() => !deleting && setShowDeleteModal(null)} />
+          <div className="relative bg-white w-full rounded-[20px] shadow-xl" style={{ padding: "5.5vw" }}>
+            <h3 className="text-base font-bold text-[#0f172a] mb-3">Delete Work Plan</h3>
+            <p className="text-sm text-[#475569] mt-3 leading-[18px]">Are you sure you want to delete "{showDeleteModal.title || "Untitled"}"? This cannot be undone.</p>
+            <div className="flex justify-end gap-3 mt-6">
+              <button 
+                disabled={deleting} 
+                onClick={() => setShowDeleteModal(null)} 
+                className="px-5 py-3 rounded-[10px] bg-[#f1f5f9] text-[#0f172a] font-semibold text-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                disabled={deleting} 
+                onClick={() => doDelete(showDeleteModal._id)} 
+                className="px-5 py-3 rounded-[10px] bg-[#dc2626] text-white font-bold text-sm disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

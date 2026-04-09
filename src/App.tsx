@@ -70,6 +70,7 @@ import TakeAttendance from "./screens/main/TakeAttendance";
 import JoinChurchScreen from "./screens/main/JoinChurchScreen";
 import WorkPlansList from "./screens/main/WorkPlansList";
 import WorkPlanDetail from "./screens/main/WorkPlanDetail";
+import NewWorkPlan from "./screens/main/NewWorkPlan";
 import AdminWorkPlansList from "./screens/main/AdminWorkPlansList";
 import AdminViewWorkPlan from "./screens/main/AdminViewWorkPlan";
 import AttendanceRecord from "./screens/main/AttendanceRecord";
@@ -262,6 +263,7 @@ export default function App() {
               element={<NotificationDetail />}
             />
             <Route path="/notifications/compose" element={<ComposeEmail />} />
+            <Route path="/compose-email" element={<ComposeEmail />} />
             <Route path="/home" element={<HomeScreen />} />
             <Route
               path="/sales"
@@ -333,7 +335,8 @@ export default function App() {
 
             {/* Work Plans */}
             <Route path="/work-plans" element={<WorkPlansList />} />
-            <Route path="/work-plans/new" element={<WorkPlanDetail />} />
+            <Route path="/work-plans/new" element={<NewWorkPlan />} />
+            <Route path="/work-plans/:id/edit" element={<NewWorkPlan />} />
             <Route path="/work-plans/:id" element={<WorkPlanDetail />} />
             <Route path="/sa/work-plans" element={<AdminWorkPlansList />} />
             <Route path="/admin-work-plans" element={<AdminWorkPlansList />} />

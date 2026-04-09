@@ -213,44 +213,29 @@ export default function LoginScreen() {
   }, [pendingUserId, password, navigate, storedEmail, user]);
 
   return (
-    <div className="min-h-[100dvh] w-full bg-white dark:bg-[#0f1218] flex flex-col items-center justify-center p-4 md:p-8">
-      {/* Background Decoration */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-20 dark:opacity-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#349DC5] rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#1282a2] rounded-full blur-[120px]" />
-      </div>
-
-      <div className="w-full max-w-md bg-white dark:bg-[#1a1c1e] rounded-[32px] shadow-md shadow-blue-500/5 border border-white/20 dark:border-white/5 flex flex-col relative z-10 overflow-hidden">
+    <div className="min-h-[100dvh] w-full bg-white dark:bg-[#0f1218] flex flex-col items-center justify-start pt-10 px-5">
+      <div className="w-full max-w-md flex flex-col relative z-10 pb-[120px]">
         {/* Top bar */}
         {activeTab === "login" && (
-          <div className="flex justify-end px-6 pt-6 -mb-4">
+          <div className="flex justify-end w-full mb-8 mt-2">
             <button
               onClick={() => toast.success("Login to access notifications")}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+              className="p-[6px] hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
             >
-              <Bell size={24} color="#349DC5" />
+              <Bell size={28} color="#349DC5" strokeWidth={1.5} />
             </button>
           </div>
         )}
 
-        <div className="px-6 py-8 md:px-10 md:py-12 flex flex-col">
+        <div className="w-full flex flex-col items-center">
           {/* Logo & Branding */}
           {activeTab === "login" && (
-            <div className="flex flex-col items-center mb-8">
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="w-20 h-20 rounded-[22px] bg-gradient-to-br from-[#349DC5] to-[#1282a2] flex items-center justify-center p-3 shadow mb-4"
-              >
-                <img
-                  src="/pwa-192x192.png"
-                  alt="Logo"
-                  className="w-full h-full object-contain brightness-0 invert"
-                />
-              </motion.div>
-              <h1 className="text-[11px] font-bold bg-clip-text text-transparent bg-gradient-to-b from-[#00204a] via-[#349DC5] to-[#349DC5] dark:from-white dark:to-gray-400 leading-tight text-center uppercase whitespace-nowrap">
-                Streams of Joy
-              </h1>
+            <div className="flex flex-col items-center mb-6">
+              <img
+                src="/pwa-192x192.png"
+                alt="Logo"
+                className="w-[100px] h-[100px] object-contain mb-[10px]"
+              />
             </div>
           )}
 
@@ -327,24 +312,20 @@ export default function LoginScreen() {
                 </div>
               ) : (
                 /* Normal login form */
-                <div className="flex flex-col">
-                  <div className="text-center mb-10">
+                <div className="flex flex-col w-full px-5">
+                  <div className="text-center mb-[30px]">
                     <p className="text-[17px] font-medium text-[#555555ff]">
                       {user
-                        ? `Welcome back, ${user.firstName || ""}!`
+                        ? `Welcome back, ${user?.surname || ""} ${user?.firstName || ""}!`
                         : "Welcome back!"}
-                    </p>
-                    <p className="text-sm text-slate-400 mt-1 font-medium">
-                      Please enter your credentials
                     </p>
                   </div>
 
-                  <div className="w-full mb-6">
-                    <label className="block text-[13px] font-medium text-[#555555ff] mb-2 px-1">
+                  <div className="w-full mb-[10px]">
+                    <label className="block text-[14px] font-medium text-[#555555ff] mb-2 px-1">
                       Password
                     </label>
-                    <div className="group flex items-center w-full border border-[#e0e0e0] rounded-xl bg-[#fafcff] px-4 focus-within:ring-2 focus-within:ring-[#349DC5]/20 focus-within:border-[#349DC5] transition-all duration-200">
-                      <LockKeyhole size={20} className="text-[#349DC5] shrink-0" />
+                    <div className="flex items-center w-full border border-[#e0e0e0] rounded-lg bg-[#fafcff] px-2.5 h-[48px] transition-all duration-200">
                       <input
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter password"
@@ -353,65 +334,65 @@ export default function LoginScreen() {
                         onKeyDown={(e) =>
                           e.key === "Enter" && handlePasswordLogin()
                         }
-                        className="flex-1 h-12 text-base text-[#222] bg-transparent outline-none px-3 font-medium placeholder:text-gray-400"
+                        className="flex-1 h-full text-[16px] text-[#222] bg-transparent outline-none px-2 font-normal placeholder:text-[#666]"
                       />
                       <button
                         onClick={() => setShowPassword((p) => !p)}
-                        className="p-2 transition-transform active:scale-90 text-gray-500"
+                        className="p-2 transition-transform active:scale-90 text-[#555555ff]"
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                   </div>
 
-                  <div className="w-full flex justify-end mb-8">
+                  <div className="w-full flex justify-end pr-10 mb-[30px] mt-[5px]">
                     <button
                       onClick={() =>
                         navigate("/forgot-password", {
                           state: { email: storedEmail || undefined },
                         })
                       }
-                      className="text-xs font-medium text-gray-500 hover:text-[#349DC5] transition-colors"
+                      className="text-[14px] font-normal text-[#666] hover:text-[#349DC5] transition-colors"
                     >
                       Forgot your password?{" "}
                       <span className="text-[#349DC5]">Click Here</span>
                     </button>
                   </div>
 
-                  <motion.button
-                    onClick={handlePasswordLogin}
-                    disabled={loading}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full h-[56px] rounded-2xl bg-gradient-to-r from-[#349DC5] to-[#1282a2] text-white font-bold text-base flex items-center justify-center gap-3 shadow shadow-blue-500/20 disabled:opacity-60 transition-all hover:brightness-110"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <LockKeyhole size={22} className="shrink-0" />
-                        <span>Sign In</span>
-                      </>
-                    )}
-                  </motion.button>
-                  <div className="flex items-center gap-4 my-6">
-                    <div className="h-[1px] flex-1 bg-slate-100 dark:bg-white/5" />
-                    <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">
-                      OR
-                    </span>
-                    <div className="h-[1px] flex-1 bg-slate-100 dark:bg-white/5" />
+                  <div className="w-full flex justify-center mt-5">
+                    <button
+                      onClick={handlePasswordLogin}
+                      disabled={loading}
+                      style={{ backgroundColor: "#349DC5" }}
+                      className="w-[90%] h-[50px] rounded-lg text-white font-semibold text-[16px] flex items-center justify-center disabled:opacity-60 transition-all cursor-pointer"
+                    >
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <LockKeyhole size={22} className="shrink-0 mr-1" />
+                          <span className="ml-[10px]">Login</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <button
-                    onClick={() =>
-                      toast.success(
-                        "Biometric login is available on the mobile app.",
-                        { icon: "📱" },
-                      )
-                    }
-                    className="w-full h-[56px] rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center justify-center gap-3 transition-all hover:bg-slate-100 dark:hover:bg-white/10"
-                  >
-                    <Fingerprint size={22} className="text-[#349DC5]" />
-                    <span>Quick Access (Mobile)</span>
-                  </button>
+
+                  {/* Biometric */}
+                  <div className="w-full flex justify-center mt-3">
+                    <button
+                      onClick={() =>
+                        toast.success(
+                          "Biometric login is available on the mobile app.",
+                          { icon: "📱" },
+                        )
+                      }
+                      style={{ backgroundColor: "#349DC5" }}
+                      className="w-[90%] h-[50px] rounded-lg text-white font-semibold text-[16px] flex items-center justify-center transition-all cursor-pointer"
+                    >
+                      <Fingerprint size={22} className="shrink-0 mr-[2px]" />
+                      <span>Biometric</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -424,30 +405,20 @@ export default function LoginScreen() {
           )}
         </div>
 
-        <div className="bg-slate-50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 flex p-2 gap-2">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1a1c1e] border-t-2 border-[#eee] flex justify-around w-full h-[10vh] pt-[10px] pb-[1.2vh]">
           <button
             onClick={() => setActiveTab("login")}
-            className={cn(
-              "flex-1 flex items-center justify-center py-4 rounded-2xl gap-2 font-bold text-xs transition-all",
-              activeTab === "login"
-                ? "bg-white dark:bg-[#1a1c1e] text-[#349DC5] shadow-sm"
-                : "text-slate-400 hover:text-slate-600",
-            )}
+            className="flex-1 flex flex-col items-center justify-center"
           >
-            <LockKeyhole size={18} />
-            <span>Login</span>
+            <LockKeyhole size={25} color="#349DC5" />
+            <span className="text-[12px] text-[#349DC5] font-bold mt-[2px]">Login</span>
           </button>
           <button
             onClick={() => setActiveTab("support")}
-            className={cn(
-              "flex-1 flex items-center justify-center py-4 rounded-2xl gap-2 font-bold text-xs transition-all",
-              activeTab === "support"
-                ? "bg-white dark:bg-[#1a1c1e] text-[#349DC5] shadow-sm"
-                : "text-slate-400 hover:text-slate-600",
-            )}
+            className="flex-1 flex flex-col items-center justify-center"
           >
-            <Headset size={18} />
-            <span>Support</span>
+            <Headset size={25} color="#349DC5" />
+            <span className="text-[12px] text-[#349DC5] font-bold mt-[2px]">Support</span>
           </button>
         </div>
       </div>

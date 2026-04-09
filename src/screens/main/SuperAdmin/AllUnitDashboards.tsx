@@ -1,15 +1,11 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Search,
-  Filter,
   Users,
-  ChevronRight,
   RefreshCw,
-  Shield,
-  Calendar,
+  X,
 } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -111,202 +107,150 @@ export default function AllUnitDashboards() {
 
   if (loading && data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-[#0f1218]">
-        <div className="w-16 h-16 border-4 border-[#349DC5] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-[10px] font-bold text-[#349DC5] uppercase tracking-widest animate-pulse">
-          Aggregating Unit Intelligence...
-        </p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+        <div className="w-10 h-10 border-4 border-[#349DC5] border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-[#349DC5] text-sm">Loading dashboards…</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-32">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
-        <div className="flex items-center gap-6">
+    <div className="flex flex-col bg-white dark:bg-[#0f1218] min-h-screen">
+      {/* Header */}
+      <div className="pt-[5vh] px-4 pb-2 bg-white dark:bg-[#0f1218] z-10">
+        <div className="flex items-center mb-2">
           <button
             onClick={() => navigate(-1)}
-            className="p-4 rounded-2xl bg-white dark:bg-[#1a1c1e] shadow-sm border border-gray-100 dark:border-white/5 text-gray-400 hover:text-[#349DC5] transition-all active:scale-95"
+            className="p-0.5 mr-2 text-[#222]"
+            hitSlop="16px"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={22} />
           </button>
-          <div>
-            <h1 className="text-3xl font-bold text-[#00204a] dark:text-white uppercase leading-none">
-              Unit Fleet Status
-            </h1>
-            <p className="text-[10px] font-bold text-[#349DC5] uppercase mt-2">
-              Global Deployment Overview
-            </p>
-          </div>
+          <h1 className="flex-1 text-center font-semibold text-[17px] text-[#212121] dark:text-white mr-7">
+            All Unit Dashboards
+          </h1>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 md:w-80">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Filter units..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-14 pl-14 pr-6 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-xl text-sm font-bold focus:border-[#349DC5] transition-all outline-none"
-            />
-          </div>
-          <button
-            onClick={() => fetchUnits(true)}
-            className="w-14 h-14 rounded-xl bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 text-gray-400 hover:text-[#349DC5] transition-all shadow-sm flex items-center justify-center"
-          >
-            <RefreshCw size={20} className={refreshing ? "animate-spin text-[#349DC5]" : ""} />
-          </button>
-          {!restrictToMinistry && (
-            <button
-              onClick={() => setShowFilter(!showFilter)}
-              className={`h-14 px-6 rounded-xl border transition-all flex items-center gap-3 font-bold text-[10px] uppercase active:scale-95 ${ministry ? "bg-[#349DC5] text-white border-[#349DC5]" : "bg-white dark:bg-[#1a1c1e] border-gray-100 dark:border-white/5 text-gray-400"}`}
-            >
-              <Filter size={18} /> {ministry || "Ministry Filter"}
+
+        {/* Search */}
+        <div className="flex items-center bg-white dark:bg-[#1a1c1e] border border-[#d4e4ef] rounded-lg px-2.5 h-11 mt-2.5 mb-1.5">
+          <Search size={20} className="text-[#888] mr-1.5 shrink-0" />
+          <input
+            type="text"
+            placeholder="Search for a Unit"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 text-[15px] text-[#181818] dark:text-white bg-transparent outline-none placeholder:text-[#a5a5a5]"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="p-1 text-gray-400 hover:text-gray-600">
+              <X size={16} />
             </button>
           )}
         </div>
-      </header>
 
-      <AnimatePresence>
-        {showFilter && !restrictToMinistry && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden mb-10"
-          >
-            <div className="flex flex-wrap gap-3 p-6 bg-gray-50/50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10">
+        {/* Ministry filter */}
+        {!restrictToMinistry && (
+          <div className="flex items-center gap-2 pb-2">
+            <button
+              onClick={() => setShowFilter(!showFilter)}
+              className="px-3 py-2 border border-[#d4e4ef] rounded-lg bg-white dark:bg-[#1a1c1e] text-[#14234b] dark:text-white font-bold text-sm"
+            >
+              {ministry ? `Service: ${ministry}` : 'Filter Service'}
+            </button>
+            {ministry && (
               <button
-                onClick={() => {
-                  setMinistry("");
-                  setShowFilter(false);
-                }}
-                className={`px-5 py-2.5 rounded-lg text-[10px] font-bold uppercase transition-all ${!ministry ? "bg-[#00204a] text-white" : "bg-white dark:bg-gray-800 text-gray-500"}`}
+                onClick={() => { setMinistry(""); setShowFilter(false); }}
+                className="px-3 py-2 rounded-lg bg-[#eef2f7] text-[#14234b] font-bold text-sm"
               >
-                All Regions
+                Clear
               </button>
-              {ministryList.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => {
-                    setMinistry(m);
-                    setShowFilter(false);
-                  }}
-                  className={`px-5 py-2.5 rounded-lg text-[10px] font-bold uppercase transition-all ${ministry === m ? "bg-[#349DC5] text-white" : "bg-white dark:bg-gray-800 text-gray-500"}`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          </motion.div>
+            )}
+            <button
+              onClick={() => fetchUnits(true)}
+              className="ml-auto p-2 text-gray-400 hover:text-[#349DC5] transition-colors"
+            >
+              <RefreshCw size={18} className={refreshing ? "animate-spin text-[#349DC5]" : ""} />
+            </button>
+          </div>
         )}
-      </AnimatePresence>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-        <div className="bg-[#00204a] p-8 rounded-3xl text-white shadow-xl relative overflow-hidden group">
-          <Users
-            size={120}
-            className="absolute -top-4 -right-4 opacity-5 group-hover:scale-110 transition-transform duration-700"
-          />
-          <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-2">
-            Global Personnel
-          </p>
-          <h3 className="text-4xl font-black mb-1">
-            {data.reduce((acc, curr) => acc + curr.membersCount, 0).toLocaleString()}
-          </h3>
-          <p className="text-[10px] font-bold opacity-40 uppercase">Total Field Agents</p>
-        </div>
-        <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm">
-          <p className="text-[10px] font-bold text-[#349DC5] uppercase tracking-widest mb-2">
-            Unit Distribution
-          </p>
-          <h3 className="text-4xl font-black text-[#00204a] dark:text-white mb-1">
-            {data.length}
-          </h3>
-          <p className="text-[10px] font-bold text-gray-400 uppercase">Operational Hubs</p>
-        </div>
-        <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm text-center md:text-left">
-          <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2">
-            Strategic Engagement
-          </p>
-          <h3 className="text-4xl font-black text-[#00204a] dark:text-white mb-1">
-            {data.reduce((acc, curr) => acc + curr.activeCount, 0).toLocaleString()}
-          </h3>
-          <p className="text-[10px] font-bold text-gray-400 uppercase">Active Engagement</p>
-        </div>
+        {/* Ministry picker dropdown */}
+        {showFilter && !restrictToMinistry && (
+          <div className="border border-[#e2e8f0] rounded-lg bg-white dark:bg-[#1a1c1e] mb-2">
+            {ministryList.length > 0 ? ministryList.map(m => (
+              <button
+                key={m}
+                onClick={() => { setMinistry(m); setShowFilter(false); }}
+                className="w-full text-left px-3 py-3 text-sm text-[#14234b] dark:text-white border-b border-[#eaeaea] last:border-0 hover:bg-gray-50 dark:hover:bg-white/5"
+              >
+                {m}
+              </button>
+            )) : (
+              <div className="px-3 py-3 text-sm text-[#8a8a8a]">No ministries found</div>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredData.map((unit) => (
-          <motion.div
-            layout
-            key={unit._id}
-            whileHover={{ y: -5 }}
-            className="group bg-white dark:bg-[#1a1c1e] p-8 rounded-[40px] border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col"
-          >
-            <div className="flex items-start justify-between mb-8">
-              <div className="w-14 h-14 bg-gray-50 dark:bg-white/5 rounded-2xl flex items-center justify-center text-[#349DC5] transition-transform group-hover:scale-110">
-                <Shield size={28} />
-              </div>
-              {unit.lastReportAt && (
-                <div className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-500 dark:text-emerald-400 rounded-full text-[9px] font-black uppercase">
-                  Connected
-                </div>
-              )}
-            </div>
-            <h3 className="text-xl font-bold text-[#00204a] dark:text-white uppercase leading-tight mb-6">
-              {unit.name}
-            </h3>
-            <div className="space-y-4 mb-10 flex-1">
-              <div className="flex items-center gap-3 opacity-80">
-                <Calendar size={14} className="text-gray-400" />
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                  Updated: {formatDate(unit.lastReportAt)}
-                </p>
-              </div>
-              <div className="flex items-center gap-3 opacity-80">
-                <Users size={14} className="text-gray-400" />
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                  Lead: {unit.leaderName}
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mb-10 p-5 bg-gray-50/50 dark:bg-white/2 rounded-3xl border border-gray-100 dark:border-white/5">
-              <div>
-                <p className="text-[9px] font-bold text-gray-400 uppercase mb-2">Personnel</p>
-                <p className="text-xl font-bold text-[#00204a] dark:text-white">
-                  {unit.membersCount}
-                </p>
-              </div>
-              <div>
-                <p className="text-[9px] font-bold text-gray-400 uppercase mb-2">Activity</p>
-                <p className="text-xl font-bold text-[#349DC5]">
-                  {unit.membersCount > 0
-                    ? Math.round((unit.activeCount / unit.membersCount) * 100)
-                    : 0}
-                  %
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => navigate(`/sa/profile?userId=${unit.leaderId}&unitId=${unit._id}`)}
-                className="flex-1 h-12 bg-[#00204a] text-white rounded-xl text-[10px] font-bold uppercase hover:bg-[#349DC5] transition-all"
-              >
-                Inspect Lead
-              </button>
-              <button
-                onClick={async () => {
-                  await AsyncStorage.setItem("activeUnitId", unit._id);
-                  navigate(`/member-list?unitId=${unit._id}`);
+      {/* List */}
+      <div className="flex-1 overflow-y-auto px-4 pb-[120px] pt-2">
+        {filteredData.length === 0 ? (
+          <div className="flex items-center justify-center mt-8">
+            <p className="text-[#888] text-sm">No unit found.</p>
+          </div>
+        ) : (
+          filteredData.map((unit) => {
+            const disabled = !unit.leaderId;
+            return (
+              <div
+                key={unit._id}
+                onClick={() => {
+                  if (!disabled) navigate(`/sa/profile?userId=${unit.leaderId}&unitId=${unit._id}`);
                 }}
-                className="w-12 h-12 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 flex items-center justify-center hover:bg-[#349DC5] hover:text-white transition-all border border-gray-100 dark:border-white/5"
+                className={`bg-white dark:bg-[#1a1c1e] rounded-xl py-4 px-4 mb-5 shadow-sm border border-[#349DC5] ${
+                  disabled ? "opacity-60 border-[#dbeef6] bg-[#f7fbfd]" : "cursor-pointer active:opacity-80"
+                }`}
               >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          </motion.div>
-        ))}
+                <p className="font-bold text-[16px] text-[#14234b] dark:text-white mb-0.5">{unit.name}</p>
+                <p className="text-[14px] text-[#333] dark:text-gray-300 leading-[22px]">
+                  Unit Leader:{" "}
+                  <span
+                    className="text-[#349DC5] font-bold underline cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (unit.leaderId) navigate(`/sa/profile?userId=${unit.leaderId}&unitId=${unit._id}`);
+                    }}
+                  >
+                    {unit.leaderName}
+                  </span>
+                </p>
+                <p className="text-[14px] text-[#333] dark:text-gray-300 leading-[22px]">
+                  Total Members:{" "}
+                  <span
+                    className="text-[#349DC5] font-bold underline cursor-pointer"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await AsyncStorage.setItem("activeUnitId", unit._id);
+                      navigate(`/member-list?unitId=${unit._id}`);
+                    }}
+                  >
+                    {unit.membersCount}
+                  </span>
+                </p>
+                <p className="text-[14px] text-[#333] dark:text-gray-300 leading-[22px]">
+                  Active Members:{" "}
+                  <span className="text-[#1dcc79] font-bold">{unit.activeCount}</span>
+                </p>
+                <p className="text-[14px] text-[#333] dark:text-gray-300 leading-[22px]">
+                  Last Report Submitted:{" "}
+                  <span className="text-[#349DC5] font-semibold underline">
+                    {formatDate(unit.lastReportAt) || "—"}
+                  </span>
+                </p>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

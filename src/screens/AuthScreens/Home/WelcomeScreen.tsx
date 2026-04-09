@@ -238,30 +238,27 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#f8fafc] dark:bg-[#0f1218] flex flex-col items-center justify-center overflow-x-hidden">
+    <div className="min-h-screen w-full bg-white dark:bg-[#0f1218] flex flex-col items-center justify-center overflow-x-hidden">
       <GradientModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         message={modalMessage}
       />
       
-      <div className="w-full max-w-lg px-6 py-12 flex flex-col items-center relative z-10">
+      <div className="w-full max-w-lg px-[8vw] py-[5vh] flex flex-col items-center relative z-10">
         <div className="w-full max-w-sm">
           {/* Logo Section */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex justify-center mb-12"
+            className="flex justify-center mb-[4vh]"
           >
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-[#349DC5]/20 rounded-full blur-2xl group-hover:bg-[#349DC5]/30 transition-all duration-700" />
-              <img
-                src="/icon_app.png"
-                alt="Streams of Joy"
-                className="w-32 h-32 object-contain relative drop-shadow-xl"
-              />
-            </div>
+            <img
+              src="/icon_app.png"
+              alt="Streams of Joy"
+              className="w-[50vw] max-w-[220px] h-[20vh] max-h-[180px] object-contain"
+            />
           </motion.div>
 
           {/* Heading */}
@@ -269,15 +266,15 @@ export default function WelcomeScreen() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-center mb-10"
+            className="text-center mb-[5vh]"
           >
-            <h1 className="text-[34px] font-black text-gray-900 dark:text-white leading-[1.1] tracking-tight">
-              {storedUser?.firstName
-                ? `Welcome back, ${storedUser?.title ? storedUser.title + " " : ""}${storedUser.firstName}!`
+            <h1 className="text-[32px] font-bold text-[#349DC5] leading-tight tracking-[-1px]">
+              {storedUser?.firstName || storedUser?.title
+                ? `Welcome back, ${storedUser?.title ? storedUser.title + " " : ""}${storedUser?.firstName || ""}!`
                 : "Welcome!"}
             </h1>
-            <p className="text-[17px] text-gray-500 dark:text-gray-400 mt-4 leading-relaxed font-medium">
-              Sign in to your account to continue your spiritual journey.
+            <p className="text-[16px] text-[#64748B] dark:text-gray-400 mt-3 leading-6 px-2">
+              Sign in to your account.
             </p>
           </motion.div>
 
@@ -288,22 +285,22 @@ export default function WelcomeScreen() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="space-y-6"
           >
-            <div className="relative">
+            <div>
               <div
-                className={`flex items-center h-[64px] rounded-[20px] border-[2px] px-5 transition-all duration-300 bg-white dark:bg-[#1A1F26] ${
+                className={`flex items-center h-[60px] rounded-2xl border-[1.5px] px-4 transition-all duration-300 bg-white dark:bg-[#1A1F26] shadow-sm ${
                   inputFocused 
-                  ? "border-[#349DC5] shadow-[0_0_0_4px_rgba(52,157,197,0.1)]" 
-                  : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                  ? "border-[#349DC5] shadow-[0_0_0_0_rgba(52,157,197,0.1)]" 
+                  : "border-gray-200 dark:border-white/10"
                 }`}
               >
                 <Mail 
-                  size={22} 
-                  className={`mr-4 transition-colors duration-300 ${inputFocused ? "text-[#349DC5]" : "text-gray-400"}`} 
+                  size={20} 
+                  className={`mr-3 shrink-0 transition-colors duration-300 ${inputFocused ? "text-[#349DC5]" : "text-gray-400"}`} 
                 />
                 <input
                   type="email"
-                  className="flex-1 text-[17px] font-semibold text-gray-900 dark:text-white outline-none bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                  placeholder="name@example.com"
+                  className="flex-1 text-[16px] font-medium text-[#1E293B] dark:text-white outline-none bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  placeholder="Enter Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setInputFocused(true)}
@@ -317,19 +314,17 @@ export default function WelcomeScreen() {
             <button
               onClick={continueButtonPress}
               disabled={loading}
-              className="group relative w-full h-[64px] bg-[#349DC5] text-white rounded-[20px] font-bold text-[18px] shadow-xl shadow-[#349DC5]/25 overflow-hidden transition-all active:scale-[0.98] disabled:opacity-70"
+              className="w-full h-[60px] rounded-2xl font-bold text-[18px] text-white tracking-[0.5px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70"
+              style={{ backgroundColor: "#349DC5" }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#349DC5] to-[#7DC3E8] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="flex items-center justify-center relative z-10 gap-3">
-                {loading ? (
-                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <span>Continue</span>
-                    <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
-                  </>
-                )}
-              </div>
+              {loading ? (
+                <div className="w-6 h-6 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span>Continue</span>
+                  <ArrowRight size={20} className="transition-transform" />
+                </>
+              )}
             </button>
           </motion.div>
         </div>

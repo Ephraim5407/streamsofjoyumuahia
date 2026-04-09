@@ -261,23 +261,23 @@ export default function MemberListScreen() {
   return (
     <div className="flex-1 bg-gray-50 dark:bg-[#0f1218] min-h-screen pb-32">
       {/* Mobile-Style Header Strategy */}
-      <div className="bg-[#00204a] px-6 py-12 pb-20">
-        <div className="max-w-7xl mx-auto flex flex-col gap-10">
+      <div className="bg-[#00204a] px-4 sm:px-6 py-8 sm:py-12 pb-16 sm:pb-20">
+        <div className="max-w-7xl mx-auto flex flex-col gap-6 sm:gap-10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 sm:gap-6">
               <button
                 onClick={() => navigate(-1)}
-                className="p-4 rounded-2xl bg-white/10 text-white hover:bg-white/20 transition-all active:scale-95 shadow-lg border border-white/10"
+                className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/10 text-white hover:bg-white/20 transition-all active:scale-95 shadow-lg border border-white/10"
               >
-                <ArrowLeft size={24} />
+                <ArrowLeft size={20} />
               </button>
               <div>
-                <h1 className="text-3xl font-black text-white leading-tight uppercase tracking-tight">
+                <h1 className="text-xl sm:text-3xl font-black text-white leading-tight uppercase tracking-tight">
                   Unit Members
                 </h1>
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] animate-pulse" />
-                  <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em]">
+                  <p className="text-white/40 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em]">
                     Personnel Registry
                   </p>
                 </div>
@@ -286,33 +286,34 @@ export default function MemberListScreen() {
 
             <button
               onClick={() => fetchData()}
-              className="p-4 rounded-2xl bg-white/10 text-white/60 hover:text-[#349DC5] transition-all hover:bg-white/20 border border-white/10"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/10 text-white/60 hover:text-[#349DC5] transition-all hover:bg-white/20 border border-white/10"
             >
               <RefreshCw
-                size={22}
+                size={20}
                 className={loading ? "animate-spin" : ""}
               />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-              <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-2">Total Members</p>
-              <h3 className="text-3xl font-black text-white">{stats.total}</h3>
+          {/* Stats — scrollable row on mobile, grid on md+ */}
+          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide md:grid md:grid-cols-3 md:gap-6">
+            <div className="bg-white/5 backdrop-blur-md p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-white/10 shrink-0 min-w-[120px] sm:min-w-0">
+              <p className="text-white/40 text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Total</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-white">{stats.total}</h3>
             </div>
-            <div className="bg-blue-500/10 backdrop-blur-md p-6 rounded-2xl border border-blue-500/20">
-              <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mb-2">Male Members</p>
-              <h3 className="text-3xl font-black text-blue-400">{stats.male}</h3>
+            <div className="bg-blue-500/10 backdrop-blur-md p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-blue-500/20 shrink-0 min-w-[120px] sm:min-w-0">
+              <p className="text-blue-400 text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Male</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-blue-400">{stats.male}</h3>
             </div>
-            <div className="bg-rose-500/10 backdrop-blur-md p-6 rounded-2xl border border-rose-500/20">
-              <p className="text-rose-400 text-[10px] font-black uppercase tracking-widest mb-2">Female Members</p>
-              <h3 className="text-3xl font-black text-rose-400">{stats.female}</h3>
+            <div className="bg-rose-500/10 backdrop-blur-md p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-rose-500/20 shrink-0 min-w-[120px] sm:min-w-0">
+              <p className="text-rose-400 text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Female</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-rose-400">{stats.female}</h3>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 -mt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 -mt-6 sm:-mt-8">
 
         <section className="mb-10 flex flex-col lg:flex-row gap-6">
           <div className="relative flex-1 group">
@@ -431,7 +432,7 @@ export default function MemberListScreen() {
           )}
         </AnimatePresence>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
           {loading
             ? Array(8)
               .fill(0)
@@ -512,7 +513,7 @@ export default function MemberListScreen() {
             />
             <motion.div
               layoutId={selectedMember._id}
-              className="relative w-full max-w-4xl bg-white dark:bg-[#0f1218] rounded-[24px] md:rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-white/5 mx-2"
+              className="relative w-full max-w-4xl bg-white dark:bg-[#0f1218] rounded-2xl md:rounded-[48px] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-white/5 mx-2"
             >
               {detailsLoading ? (
                 <div className="p-16 md:p-32 flex flex-col items-center gap-8">
@@ -534,7 +535,7 @@ export default function MemberListScreen() {
                     </button>
                   </div>
                   <div className="px-6 md:px-12 pb-12 relative z-10">
-                    <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 mb-10 md:mb-16 -mt-20 md:mt-[-120px]">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-10 mb-8 md:mb-16 pt-4 md:pt-0 md:-mt-[80px]">
                       <div className="w-40 h-40 md:w-48 md:h-48 rounded-[32px] md:rounded-[48px] border-[6px] md:border-[10px] border-white dark:border-[#0f1218] p-1 shadow-2xl overflow-hidden bg-white dark:bg-white/10 backdrop-blur-xl shrink-0 group">
                         {selectedMember.profile?.avatar || selectedMember.avatar ? (
                           <img

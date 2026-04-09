@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Plus, Trash2, X, Send, CheckCircle2, XCircle,
-  ChevronDown, Target, Clock, Edit3, Save, AlertCircle, Calendar
+  ChevronDown, Target, Clock, Edit3, AlertCircle, Calendar
 } from "lucide-react";
 import {
   getWorkPlan,
@@ -27,7 +27,6 @@ interface Activity {
   _id?: string;
   title: string;
   description?: string;
-  estimatedHours?: number;
   startDate?: string;
   endDate?: string;
   progressPercent?: number;
@@ -66,11 +65,11 @@ export default function WorkPlanDetail() {
   const [role, setRole] = useState("");
   // form fields
   const [title, setTitle] = useState("");
-  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0,10));
+  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState("");
   const [generalGoal, setGeneralGoal] = useState("");
   const [notes, setNotes] = useState("");
-  const [plans, setPlans] = useState<Plan[]>([{ title: "Plan 1", activities: [{ title: "", description: "", estimatedHours: 1 }] }]);
+  const [plans, setPlans] = useState<Plan[]>([{ title: "Plan 1", activities: [{ title: "", description: "" }] }]);
   // progress modal
   const [progressModal, setProgressModal] = useState<{ planIdx: number; actIdx: number; act: Activity } | null>(null);
   const [progressVal, setProgressVal] = useState(0);
@@ -94,8 +93,8 @@ export default function WorkPlanDetail() {
       const wp = data.workPlan || data;
       setPlan(wp);
       setTitle(wp.title || "");
-      setStartDate((wp.startDate || "").slice(0,10));
-      setEndDate((wp.endDate || "").slice(0,10));
+      setStartDate((wp.startDate || "").slice(0, 10));
+      setEndDate((wp.endDate || "").slice(0, 10));
       setGeneralGoal(wp.generalGoal || "");
       setNotes(wp.notes || "");
       setPlans(wp.plans || []);
@@ -110,7 +109,7 @@ export default function WorkPlanDetail() {
     if (plans.some(p => p.activities.some(a => !a.title.trim()))) { toast.error("Please fill in all activity titles"); return; }
     setSaving(true);
     try {
-      const body = { title, startDate, endDate, generalGoal, notes, plans: plans.map(p => ({ title: p.title, activities: p.activities.map(a => ({ title: a.title, description: a.description, estimatedHours: a.estimatedHours || 1, startDate: a.startDate, endDate: a.endDate })) })) };
+      const body = { title, startDate, endDate, generalGoal, notes, plans: plans.map(p => ({ title: p.title, activities: p.activities.map(a => ({ title: a.title, description: a.description, startDate: a.startDate, endDate: a.endDate })) })) };
       if (creating) {
         await createWorkPlan(body);
         toast.success("Work Plan created");
@@ -155,19 +154,19 @@ export default function WorkPlanDetail() {
     finally { setSaving(false); }
   };
 
-  const addPlan = () => setPlans(p => [...p, { title: `Plan ${p.length + 1}`, activities: [{ title: "", description: "", estimatedHours: 1 }] }]);
+  const addPlan = () => setPlans(p => [...p, { title: `Plan ${p.length + 1}`, activities: [{ title: "", description: "" }] }]);
   const removePlan = (i: number) => setPlans(p => p.filter((_, idx) => idx !== i));
-  const addActivity = (pIdx: number) => setPlans(p => { const n = [...p]; n[pIdx].activities.push({ title: "", description: "", estimatedHours: 1 }); return n; });
+  const addActivity = (pIdx: number) => setPlans(p => { const n = [...p]; n[pIdx].activities.push({ title: "", description: "" }); return n; });
   const removeActivity = (pIdx: number, aIdx: number) => setPlans(p => { const n = [...p]; n[pIdx].activities = n[pIdx].activities.filter((_, i) => i !== aIdx); return n; });
 
   const canEdit = creating || (plan?.status === "draft");
-  const canSubmit = !creating && plan?.status === "draft";
-  const canReview = !creating && (role === "SuperAdmin" || role === "MinistryAdmin") && plan?.status === "submitted";
+  const canSubmit = false; // Submitting is handled via NewWorkPlan (Publish button)
+  const canReview = !creating && (role === "SuperAdmin" || role === "MinistryAdmin") && (plan?.status === "pending" || plan?.status === "submitted");
   const canUpdateProgress = !creating && (role === "UnitLeader" || role === "Member");
 
   const progress = plan ? (plan.weightedProgress || calcWeightedProgress(plan.plans)) : 0;
-  const statusLabel: Record<string, string> = { draft: "Draft", submitted: "Submitted", approved: "Approved", rejected: "Rejected" };
-  const statusColor: Record<string, string> = { draft: "#6B7280", submitted: "#F59E0B", approved: "#10B981", rejected: "#EF4444" };
+  const statusLabel: Record<string, string> = { draft: "Draft", submitted: "Pending Review", pending: "Pending Review", approved: "Approved", rejected: "Rejected", ignored: "Ignored", completed: "Completed" };
+  const statusColor: Record<string, string> = { draft: "#6B7280", submitted: "#F59E0B", pending: "#F59E0B", approved: "#10B981", rejected: "#EF4444", ignored: "#475569", completed: "#6366f1" };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#111]">
@@ -193,10 +192,19 @@ export default function WorkPlanDetail() {
               )}
             </div>
           </div>
-          {canEdit && (
+          {/* Edit button for owners on draft/rejected plans */}
+          {!creating && plan && (plan.status === "draft" || plan.status === "rejected") && (
+            <button
+              onClick={() => navigate(`/work-plans/new?edit=${id}`)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#349DC5] text-white rounded-2xl text-xs font-black uppercase tracking-wider"
+            >
+              Edit
+            </button>
+          )}
+          {canEdit && creating && (
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-[#349DC5] text-white rounded-2xl text-xs font-black uppercase tracking-wider disabled:opacity-50">
-              {saving ? <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" /> : <Save size={14} />}
-              {creating ? "Create" : "Update"}
+              {saving ? <div className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" /> : null}
+              Create
             </button>
           )}
         </div>
@@ -277,13 +285,6 @@ export default function WorkPlanDetail() {
                         )}
                       </div>
                       <input value={act.description || ""} onChange={e => setPlans(pl => { const n = [...pl]; n[pIdx].activities[aIdx].description = e.target.value; return n; })} placeholder="Description (optional)" className="w-full bg-transparent text-xs text-gray-400 outline-none placeholder:text-gray-300 mb-2" />
-                      <div className="flex items-center gap-3 text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <Clock size={11} className="text-gray-400" />
-                          <input type="number" min={1} value={act.estimatedHours || 1} onChange={e => setPlans(pl => { const n = [...pl]; n[pIdx].activities[aIdx].estimatedHours = Number(e.target.value); return n; })} className="w-14 bg-white dark:bg-[#2a2a2a] border border-gray-200 dark:border-white/10 rounded-lg px-2 py-1 text-xs font-bold text-[#00204a] dark:text-white outline-none" />
-                          <span className="text-gray-400">hrs</span>
-                        </div>
-                      </div>
                     </>
                   ) : (
                     <>
@@ -298,12 +299,9 @@ export default function WorkPlanDetail() {
                           </button>
                         )}
                       </div>
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{act.estimatedHours || 1}hrs estimated</span>
-                          <span className="text-[9px] font-black text-[#349DC5]">{act.progressPercent || 0}%</span>
-                        </div>
-                        <div className="h-1 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden">
+                      <div className="mt-2 text-right">
+                        <span className="text-[9px] font-black text-[#349DC5]">{act.progressPercent || 0}%</span>
+                        <div className="h-1 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden mt-1">
                           <div className="h-full rounded-full bg-[#349DC5]" style={{ width: `${Math.min(act.progressPercent || 0, 100)}%` }} />
                         </div>
                       </div>
@@ -389,7 +387,7 @@ export default function WorkPlanDetail() {
                 <div className="mb-5">
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Rating (1-5)</label>
                   <div className="flex gap-2">
-                    {[1,2,3,4,5].map(r => (
+                    {[1, 2, 3, 4, 5].map(r => (
                       <button key={r} onClick={() => setReviewRating(r)} className={`flex-1 py-3 rounded-xl font-black text-sm transition-colors ${reviewRating >= r ? "bg-[#349DC5] text-white" : "bg-gray-100 dark:bg-white/5 text-gray-400"}`}>
                         {r}
                       </button>

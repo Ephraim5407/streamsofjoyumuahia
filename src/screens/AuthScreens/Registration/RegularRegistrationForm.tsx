@@ -89,11 +89,11 @@ function LabelInput({
 }: any) {
   return (
     <div className="mb-4">
-      <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
+      <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5 leading-tight">
         {label}
       </label>
       {sublabel && (
-        <p className="text-[11.5px] text-[#667085] dark:text-gray-400 mb-2 leading-4">
+        <p className="text-[11px] text-[#667085] dark:text-gray-400 mb-1.5 leading-[14px]">
           {sublabel}
         </p>
       )}
@@ -103,7 +103,7 @@ function LabelInput({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         placeholder={placeholder}
-        className="w-full h-12 border border-[#D0D5DD] dark:border-[#333] rounded-xl px-4 text-sm text-[#101828] dark:text-white bg-white dark:bg-[#1a1c23] outline-none focus:border-[#2CA6FF] focus:ring-4 focus:ring-[#2CA6FF]/10 transition-all placeholder:text-[#98A2B3] shadow-sm hover:border-[#2CA6FF]/50"
+        className="w-full h-[44px] border border-[#D0D5DD] dark:border-[#333] rounded-lg px-[14px] text-sm text-[#101828] dark:text-white bg-white dark:bg-[#1a1c23] outline-none focus:border-[#2CA6FF] transition-all placeholder:text-[#98A2B3]"
       />
     </div>
   );
@@ -130,11 +130,11 @@ function Select({
   const selected = options?.find((o: any) => (o.value ?? o) === value);
   return (
     <div className="mb-4 relative" ref={ref}>
-      <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
+      <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5 leading-tight">
         {label}
       </label>
       {sublabel && (
-        <p className="text-[11.5px] text-[#667085] dark:text-gray-400 mb-2 leading-4">
+        <p className="text-[11px] text-[#667085] dark:text-gray-400 mb-1.5 leading-[14px]">
           {sublabel}
         </p>
       )}
@@ -142,7 +142,7 @@ function Select({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setOpen((o) => !o)}
-        className={`w-full h-12 border border-[#D0D5DD] dark:border-[#333] rounded-xl px-4 text-sm text-left flex items-center justify-between bg-white dark:bg-[#1a1c23] ${disabled ? "opacity-50 grayscale cursor-not-allowed" : "focus:border-[#2CA6FF] focus:ring-4 focus:ring-[#2CA6FF]/10"} transition-all shadow-sm hover:border-[#2CA6FF]/50`}
+        className={`w-full h-[44px] border border-[#D0D5DD] dark:border-[#333] rounded-lg px-[14px] text-sm text-left flex items-center justify-between bg-white dark:bg-[#1a1c23] ${disabled ? "opacity-50 grayscale cursor-not-allowed" : "focus:border-[#2CA6FF]"} transition-all`}
       >
         <span
           className={
@@ -217,13 +217,13 @@ function MultiSelect({ label, value, onChange, options }: any) {
     );
   return (
     <div className="mb-4 relative" ref={ref}>
-      <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
+      <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5 leading-tight">
         {label}
       </label>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full min-h-12 border border-[#D0D5DD] dark:border-[#333] rounded-xl px-4 py-2.5 text-sm text-left flex flex-wrap items-center gap-2 bg-white dark:bg-[#1a1c23] transition-all shadow-sm hover:border-[#2CA6FF]/50"
+        className="w-full min-h-[44px] border border-[#D0D5DD] dark:border-[#333] rounded-lg px-[14px] py-2 text-sm text-left flex flex-wrap items-center gap-2 bg-white dark:bg-[#1a1c23] transition-all"
       >
         {(value as string[]).length === 0 ? (
           <span className="text-[#98A2B3]">Select fields</span>
@@ -231,7 +231,7 @@ function MultiSelect({ label, value, onChange, options }: any) {
           (value as string[]).map((v: string) => (
             <span
               key={v}
-              className="inline-flex items-center gap-1.5 bg-[#EEF6FB] dark:bg-[#2CA6FF]/10 text-[#2CA6FF] text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm"
+              className="inline-flex items-center gap-1.5 bg-[#EEF6FB] dark:bg-[#2CA6FF]/10 text-[#0A6375] dark:text-[#2CA6FF] text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider"
             >
               {v}
               <button
@@ -240,7 +240,7 @@ function MultiSelect({ label, value, onChange, options }: any) {
                   e.stopPropagation();
                   toggle(v);
                 }}
-                className="hover:bg-[#2CA6FF] hover:text-white rounded-full p-0.5 transition-colors"
+                className="hover:text-black hover:bg-black/5 dark:hover:bg-white/10 rounded-full p-0.5 transition-colors text-[#0A6375]"
               >
                 <X size={10} strokeWidth={4} />
               </button>
@@ -288,26 +288,26 @@ function PasswordInput({ label, value, onChange, placeholder }: any) {
   const [show, setShow] = useState(false);
   return (
     <div className="mb-4">
-      <label className="block text-[13px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5">
+      <label className="block text-[12px] font-semibold text-[#344054] dark:text-gray-300 mb-1.5 leading-tight">
         {label}
       </label>
-      <div className="flex items-center border border-[#D0D5DD] dark:border-[#333] rounded-xl bg-white dark:bg-[#1a1c23] pr-3 focus-within:border-[#2CA6FF] focus-within:ring-4 focus-within:ring-[#2CA6FF]/10 transition-all shadow-sm group hover:border-[#2CA6FF]/50">
+      <div className="flex items-center border border-[#D0D5DD] dark:border-[#333] rounded-lg bg-white dark:bg-[#1a1c23] pr-3 focus-within:border-[#2CA6FF] transition-all group overflow-hidden h-[44px]">
         <input
           type={show ? "text" : "password"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 h-12 px-4 text-sm text-[#101828] dark:text-white bg-transparent outline-none placeholder:text-[#98A2B3]"
+          className="flex-1 h-full px-[14px] text-sm text-[#101828] dark:text-white bg-transparent outline-none placeholder:text-[#98A2B3]"
         />
         <button
           type="button"
           onClick={() => setShow((s) => !s)}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          className="p-2 text-[#555555] opacity-50 hover:opacity-100 transition-opacity"
         >
           {show ? (
-            <EyeOff size={20} className="text-gray-400 group-focus-within:text-[#2CA6FF]" />
+            <EyeOff size={20} />
           ) : (
-            <Eye size={20} className="text-gray-400 group-focus-within:text-[#2CA6FF]" />
+            <Eye size={20} />
           )}
         </button>
       </div>
@@ -721,44 +721,38 @@ export default function RegularRegistrationForm() {
   }
 
   return (
-    <div className="w-full h-[100dvh] bg-gray-50 dark:bg-[#080a0c] flex flex-col items-center justify-start sm:py-10">
-      <div className="w-full sm:max-w-md bg-white dark:bg-[#0f1218] h-full sm:h-auto sm:min-h-0 sm:rounded-[2.5rem] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)] flex flex-col border border-gray-100 dark:border-gray-800" style={{ minHeight: '100dvh' }}>
-
-        {/* Header - Fixed at top, never moves */}
-        <div className="shrink-0 bg-[#2CA6FF] px-6 py-4 flex items-center gap-4 shadow-[0_4px_20px_rgba(44,166,255,0.2)] z-50" style={{ position: 'sticky', top: 0 }}>
-          <button
-            onClick={() => (step === 1 ? navigate(-1) : setStep(1))}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-90"
-          >
-            <ChevronLeft size={24} color="white" strokeWidth={3} />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-[17px] font-bold text-white leading-tight">
-              {step === 1 ? "Personal Details" : "Final Steps"}
-            </h1>
-            <p className="text-[11px] text-white/80 font-medium tracking-tight">
-              Step {step} of 2
-            </p>
-          </div>
-        </div>
+    <div className="w-full min-h-[100dvh] bg-[#fff] dark:bg-[#080a0c] flex flex-col justify-start">
+      <div className="w-full max-w-md mx-auto flex flex-col h-full bg-[#fff] dark:bg-[#0f1218]">
 
         {/* Scrollable Content Container */}
-        <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex-1 overflow-y-auto px-[28px] pt-[24px]">
+          
+          <div className="flex items-center mb-[18px]">
+            <button
+              onClick={() => (step === 1 ? navigate(-1) : setStep(1))}
+              className="w-8 h-8 flex items-center justify-center -ml-1 text-[#667085] hover:bg-gray-50 rounded"
+            >
+              <span className="text-[28px] leading-[32px] font-light">‹</span>
+            </button>
+            <h1 className="text-[16px] font-semibold text-[#101828] dark:text-white ml-2">
+              Please complete your registration.
+            </h1>
+          </div>
+
           {/* Progress bar */}
-          <div className="flex gap-1.5 px-6 pt-6 mb-2">
+          <div className="flex gap-2.5 mb-6">
             {[1, 2].map((s) => (
               <div
                 key={s}
-                className="flex-1 h-1.5 rounded-full transition-all duration-500 ease-out"
+                className="flex-1 h-1 rounded-full transition-all duration-500 ease-out"
                 style={{
-                  backgroundColor: step >= s ? PRIMARY : "#F2F4F7",
-                  opacity: step >= s ? 1 : 0.4
+                  backgroundColor: step >= s ? PRIMARY : "#F2F4F7"
                 }}
               />
             ))}
           </div>
 
-          <div className="px-6 pb-28">
+          <div className="pb-28">
             {" "}
             {/* ═══════════════ STEP 1 ═══════════════ */}{" "}
             {step === 1 && (
@@ -895,7 +889,7 @@ export default function RegularRegistrationForm() {
                   disabled={!canNext}
                   onClick={() => setStep(2)}
                   whileTap={{ scale: 0.97 }}
-                  className="w-full h-12 rounded-lg font-semibold text-[15px] text-white mt-1 disabled:opacity-40 shadow-md"
+                  className="w-full h-[48px] rounded-lg font-semibold text-[15px] text-white mt-[14px] disabled:opacity-40"
                   style={{ backgroundColor: PRIMARY }}
                 >
                   {" "}
@@ -1121,7 +1115,7 @@ export default function RegularRegistrationForm() {
                   onClick={submit}
                   disabled={submitting}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full h-14 rounded-2xl font-bold text-[16px] text-white disabled:opacity-50 shadow-[0_10px_25px_rgba(44,166,255,0.4)] transition-all hover:shadow-[0_15px_30px_rgba(44,166,255,0.5)] flex items-center justify-center gap-3 mb-4"
+                  className="w-full h-[48px] rounded-lg font-semibold text-[15px] text-white disabled:opacity-50 flex items-center justify-center gap-3 mb-4 mt-[14px]"
                   style={{ backgroundColor: PRIMARY }}
                 >
                   {submitting ? (

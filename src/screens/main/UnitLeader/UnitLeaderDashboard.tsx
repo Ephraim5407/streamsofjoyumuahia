@@ -196,11 +196,15 @@ export default function UnitLeaderDashboard() {
             )}
             <button
               onClick={() => navigate("/notifications")}
-              className="h-10 sm:h-12 flex-1 px-4 sm:px-5 bg-[#349DC5] text-white rounded-xl font-bold text-[9px] sm:text-[10px] uppercase tracking-wider shadow-lg shadow-blue-900/20 hover:bg-[#2d8ab0] active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="h-10 sm:h-12 flex-1 px-4 sm:px-5 bg-[#349DC5] text-white rounded-xl font-bold text-[9px] sm:text-[10px] uppercase tracking-wider shadow-lg shadow-blue-900/20 hover:bg-[#2d8ab0] active:scale-95 transition-all flex items-center justify-center gap-2 relative"
             >
               <Bell size={16} />
-              <span className="hidden sm:inline">Notifications</span>
-              <span className="sm:hidden">{unreadCount > 0 ? unreadCount : ""} Alerts</span>
+              <span>Notifications</span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center px-1 shadow-md">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
