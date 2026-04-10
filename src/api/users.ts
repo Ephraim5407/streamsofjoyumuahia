@@ -2,29 +2,27 @@ import axios from "axios";
 import type { AxiosResponse } from "axios";
 import AsyncStorage from "../utils/AsyncStorage";
 // Resolve API base URL robustly with caching and sensible fallbacks
-const VITE_API_BASE = (
-  import.meta.env.VITE_API_BASE_URL ||
-  ""
-)
-  .toString()
-  .trim();
+const normalizeUrl = (url: string) => (url ? url.trim().replace(/\/+$/, "") : "");
 
-export let BASE_URl =
-  VITE_API_BASE || "https://streamsofjoyumuahia-api-n6na.onrender.com";
+const VITE_API_BASE = normalizeUrl(import.meta.env.VITE_API_BASE_URL || "");
+const DEFAULT_REMOTE = "https://streamsofjoyumuahia-api-n6na.onrender.com";
+
+export let BASE_URl = VITE_API_BASE || DEFAULT_REMOTE;
 
 async function getCandidates(): Promise<string[]> {
   const saved = await AsyncStorage.getItem("API_BASE_URL");
   const list: string[] = [];
-  if (saved) list.push(saved);
-  if (VITE_API_BASE && !list.includes(VITE_API_BASE)) list.push(VITE_API_BASE);
-  // Hosted default
-  if (!list.includes("https://streamsofjoyumuahia-api-n6na.onrender.com"))
-    list.push("https://streamsofjoyumuahia-api-n6na.onrender.com/");
-  // Local dev fallbacks
-  if (!list.includes("http://localhost:4000")) list.push("http://localhost:4000");
-  if (!list.includes("http://127.0.0.1:4000")) list.push("http://127.0.0.1:4000");
+  if (saved) list.push(normalizeUrl(saved));
+  if (VITE_API_BASE) list.push(VITE_API_BASE);
 
-  return Array.from(new Set(list));
+  // Local dev fallbacks
+  list.push("http://localhost:4000");
+  list.push("http://127.0.0.1:4000");
+
+  // Hosted default
+  list.push(DEFAULT_REMOTE);
+
+  return Array.from(new Set(list.map(normalizeUrl).filter(Boolean)));
 }
 
 // Resolve a list of candidate base URLs (custom override, default, emulator/local fallbacks)
