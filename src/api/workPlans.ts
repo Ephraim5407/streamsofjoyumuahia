@@ -1,7 +1,7 @@
 import AsyncStorage from "../utils/AsyncStorage";
 
 const API_BASE =
-  process.env.EXPO_PUBLIC_API_BASE ||
+  import.meta.env.VITE_API_BASE_URL ||
   "https://streamsofjoyumuahia-api.onrender.com";
 
 async function authFetch(path: string, options: RequestInit = {}) {

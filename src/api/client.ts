@@ -28,10 +28,14 @@ axiosRetry(apiClient, {
 // Request interceptor to add token
 apiClient.interceptors.request.use(
   async (config) => {
-    // dynamically setting baseURL
+    // dynamically setting baseURL — prioritize .env but allow for storage override if explicitly set
     const dynamicBase = await AsyncStorage.getItem("API_BASE_URL");
+    const envBase = import.meta.env.VITE_API_BASE_URL;
+
     if (dynamicBase) {
        config.baseURL = dynamicBase;
+    } else if (envBase) {
+       config.baseURL = envBase;
     }
 
     const token = await AsyncStorage.getItem("token");

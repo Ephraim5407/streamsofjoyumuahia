@@ -2,21 +2,21 @@ import axios from "axios";
 import type { AxiosResponse } from "axios";
 import AsyncStorage from "../utils/AsyncStorage";
 // Resolve API base URL robustly with caching and sensible fallbacks
-const EXPO_BASE = (
-  process.env.EXPO_PUBLIC_API_URL ||
-  process.env.API_BASE_URL ||
+const VITE_API_BASE = (
+  import.meta.env.VITE_API_BASE_URL ||
   ""
 )
   .toString()
   .trim();
+
 export let BASE_URl =
-  EXPO_BASE || "https://streamsofjoyumuahia-api-n6na.onrender.com";
+  VITE_API_BASE || "https://streamsofjoyumuahia-api-n6na.onrender.com";
 
 async function getCandidates(): Promise<string[]> {
   const saved = await AsyncStorage.getItem("API_BASE_URL");
   const list: string[] = [];
   if (saved) list.push(saved);
-  if (EXPO_BASE && !list.includes(EXPO_BASE)) list.push(EXPO_BASE);
+  if (VITE_API_BASE && !list.includes(VITE_API_BASE)) list.push(VITE_API_BASE);
   // Hosted default
   if (!list.includes("https://streamsofjoyumuahia-api-n6na.onrender.com"))
     list.push("https://streamsofjoyumuahia-api-n6na.onrender.com/");

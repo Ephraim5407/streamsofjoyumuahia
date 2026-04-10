@@ -11,8 +11,8 @@ export type Recovered = {
 };
 
 const base =
-  process.env.EXPO_PUBLIC_API_URL + "/" ||
-  "https://streamsofjoyumuahia-api-n6na.onrender.com/api";
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://streamsofjoyumuahia-api.onrender.com/api";
 
 export async function listRecovered(
   token: string,

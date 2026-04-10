@@ -118,11 +118,11 @@ export default function LayoutWrapper({
     { label: "More", path: "/more", icon: <Menu size={24} /> },
   ];
   return (
-    <div className="flex h-screen w-full flex-col md:flex-row bg-gray-50 dark:bg-[#121212]">
+    <div className="flex h-screen w-full flex-col md:flex-row bg-background dark:bg-dark-background">
       {/* Desktop Sidebar (Hide on Mobile) */}
       <aside
         className={cn(
-          "hidden md:flex flex-col w-20 lg:w-72 bg-white dark:bg-[#1e1e1e] border-r border-border dark:border-dark-border h-screen sticky top-0 transition-all duration-300 z-30",
+          "hidden md:flex flex-col w-20 lg:w-72 bg-surface dark:bg-dark-surface border-r border-border dark:border-dark-border h-screen sticky top-0 transition-all duration-300 z-30",
         )}
       >
         <div className="h-28 flex flex-col items-center justify-center px-4 mb-4 border-b border-gray-50 dark:border-white/5">
@@ -194,7 +194,7 @@ export default function LayoutWrapper({
         {children}
       </main>
       {/* Mobile Bottom Tab Navigation (Hide on Desktop) */}
-      <nav className="md:hidden flex flex-row items-center justify-around bg-white dark:bg-[#1e1e1e] h-[70px] pb-[10px] w-full fixed bottom-0 z-20 pb-safe rounded-t-[20px] shadow-[0_-2px_15px_rgba(0,0,0,0.05)] dark:shadow-none border-t border-[#f0f0f0] dark:border-dark-border">
+      <nav className="md:hidden flex flex-row items-center justify-around bg-surface dark:bg-dark-surface h-[70px] pb-[10px] w-full fixed bottom-0 z-20 pb-safe rounded-t-[20px] shadow-[0_-2px_15px_rgba(0,0,0,0.05)] dark:shadow-none border-t border-border dark:border-dark-border">
         {mobileNavItems.map((item) => {
           const content = (
             <>

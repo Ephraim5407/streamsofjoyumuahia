@@ -6,6 +6,7 @@ import axios from "axios";
 
 import LayoutWrapper from "./components/LayoutWrapper";
 import InstallPWAPrompt from "./components/InstallPWAPrompt";
+import GlobalErrorBoundary from "./components/GlobalErrorBoundary";
 
 import LegalContentScreen from "./screens/LegalContentScreen";
 import AdminFinanceSummary from "./screens/AdminFinance/AdminFinanceSummary";
@@ -103,7 +104,16 @@ const ComingSoon = ({ title }: { title: string }) => (
   <ComingSoonScreen title={title} />
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      refetchOnWindowFocus: true,
+      retry: 2,
+    },
+  },
+});
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -168,9 +178,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <InstallPWAPrompt />
-        <LayoutWrapper>
-          <Routes>
-            <Route path="/login" element={<LoginScreen />} />
+        <GlobalErrorBoundary>
+          <LayoutWrapper>
+            <Routes>
+              <Route path="/login" element={<LoginScreen />} />
             <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
             <Route path="/register" element={<RegistrationScreen />} />
             <Route
@@ -367,7 +378,8 @@ export default function App() {
             />
             <Route path="/" element={<RootRedirect />} />
           </Routes>
-        </LayoutWrapper>
+          </LayoutWrapper>
+        </GlobalErrorBoundary>
       </BrowserRouter>
       <Toaster position="top-right" />
     </QueryClientProvider>
