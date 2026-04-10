@@ -279,8 +279,72 @@ export default function FinanceSummaryScreen() {
 
   if (loading) return null;
 
+  const renderStrategicAnalysis = () => {
+    if (search || finances.length === 0) return null;
+    return (
+      <section className="space-y-12 lg:space-y-16 pb-20 lg:pb-8">
+        <div>
+          <div className="flex items-center gap-4 mb-6">
+            <BarChart3 className="text-[#349DC5]" size={20} />
+            <h3 className="text-base font-black text-[#00204a] dark:text-white uppercase">
+              Finance Trend (Last 6 Months)
+            </h3>
+          </div>
+          <div className="bg-white dark:bg-[#1a1c1e] p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-[320px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E6EAF0" opacity={0.5} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: "#94A3B8" }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: "#94A3B8" }} />
+                <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 30px rgba(0,0,0,0.1)", fontSize: "10px", fontWeight: "bold" }} />
+                <Bar dataKey="income" fill="#10B981" radius={[4, 4, 0, 0]} barSize={15} />
+                <Bar dataKey="expense" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={15} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-8 bg-white dark:bg-[#1a1c1e] lg:bg-transparent p-8 lg:p-0 rounded-2xl lg:rounded-none border border-gray-100 dark:border-white/5 lg:border-0 shadow-sm lg:shadow-none">
+          <div className="flex flex-col items-center">
+            <div className="w-48 h-48 lg:w-56 lg:h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={70} outerRadius={90} paddingAngle={5} dataKey="value">
+                    {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="space-y-6 w-full">
+            <h3 className="text-base font-black text-[#00204a] dark:text-white uppercase">
+              Financial Health Overview
+            </h3>
+            <div className="space-y-4">
+              {pieData.map((item) => {
+                const total = pieData.reduce((acc, curr) => acc + curr.value, 0);
+                const pct = ((item.value / total) * 100).toFixed(1);
+                return (
+                  <div key={item.name} className="flex items-center justify-between p-4 px-5 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.fill }} />
+                      <span className="text-xs font-bold text-gray-500 uppercase">{item.name} Allocation</span>
+                    </div>
+                    <span className="text-sm font-black text-[#00204a] dark:text-white">{pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
   return (
-    <div className="flex-1 bg-gray-50 dark:bg-[#0f1218] min-h-screen pb-32">
+    <div className="flex w-full min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-gray-50 dark:bg-[#0f1218]">
+      {/* Scrollable Main Area */}
+      <div className="flex-1 lg:w-[60%] xl:w-[65%] lg:flex-none lg:overflow-y-auto hide-scrollbar pb-32 lg:pb-0 relative">
       {/* Finance Header */}
       <div className="bg-[#00204a] px-6 py-12">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-8">
@@ -474,65 +538,11 @@ export default function FinanceSummaryScreen() {
           />
         </div>
 
-        {/* Strategic Analysis */}
-        {!search && finances.length > 0 && (
-          <section className="space-y-12 pb-20">
-            <div>
-              <div className="flex items-center gap-4 mb-6">
-                <BarChart3 className="text-[#349DC5]" size={20} />
-                <h3 className="text-base font-black text-[#00204a] dark:text-white uppercase">
-                  Finance Trend (Last 6 Months)
-                </h3>
-              </div>
-              <div className="bg-white dark:bg-[#1a1c1e] p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm h-[320px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E6EAF0" opacity={0.5} />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: "#94A3B8" }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: "#94A3B8" }} />
-                    <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 30px rgba(0,0,0,0.1)", fontSize: "10px", fontWeight: "bold" }} />
-                    <Bar dataKey="income" fill="#10B981" radius={[4, 4, 0, 0]} barSize={15} />
-                    <Bar dataKey="expense" fill="#EF4444" radius={[4, 4, 0, 0]} barSize={15} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white dark:bg-[#1a1c1e] p-8 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm">
-              <div className="flex flex-col items-center">
-                <div className="w-48 h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                        {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              <div className="space-y-6">
-                <h3 className="text-base font-black text-[#00204a] dark:text-white uppercase">
-                  Financial Health Overview
-                </h3>
-                <div className="space-y-4">
-                  {pieData.map((item) => {
-                    const total = pieData.reduce((acc, curr) => acc + curr.value, 0);
-                    const pct = ((item.value / total) * 100).toFixed(1);
-                    return (
-                      <div key={item.name} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.fill }} />
-                          <span className="text-xs font-bold text-gray-500 uppercase">{item.name} Allocation</span>
-                        </div>
-                        <span className="text-sm font-black text-[#00204a] dark:text-white">{pct}%</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
+        {/* Strategic Analysis - Mobile Only */}
+        <div className="block lg:hidden">
+          {renderStrategicAnalysis()}
+        </div>
+      </div>
       </div>
 
       <AnimatePresence>
@@ -601,6 +611,22 @@ export default function FinanceSummaryScreen() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Right Desktop Pane (Strategic Analysis) */}
+      <div className="hidden lg:block lg:w-[40%] xl:w-[35%] lg:flex-none border-l border-gray-100 dark:border-white/5 bg-white dark:bg-[#0f1218] lg:overflow-y-auto hide-scrollbar custom-scrollbar relative shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
+        <div className="p-8 xl:p-12 pb-32">
+           <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-12 border-b border-gray-100 dark:border-white/5 pb-4">
+             Analysis
+           </h2>
+           {renderStrategicAnalysis()}
+           {!search && finances.length === 0 && (
+             <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
+                <PieIcon size={64} className="mb-6 text-gray-300" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#00204a] dark:text-white">No data found</p>
+             </div>
+           )}
+        </div>
+      </div>
     </div>
   );
 }

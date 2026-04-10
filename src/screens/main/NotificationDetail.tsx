@@ -18,6 +18,8 @@ import {
   MessageSquare,
   Mic,
   StopCircle,
+  Megaphone,
+  Calendar,
 } from "lucide-react";
 import bgChat from "../../assets/bg_chat.jpg";
 import toast from "react-hot-toast";
@@ -40,13 +42,32 @@ interface Item {
   isUnit: boolean;
   _rawNotification?: any;
 }
-export default function NotificationDetail() {
+
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(" ");
+}
+
+const fmtTime = (t: string) => {
+  const d = new Date(t);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+};
+interface NotificationDetailProps {
+  embeddedId?: string;
+  embeddedData?: Item;
+  onBack?: () => void;
+}
+
+export default function NotificationDetail({ embeddedId, embeddedData, onBack }: NotificationDetailProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const queryParams = new URLSearchParams(location.search);
-  const convId = queryParams.get("id") || "";
-  const initialData = location.state?.notification as Item;
+  const convId = embeddedId || queryParams.get("id") || "";
+  const initialData = embeddedData || (location.state?.notification as Item);
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -260,7 +281,7 @@ export default function NotificationDetail() {
         if (isInitial) setLoading(false);
       }
     },
-    [scope, peerId],
+    [scope, peerId, convId],
   );
   useEffect(() => {
     loadMessages(true);
@@ -372,7 +393,7 @@ export default function NotificationDetail() {
       setMessages((prev) =>
         prev.filter((m) => String(m._id) !== String(tempId)),
       );
-      toast.error("Transmission relay failure");
+      toast.error("Failed to send message");
     } finally {
       setSending(false);
     }
@@ -396,13 +417,83 @@ export default function NotificationDetail() {
     visible: boolean;
     msg?: any;
   }>({ visible: false });
+  const isStaticNotification = convId.startsWith("notification:");
+  const notificationRaw = initialData?._rawNotification;
+
+  if (isStaticNotification && notificationRaw) {
+    return (
+      <div className="h-full flex flex-col bg-gray-50 dark:bg-[#0f1218] overflow-hidden">
+        <header className="z-20 bg-white/95 dark:bg-[#1a1c1e]/95 backdrop-blur-sm border-b border-gray-100 dark:border-white/5 px-8 h-20 flex items-center shrink-0">
+          <button
+            onClick={() => onBack ? onBack() : navigate(-1)}
+            className="p-3 bg-gray-50 dark:bg-white/5 rounded-2xl text-gray-400 hover:text-[#349DC5] transition-all active:scale-95 mr-6"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            <h2 className="text-xl font-black text-[#00204a] dark:text-white uppercase tracking-tight">
+              {notificationRaw.type === "announcement" ? "Announcement" : "Event Detail"}
+            </h2>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+              Ref ID: {notificationRaw._id?.slice(-8).toUpperCase()}
+            </p>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-8 sm:p-12 lg:p-16 max-w-4xl mx-auto w-full">
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             className="bg-white dark:bg-[#1a1c1e] rounded-[48px] p-10 sm:p-16 shadow-sm border border-gray-100 dark:border-white/5"
+           >
+              <div className={cn(
+                "w-20 h-20 rounded-[32px] flex items-center justify-center mb-10 shadow-inner",
+                notificationRaw.type === "announcement" ? "bg-amber-50 dark:bg-amber-500/10 text-amber-500" : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500"
+              )}>
+                 {notificationRaw.type === "announcement" ? <Megaphone size={40} /> : <Calendar size={40} />}
+              </div>
+
+              <div className="flex items-center gap-3 mb-6">
+                <span className="px-3 py-1 bg-gray-100 dark:bg-white/5 rounded-lg text-[9px] font-black uppercase tracking-widest text-gray-500">
+                  {fmtTime(notificationRaw.createdAt)}
+                </span>
+                <div className="w-1 h-1 rounded-full bg-gray-300" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-[#349DC5]">
+                  Announcement
+                </span>
+              </div>
+
+              <h1 className="text-3xl sm:text-5xl font-black text-[#00204a] dark:text-white leading-[1.1] mb-10">
+                {notificationRaw.title}
+              </h1>
+
+              <div className="space-y-6">
+                <p className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {notificationRaw.body}
+                </p>
+              </div>
+
+              <div className="mt-16 pt-10 border-t border-gray-50 dark:border-white/5">
+                <button
+                  onClick={() => onBack ? onBack() : navigate(-1)}
+                  className="px-10 h-16 bg-[#00204a] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#349DC5] transition-all shadow-lg active:scale-95"
+                >
+                  Confirm & Close
+                </button>
+              </div>
+           </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-[#121212] overflow-hidden relative">
       <header className="z-20 bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 shadow-sm px-4 sm:px-8 h-20 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-6">
           <button
-            onClick={() => navigate(-1)}
-            className="p-3 bg-gray-50 dark:bg-gray-800 rounded-2xl text-gray-400 hover:text-primary transition-all active:scale-95"
+            onClick={() => onBack ? onBack() : navigate(-1)}
+            className="p-3 bg-gray-50 dark:bg-gray-800 rounded-2xl text-gray-400 hover:text-[#349DC5] transition-all active:scale-95"
           >
             <ArrowLeft size={24} />
           </button>

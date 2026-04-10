@@ -257,9 +257,9 @@ export default function RecoveredAddicts() {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <DetailRow label="Strategic Victory Date" value={new Date(item.dateOfRecovery).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />
+                  <DetailRow label="Date of Recovery" value={new Date(item.dateOfRecovery).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />
                   <DetailRow label="Addiction Profile" value={item.addictionType} />
-                  <DetailRow label="Biological Registry" value={item.gender} />
+                  <DetailRow label="Gender" value={item.gender} />
                   <DetailRow label="Age Bracket" value={item.age ? `${item.age} years` : "—"} />
                   <DetailRow label="Marital Status" value={item.maritalStatus || "—"} />
                   <DetailRow label="Digital Contact" value={item.phone || "—"} />

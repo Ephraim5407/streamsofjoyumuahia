@@ -169,7 +169,7 @@ export default function MembersAssisted() {
               <div className="flex items-center gap-3 mt-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] animate-pulse" />
                 <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">
-                  Strategic Member Support Registry
+                  Member Support Records
                 </span>
               </div>
             </div>
@@ -258,7 +258,7 @@ export default function MembersAssisted() {
                 </div>
 
                 <div className="space-y-4">
-                  <DetailRow label="Strategic Support Date" value={new Date(a.assistedOn).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />
+                  <DetailRow label="Date" value={new Date(a.assistedOn).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />
                   {a.reason && <DetailRow label="Support Objective" value={a.reason} />}
 
                   <div className="mt-6 pt-6 border-t border-gray-50 dark:border-white/5">
@@ -335,7 +335,7 @@ export default function MembersAssisted() {
                 </section>
                 <section>
                   <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">
-                    Tactical Support Date
+                    Date
                   </label>
                   <input
                     type="date"
@@ -362,7 +362,7 @@ export default function MembersAssisted() {
                 </section>
                 <section>
                   <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">
-                    Strategic Support Account
+                    Notes
                   </label>
                   <textarea
                     rows={4}

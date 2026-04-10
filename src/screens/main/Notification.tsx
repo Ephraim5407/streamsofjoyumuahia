@@ -18,11 +18,9 @@ import {
 import toast from "react-hot-toast";
 import AsyncStorage from "../../utils/AsyncStorage";
 import { listConversations, deleteConversation } from "../../api/messages";
-import {
-  listNotifications,
-  markNotificationRead,
-} from "../../api/notifications";
+import { listNotifications, markNotificationRead } from "../../api/notifications";
 import { eventBus, AppEventBus } from "../../utils/eventBus";
+import NotificationDetail from "./NotificationDetail";
 
 interface Item {
   id: string; // key: user:<id> or unit:<id> or notification:<id>
@@ -71,6 +69,7 @@ export default function Notification() {
     visible: boolean;
     item?: Item;
   }>({ visible: false });
+  const [selectedConv, setSelectedConv] = useState<Item | null>(null);
 
   const loadData = useCallback(async (isRefresh = false) => {
     if (!isRefresh) setLoading(true);
@@ -104,7 +103,7 @@ export default function Notification() {
         setItems(merged);
       }
     } catch (e) {
-      toast.error("Registry synchronization failed");
+      toast.error("Update failed");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -129,10 +128,10 @@ export default function Notification() {
     const [scope, id] = item.id.split(":") as ["user" | "unit", string];
     const res = await deleteConversation(scope, id);
     if (res.success) {
-      toast.success("Archival thread purged");
+      toast.success("Conversation deleted");
       loadData(true);
     } else {
-      toast.error("Thread erasure failed");
+      toast.error("Delete failed");
     }
   };
 
@@ -147,21 +146,21 @@ export default function Notification() {
           );
         } catch {}
       }
-      if (
-        raw?.type === "announcement" ||
-        raw?.type === "event" ||
-        raw?.data?.announcementId
-      ) {
-        setSelectedNote(raw);
+      if (window.innerWidth >= 1024) {
+         setSelectedConv(item || null);
       } else {
-        const requestedRole = raw?.data?.requestedRole;
-        if (requestedRole === "Member") navigate("/approvals");
-        else navigate("/approvals");
+         navigate(`/notifications/detail?id=${encodeURIComponent(item.id)}`, {
+           state: { notification: item },
+         });
       }
     } else {
-      navigate(`/notifications/detail?id=${encodeURIComponent(item.id)}`, {
-        state: { notification: item },
-      });
+      if (window.innerWidth >= 1024) {
+         setSelectedConv(item);
+      } else {
+         navigate(`/notifications/detail?id=${encodeURIComponent(item.id)}`, {
+           state: { notification: item },
+         });
+      }
     }
   };
 
@@ -191,12 +190,17 @@ export default function Notification() {
   };
 
   return (
-    <div className="pb-32 max-w-7xl mx-auto px-4 sm:px-6 pt-10">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
+    <div className="flex w-full min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-gray-50 dark:bg-[#121212]">
+      {/* Left Pane: List View */}
+      <div className={cn(
+        "flex-1 flex flex-col pb-32 max-w-7xl mx-auto px-4 sm:px-6 pt-10",
+        selectedConv ? "hidden lg:flex lg:w-[45%] lg:flex-none lg:border-r lg:border-gray-100 lg:dark:border-white/5 lg:pb-[70px] lg:overflow-y-auto" : "lg:w-full lg:overflow-y-auto"
+      )}>
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10 shrink-0">
         <div className="flex items-center gap-6">
           <button
             onClick={() => navigate(-1)}
-            className="p-3.5 rounded-2xl bg-white dark:bg-[#1a1c1e] shadow-sm border border-gray-100 dark:border-white/5 text-gray-400 hover:text-[#349DC5] transition-all active:scale-95"
+            className="p-3 bg-white dark:bg-[#1a1c1e] rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 text-gray-400 hover:text-[#349DC5] transition-all active:scale-95"
           >
             <ArrowLeft size={24} />
           </button>
@@ -205,7 +209,7 @@ export default function Notification() {
               Notifications
             </h1>
             <p className="text-[10px] font-bold text-gray-400 uppercase mt-2">
-              Strategic Notifications Feed
+              Stay updated with your community
             </p>
           </div>
         </div>
@@ -243,21 +247,21 @@ export default function Notification() {
         />
       </div>
 
-      <div className="relative mb-12 group">
+      <div className="relative mb-8 group shrink-0">
         <Search
           className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors"
           size={20}
         />
         <input
           type="text"
-          placeholder="Filter intelligence records..."
+          placeholder="Search items..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-16 pl-14 pr-8 bg-white dark:bg-[#1a1c1e] rounded-xl shadow-sm border-2 border-transparent focus:border-[#349DC5]/20 font-bold text-sm outline-none transition-all placeholder:text-gray-300"
+          className="w-full h-14 pl-14 pr-8 bg-white dark:bg-[#1a1c1e] rounded-xl shadow-sm border-2 border-transparent focus:border-[#349DC5]/20 font-bold text-sm outline-none transition-all placeholder:text-gray-300"
         />
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 flex-1 pb-10">
         {loading ? (
           Array(5)
             .fill(0)
@@ -350,13 +354,37 @@ export default function Notification() {
           <div className="py-24 text-center">
             <Bell size={48} className="text-gray-200 mx-auto mb-6" />
             <h3 className="text-xl font-bold text-[#00204a] dark:text-white uppercase mb-2">
-              Registry Clear
+              Empty
             </h3>
             <p className="text-gray-400 font-bold text-[10px] uppercase">
-              No tactical logs detected in this quadrant.
+              No items found at this time.
             </p>
           </div>
         )}
+      </div>
+      {/* End Left Pane List Container */}
+      </div>
+
+      {/* Right Pane: Split Detail View (Only visible on lg devices when an item or notification is selected, or as a placeholder) */}
+      <div className={cn(
+        "hidden lg:flex flex-col lg:w-[55%] lg:flex-none relative bg-white dark:bg-[#1a1c1e]",
+        !selectedConv && "items-center justify-center bg-gray-50 dark:bg-[#121212]"
+      )}>
+         {selectedConv ? (
+            <NotificationDetail 
+               embeddedId={selectedConv.id} 
+               embeddedData={selectedConv} 
+               onBack={() => setSelectedConv(null)} 
+            />
+         ) : (
+            <div className="text-center">
+               <div className="w-24 h-24 bg-white dark:bg-gray-800 rounded-[40px] flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-100 dark:border-white/5 text-gray-200">
+                  <MessageSquare size={48} />
+               </div>
+               <h3 className="text-xl font-bold text-[#00204a] dark:text-gray-300 uppercase">Message Center</h3>
+               <p className="text-[10px] font-bold text-gray-400 uppercase mt-2 tracking-widest">Select an item to view</p>
+            </div>
+         )}
       </div>
 
       <AnimatePresence>
@@ -392,8 +420,8 @@ export default function Notification() {
                   <div>
                     <h2 className="text-xl font-bold uppercase">
                       {selectedNote.type === "event"
-                        ? "Event Discovery"
-                        : "High Alert"}
+                        ? "Event"
+                        : "Announcement"}
                     </h2>
                     <p className="text-[10px] font-bold opacity-75 uppercase">
                       {fmtTime(selectedNote.createdAt)}
@@ -421,7 +449,7 @@ export default function Notification() {
                     selectedNote.type === "event" ? "bg-emerald-600" : "bg-amber-600",
                   )}
                 >
-                  Acknowledge Message
+                  Got it
                 </button>
               </div>
             </motion.div>
@@ -444,24 +472,23 @@ export default function Notification() {
                 <Trash2 size={40} />
               </div>
               <h3 className="text-2xl font-bold text-[#00204a] dark:text-white mb-4">
-                Purge Comms?
+                Delete Conversation?
               </h3>
               <p className="text-gray-400 font-bold text-[10px] uppercase leading-relaxed mb-10">
-                This will permanently erase all communication logs within this
-                sequence.
+                This will permanently delete this conversation and all its messages.
               </p>
               <div className="flex gap-4">
                 <button
                   onClick={() => setConfirmDelete({ visible: false })}
                   className="flex-1 h-12 bg-gray-50 dark:bg-white/5 text-gray-400 rounded-xl font-bold text-[9px] uppercase"
                 >
-                  Abort
+                  Cancel
                 </button>
                 <button
                   onClick={() => confirmDelete.item && handleDelete(confirmDelete.item)}
                   className="flex-1 h-12 bg-rose-500 text-white rounded-xl font-bold text-[9px] uppercase shadow-md active:scale-95 transition-all"
                 >
-                  Erase Data
+                  Delete
                 </button>
               </div>
             </motion.div>

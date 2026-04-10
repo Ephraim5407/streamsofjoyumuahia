@@ -102,12 +102,12 @@ export default function UnitTestimonies() {
         await axios.put(`${BASE_URl}/api/testimonies/${editingId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        toast.success("Manifestation updated");
+        toast.success("Testimony updated");
       } else {
         await axios.post(`${BASE_URl}/api/testimonies`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        toast.success("Manifestation recorded");
+        toast.success("Testimony recorded");
       }
       setShowAddModal(false);
       setEditingId(null);
@@ -121,7 +121,7 @@ export default function UnitTestimonies() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this manifestation record?")) return;
+    if (!window.confirm("Delete this testimony?")) return;
     try {
       const token = await AsyncStorage.getItem("token");
       await axios.delete(`${BASE_URl}/api/testimonies/${id}`, {
@@ -153,7 +153,7 @@ export default function UnitTestimonies() {
               <div className="flex items-center gap-3 mt-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] animate-pulse" />
                 <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">
-                  Strategic Unit manifestation registry
+                  Testimony Records
                 </span>
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function UnitTestimonies() {
             <Sparkles size={100} className="text-[#349DC5]" />
           </div>
           <div className="relative z-10">
-            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em] mb-3">Total Manifestations</p>
+            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em] mb-3">Total Testimonies</p>
             <h2 className="text-6xl font-black text-[#00204a] dark:text-white leading-none tracking-tighter tabular-nums">
               {filteredTestimonies.length}
             </h2>
@@ -188,7 +188,7 @@ export default function UnitTestimonies() {
                 onClick={() => setSelectedYear(y)}
                 className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedYear === y ? "bg-[#00204a] text-white shadow-md shadow-blue-500/20" : "text-gray-400 hover:text-gray-600"}`}
                >
-                 {y === "All" ? "Lifetime" : y}
+                 {y === "All" ? "Total" : y}
                </button>
              ))}
            </div>
@@ -198,7 +198,7 @@ export default function UnitTestimonies() {
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors" size={24} />
           <input
             type="text"
-            placeholder="Search manifestations by name or detail..."
+            placeholder="Search testimonies..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-20 pl-16 pr-8 bg-white dark:bg-[#1a1c1e] rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 font-bold text-lg outline-none focus:border-[#349DC5]/20 transition-all placeholder:text-gray-200"
@@ -209,14 +209,14 @@ export default function UnitTestimonies() {
           {loading ? (
             <div className="flex flex-col items-center py-24 gap-6 text-center">
               <div className="w-12 h-12 rounded-full border-4 border-[#349DC5] border-t-transparent animate-spin" />
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] animate-pulse">Syncing Cloud Feed...</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] animate-pulse">Loading...</p>
             </div>
           ) : filteredTestimonies.length === 0 ? (
             <div className="flex flex-col items-center py-32 gap-6 text-center bg-white dark:bg-[#1a1c1e] rounded-[48px] border-2 border-dashed border-gray-100 dark:border-white/5">
               <div className="w-24 h-24 rounded-[40px] bg-cyan-50 dark:bg-cyan-900/10 flex items-center justify-center text-6xl shadow-inner animate-pulse">✨</div>
               <div>
-                <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Manifestations Detected</p>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The unit testimony registry is currently quiet.<br/>Log your first manifestation journey today.</p>
+                <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Records Found</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The record list is currently empty.<br/>Add a new testimony today.</p>
               </div>
             </div>
           ) : (
@@ -237,7 +237,7 @@ export default function UnitTestimonies() {
                       </h3>
                       <div className="flex items-center gap-2">
                         <span className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-[#349DC5] bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-md">
-                          Divine Restoration
+                          Testimony
                         </span>
                       </div>
                     </div>
@@ -257,17 +257,17 @@ export default function UnitTestimonies() {
                 </div>
 
                 <div className="space-y-4">
-                  <DetailRow label="Event Registry Date" value={new Date(t.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />
+                  <DetailRow label="Date" value={new Date(t.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />
                   
                   <div className="mt-6 pt-6 border-t border-gray-50 dark:border-white/5">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Manifestation Narrative</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Narrative</p>
                     <div className="bg-blue-50/20 dark:bg-blue-900/5 p-6 rounded-3xl border-l-4 border-[#349DC5]">
                         <p className={`text-sm font-medium leading-relaxed italic ${expandedIds.includes(t._id) ? "text-gray-600 dark:text-gray-300" : "text-gray-400 line-clamp-3"}`}>
                           "{t.description}"
                         </p>
                         {t.description.length > 150 && (
                             <button onClick={() => toggleExpand(t._id)} className="mt-4 text-[9px] font-black uppercase tracking-[0.2em] text-[#349DC5]">
-                                {expandedIds.includes(t._id) ? "Close Narrative" : "Open Narrative"}
+                                {expandedIds.includes(t._id) ? "Show Less" : "Show More"}
                             </button>
                         )}
                     </div>
@@ -288,31 +288,31 @@ export default function UnitTestimonies() {
                 <Sparkles size={160} className="text-[#349DC5]" />
               </div>
               <h3 className="text-3xl font-black text-[#00204a] dark:text-white uppercase mb-10 relative z-10">
-                {editingId ? "Update Manifesto" : "Log Journey"}
+                {editingId ? "Update Record" : "Add Record"}
               </h3>
               <div className="space-y-6 relative z-10">
                 <section>
-                   <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Individual Name</label>
+                   <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Name</label>
                    <div className="relative group">
                     <Star className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors" size={20} />
                     <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Testifier full name" className="w-full h-18 pl-16 pr-6 bg-gray-50 dark:bg-gray-800 rounded-2xl border-none outline-none font-bold text-lg focus:ring-2 ring-blue-500/20" />
                    </div>
                 </section>
                 <section>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Victory Date</label>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Date</label>
                     <div className="relative group">
                       <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors" size={20} />
                       <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="w-full h-18 pl-16 pr-6 bg-gray-50 dark:bg-gray-800 rounded-2xl border-none outline-none font-bold text-lg focus:ring-2 ring-blue-500/20 uppercase" />
                     </div>
                 </section>
                 <section>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Narrative Detail</label>
-                    <textarea rows={6} placeholder="Provide details of the manifestation..." value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="w-full p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl border-none outline-none font-medium text-lg resize-none focus:ring-2 ring-blue-500/20" />
+                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Details</label>
+                    <textarea rows={6} placeholder="Provide details here..." value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} className="w-full p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl border-none outline-none font-medium text-lg resize-none focus:ring-2 ring-blue-500/20" />
                 </section>
                 <div className="flex gap-4 pt-4">
                   <button onClick={() => { setShowAddModal(false); setEditingId(null); }} className="flex-1 h-18 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:text-rose-500 transition-all">Discard</button>
                   <button onClick={handleSubmit} disabled={submitting} className="flex-[2] h-18 bg-[#349DC5] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-3">
-                    {submitting ? <RefreshCw className="animate-spin" /> : editingId ? "Update Manifesto" : "Seal Testimony"}
+                    {submitting ? <RefreshCw className="animate-spin" /> : editingId ? "Update Record" : "Save Testimony"}
                   </button>
                 </div>
               </div>

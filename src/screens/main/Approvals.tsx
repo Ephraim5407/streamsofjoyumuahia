@@ -97,7 +97,7 @@ export default function ApprovalsScreen() {
       );
       setUsers(filtered);
     } catch (e) {
-      toast.error("Failed to sync pending application buffer");
+      toast.error("Failed to load approval list");
     } finally {
       setLoading(false);
     }
@@ -123,7 +123,7 @@ export default function ApprovalsScreen() {
       }
       setTargetUser(null);
     } catch (e) {
-      toast.error("Decisions engine failure");
+      toast.error("Process failed");
     } finally {
       setSubmitting(false);
     }
@@ -148,10 +148,10 @@ export default function ApprovalsScreen() {
           </button>
           <div>
             <h1 className="text-3xl font-bold text-[#00204a] dark:text-white leading-none">
-              Access Control
+              Approvals
             </h1>
             <p className="text-[10px] font-bold text-gray-400 uppercase mt-2">
-              Pending Member Admissions
+              Pending Registrations
             </p>
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function ApprovalsScreen() {
             className="h-12 px-6 bg-[#00204a] text-white rounded-xl font-bold text-[10px] uppercase flex items-center gap-3 hover:bg-[#349DC5] transition-all active:scale-95 shadow"
           >
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-            Sync Buffer
+            Refresh
           </button>
         </div>
       </header>
@@ -186,7 +186,7 @@ export default function ApprovalsScreen() {
             />
             <input
               type="text"
-              placeholder="Search candidate registry..."
+              placeholder="Search by name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full h-16 pl-14 pr-8 bg-white dark:bg-[#1a1c1e] rounded-xl shadow-sm border-2 border-transparent focus:border-[#349DC5]/20 font-bold text-sm outline-none transition-all placeholder:text-gray-300"
@@ -207,7 +207,7 @@ export default function ApprovalsScreen() {
               filteredUsers.map((u) => {
                 const unitName =
                   (u.roles || []).find((r) => r.role === "Member" && r.unit)
-                    ?.unit?.name || "Global Deployment";
+                    ?.unit?.name || "Member";
                 return (
                   <motion.div
                     layout
@@ -244,7 +244,7 @@ export default function ApprovalsScreen() {
                       onClick={() => setTargetUser(u)}
                       className="h-14 px-8 bg-[#00204a] text-white rounded-xl font-bold text-[10px] uppercase hover:bg-[#349DC5] active:scale-95 transition-all shadow-sm flex items-center gap-3 w-full sm:w-auto justify-center"
                     >
-                      <UserCheck size={18} /> Authorize Admission
+                      <UserCheck size={18} /> Approve Member
                     </button>
                   </motion.div>
                 );
@@ -253,10 +253,10 @@ export default function ApprovalsScreen() {
               <div className="py-32 text-center bg-gray-50 dark:bg-white/5 rounded-2xl border-2 border-dashed border-gray-100 dark:border-white/5">
                 <UserPlus size={48} className="text-gray-200 mx-auto mb-6" />
                 <h3 className="text-xl font-bold text-[#00204a] dark:text-white uppercase">
-                  Queue Synchronized
+                  All Clear
                 </h3>
                 <p className="text-gray-400 font-bold text-[10px] uppercase mt-2 px-10">
-                  All member admissions have been processed for this session.
+                  No pending registrations to process at this time.
                 </p>
               </div>
             )}
@@ -264,48 +264,7 @@ export default function ApprovalsScreen() {
         </div>
 
         <div className="lg:col-span-4 space-y-8">
-          <div className="bg-gradient-to-br from-[#00204a] to-[#042e61] p-10 rounded-xl text-white shadow-lg relative overflow-hidden group">
-            <h3 className="text-lg font-bold uppercase mb-8 flex items-center gap-3">
-              <ShieldCheck size={24} className="text-[#349DC5]" /> Governance
-            </h3>
-            <div className="space-y-6 relative z-10">
-              <SidebarRule
-                label="Identity Verification"
-                description="Cross-reference with unit roster."
-              />
-              <SidebarRule
-                label="Unit Alignment"
-                description="Verify requested deployment zone."
-              />
-              <SidebarRule
-                label="Access Tier"
-                description="Standard member permissions apply."
-              />
-            </div>
-            <div className="absolute -bottom-10 -right-10 opacity-10 rotate-12 transition-transform group-hover:rotate-0">
-              <ShieldCheck size={180} />
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
-            <h3 className="text-base font-bold text-[#00204a] dark:text-white uppercase mb-8">
-              Buffer Insights
-            </h3>
-            <div className="space-y-4">
-              <QueueStat
-                label="Pending Admits"
-                value={users.length}
-                icon={Users}
-                color="text-[#349DC5]"
-              />
-              <QueueStat
-                label="Today's Velocity"
-                value="12"
-                icon={CheckCircle2}
-                color="text-emerald-500"
-              />
-            </div>
-          </div>
+          {/* Containers removed per user request */}
         </div>
       </div>
 
@@ -332,9 +291,9 @@ export default function ApprovalsScreen() {
                 Grant Access?
               </h3>
               <p className="text-gray-400 font-bold text-[10px] uppercase leading-relaxed mb-10 px-4">
-                You are authorizing{" "}
+                You are approving{" "}
                 <span className="text-[#349DC5]">{targetUser.firstName}</span> for
-                Global Member permissions.
+                access to the platform.
               </p>
               <div className="flex flex-col gap-3">
                 <button
@@ -345,7 +304,7 @@ export default function ApprovalsScreen() {
                   {submitting ? (
                     <RefreshCw className="animate-spin" />
                   ) : (
-                    "Confirm Protocol"
+                    "Confirm"
                   )}
                 </button>
                 <button
@@ -353,7 +312,7 @@ export default function ApprovalsScreen() {
                   disabled={submitting}
                   className="h-16 bg-gray-50 dark:bg-white/5 text-gray-400 rounded-xl font-bold text-xs uppercase"
                 >
-                  Abort
+                  Cancel
                 </button>
               </div>
             </motion.div>

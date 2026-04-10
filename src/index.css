@@ -81,7 +81,59 @@ div, span, button, input {
   animation: gradient-x 10s ease infinite;
 }
 
-/* Custom Scrollbar Utility */
+/* ==========================================
+   GLOBAL CUSTOM SCROLLBAR
+   Thin, elegant, on-brand.
+   Applied to all elements automatically.
+   ========================================== */
+
+/* Webkit: Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(52, 157, 197, 0.25);
+  border-radius: 999px;
+  transition: background 0.25s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 157, 197, 0.55);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(52, 157, 197, 0.25) transparent;
+}
+
+/* Dark mode overrides */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(52, 157, 197, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 157, 197, 0.45);
+}
+
+.dark * {
+  scrollbar-color: rgba(52, 157, 197, 0.2) transparent;
+}
+
+/* ==========================================
+   .custom-scrollbar — enhanced opt-in variant
+   Slightly wider for content lists / panels
+   ========================================== */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -89,35 +141,37 @@ div, span, button, input {
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(200, 200, 200, 0.2);
-  border-radius: 10px;
-  transition: background 0.3s ease;
+  background: rgba(52, 157, 197, 0.3);
+  border-radius: 999px;
+  transition: background 0.25s ease;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(180, 180, 180, 0.4);
+  background: rgba(52, 157, 197, 0.6);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(52, 157, 197, 0.2);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(52, 157, 197, 0.45);
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
+/* ==========================================
+   .hide-scrollbar — completely hidden
+   ========================================== */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @keyframes loading-bar {

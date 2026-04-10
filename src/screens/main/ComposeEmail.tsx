@@ -95,7 +95,7 @@ export default function ComposeEmail() {
       return;
     }
     if (!body.trim() && attachments.length === 0) {
-      toast.error("Transmission requires content or artifacts");
+      toast.error("Message must have content or an attachment");
       return;
     }
     setSending(true);

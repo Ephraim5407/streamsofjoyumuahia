@@ -76,18 +76,16 @@ export default function FinanceRecordScreen() {
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      toast.success("Taxonomy expanded");
+      toast.success("Category added");
       setNewCatName("");
       fetchCategories();
     } catch (e: any) {
-      toast.error(
-        e.response?.data?.message || "Operational failure in taxonomy engine",
-      );
+      toast.error(e.response?.data?.message || "Failed to add category");
     }
   };
   const submit = async () => {
     if (!form.source || !form.amount || !form.date || !form.description) {
-      toast.error("All mission-critical fields must be populated");
+      toast.error("All required fields must be filled");
       return;
     }
     setLoading(true);
@@ -99,12 +97,10 @@ export default function FinanceRecordScreen() {
         { ...form, unitId, type, amount: parseFloat(form.amount) },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      toast.success("Fiscal event committed to ledger");
+      toast.success("Record saved successfully");
       navigate(-1);
     } catch (e: any) {
-      toast.error(
-        e.response?.data?.message || "Critical failure in ledger commitment",
-      );
+      toast.error(e.response?.data?.message || "Failed to save record");
     } finally {
       setLoading(false);
     }
@@ -128,8 +124,7 @@ export default function FinanceRecordScreen() {
                 : "Deposit"}
           </h1>
           <p className="text-[10px] font-bold text-[#349DC5] uppercase tracking-[0.3em] mt-2 ml-1 flex items-center gap-2">
-            <ShieldCheck size={12} fill="currentColor" /> Authorized Ledger
-            Entry
+            <ShieldCheck size={12} fill="currentColor" /> Secure Finance Entry
           </p>
         </div>
       </header>
@@ -137,7 +132,7 @@ export default function FinanceRecordScreen() {
         {/* Category Selection */}
         <section>
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 ml-2">
-            Classification / Taxonomy
+            Category
           </label>
           <div
             onClick={() => setShowCatModal(true)}
@@ -155,7 +150,7 @@ export default function FinanceRecordScreen() {
                     : "text-gray-300",
                 )}
               >
-                {form.source || "Select Stream Classification"}
+                {form.source || "Select Category"}
               </span>
             </div>
             <ChevronDown size={20} className="text-gray-300" />
@@ -164,7 +159,7 @@ export default function FinanceRecordScreen() {
         {/* Amount Input */}
         <section>
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 ml-2">
-            Monetary Magnitude (₦)
+            Amount (₦)
           </label>
           <div className="relative">
             <div className="absolute left-8 top-1/2 -translate-y-1/2 text-3xl font-bold text-[#349DC5]">
@@ -182,7 +177,7 @@ export default function FinanceRecordScreen() {
         {/* Date Picker */}
         <section>
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 ml-2">
-            Temporal Marker
+            Date
           </label>
           <div className="relative group">
             <Calendar
@@ -200,7 +195,7 @@ export default function FinanceRecordScreen() {
         {/* Description */}
         <section>
           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-4 ml-2">
-            Operational Context
+            Description
           </label>
           <textarea
             value={form.description}
@@ -222,7 +217,7 @@ export default function FinanceRecordScreen() {
                   : "text-gray-300",
               )}
             >
-              {form.description.length}/100 Units
+              {form.description.length}/100
             </span>
           </div>
         </section>
@@ -237,7 +232,7 @@ export default function FinanceRecordScreen() {
           ) : (
             <Check size={20} />
           )}
-          Authorize Commitment
+          Save Record
         </button>
       </div>
       {/* Category Backdrop Modal */}
@@ -260,7 +255,7 @@ export default function FinanceRecordScreen() {
               <div className="p-10">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl font-bold text-[#00204a] dark:text-white uppercase">
-                    Fiscal Categories
+                    Finance Categories
                   </h3>
                   <button
                     onClick={() => setShowCatModal(false)}
@@ -272,7 +267,7 @@ export default function FinanceRecordScreen() {
                 <div className="relative mb-8">
                   <input
                     type="text"
-                    placeholder="Expand taxonomy..."
+                    placeholder="Add new category..."
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
                     className="w-full h-16 pl-6 pr-16 bg-gray-50 dark:bg-gray-800 rounded-2xl border-none outline-none font-bold text-sm"

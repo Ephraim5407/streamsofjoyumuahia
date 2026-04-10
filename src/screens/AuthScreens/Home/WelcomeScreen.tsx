@@ -238,26 +238,56 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-[#0f1218] flex flex-col items-center justify-center overflow-x-hidden">
+    <div className="min-h-[100dvh] w-full bg-white dark:bg-[#0f1218] flex flex-col lg:flex-row items-stretch justify-center overflow-hidden">
       <GradientModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         message={modalMessage}
       />
       
-      <div className="w-full max-w-lg px-[8vw] py-[5vh] flex flex-col items-center relative z-10">
-        <div className="w-full max-w-sm">
-          {/* Logo Section */}
+      {/* Hero / Brand Section (Hidden on Mobile, Shows on Desktop) */}
+      <div className="hidden lg:flex w-1/2 2xl:w-[55%] flex-col items-center justify-center p-12 bg-gradient-to-br from-[#00204a] to-[#00102a] relative overflow-hidden shadow-2xl z-10">
+        {/* Dynamic Glowing Orbs */}
+        <div className="absolute top-10 left-10 w-[30vw] h-[30vw] rounded-full bg-[#349DC5] opacity-20 blur-[100px] animate-pulse" />
+        <div className="absolute -bottom-20 -right-20 w-[40vw] h-[40vw] rounded-full bg-[#10b981] opacity-10 blur-[120px]" />
+        
+        <motion.div
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.8, ease: "easeOut" }}
+           className="relative z-10 flex flex-col items-center"
+        >
+          <div className="bg-white/10 p-6 rounded-3xl backdrop-blur-md border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] mb-10">
+            <img src="/icon_app.png" alt="Streams of Joy" className="w-32 h-32 object-contain drop-shadow-2xl" />
+          </div>
+          <h2 className="text-4xl xl:text-5xl font-black text-white text-center tracking-tight mb-4 uppercase">
+            Streams of Joy
+          </h2>
+          <div className="w-16 h-1 bg-[#349DC5] rounded-full mb-6" />
+          <p className="text-white/70 text-lg xl:text-xl text-center max-w-sm font-medium leading-relaxed tracking-wide">
+            Experience global connection and limitless spiritual growth.
+          </p>
+        </motion.div>
+
+        <div className="absolute bottom-10 left-0 right-0 text-center pointer-events-none text-white/30 text-xs font-black uppercase tracking-[0.3em]">
+          Powered by Skyrazor Digital
+        </div>
+      </div>
+
+      {/* Right Form Section */}
+      <div className="w-full lg:w-1/2 2xl:w-[45%] flex flex-col items-center justify-center p-8 sm:p-12 xl:p-16 relative overflow-y-auto min-h-[100dvh]">
+        <div className="w-full max-w-md flex flex-col justify-center h-full">
+          {/* Logo Section (Hidden on Desktop) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex justify-center mb-[4vh]"
+            className="flex justify-center mb-8 lg:hidden"
           >
             <img
-              src="/icon_app.png"
+              src="/pwa-192x192.png"
               alt="Streams of Joy"
-              className="w-[50vw] max-w-[220px] h-[20vh] max-h-[180px] object-contain"
+              className="w-[120px] h-[120px] object-contain rounded-[32px] shadow-xl"
             />
           </motion.div>
 
@@ -266,15 +296,15 @@ export default function WelcomeScreen() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-center mb-[5vh]"
+            className="text-center lg:text-left mb-10"
           >
-            <h1 className="text-[32px] font-bold text-[#349DC5] leading-tight tracking-[-1px]">
+            <h1 className="text-3xl lg:text-4xl xl:text-[40px] font-black text-[#00204a] dark:text-white leading-tight tracking-tight uppercase">
               {storedUser?.firstName || storedUser?.title
-                ? `Welcome back, ${storedUser?.title ? storedUser.title + " " : ""}${storedUser?.firstName || ""}!`
-                : "Welcome!"}
+                ? <>Welcome Back<span className="text-[#349DC5]">.</span><br/><span className="text-xl lg:text-2xl mt-1 block truncate text-[#349DC5]">{storedUser?.title ? storedUser.title + " " : ""}{storedUser?.firstName}</span></>
+                : <>Welcome<span className="text-[#349DC5]">.</span></>}
             </h1>
-            <p className="text-[16px] text-[#64748B] dark:text-gray-400 mt-3 leading-6 px-2">
-              Sign in to your account.
+            <p className="text-[15px] lg:text-[16px] text-[#64748B] dark:text-gray-400 mt-4 leading-6 font-medium">
+              Access your digital sanctuary.
             </p>
           </motion.div>
 
@@ -283,24 +313,24 @@ export default function WelcomeScreen() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="space-y-6"
+            className="space-y-6 w-full"
           >
             <div>
               <div
-                className={`flex items-center h-[60px] rounded-2xl border-[1.5px] px-4 transition-all duration-300 bg-white dark:bg-[#1A1F26] shadow-sm ${
+                className={`flex items-center h-16 rounded-2xl border-[2px] px-5 transition-all duration-300 bg-white dark:bg-[#1A1F26] shadow-sm ${
                   inputFocused 
-                  ? "border-[#349DC5] shadow-[0_0_0_0_rgba(52,157,197,0.1)]" 
-                  : "border-gray-200 dark:border-white/10"
+                  ? "border-[#349DC5] shadow-[0_10px_30px_-10px_rgba(52,157,197,0.3)] bg-blue-50/50 dark:bg-blue-900/10" 
+                  : "border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10"
                 }`}
               >
                 <Mail 
                   size={20} 
-                  className={`mr-3 shrink-0 transition-colors duration-300 ${inputFocused ? "text-[#349DC5]" : "text-gray-400"}`} 
+                  className={`mr-4 shrink-0 transition-colors duration-300 ${inputFocused ? "text-[#349DC5]" : "text-gray-400"}`} 
                 />
                 <input
                   type="email"
-                  className="flex-1 text-[16px] font-medium text-[#1E293B] dark:text-white outline-none bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                  placeholder="Enter Email Address"
+                  className="flex-1 text-[16px] font-bold text-[#00204a] dark:text-white outline-none bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-medium"
+                  placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setInputFocused(true)}
@@ -314,26 +344,26 @@ export default function WelcomeScreen() {
             <button
               onClick={continueButtonPress}
               disabled={loading}
-              className="w-full h-[60px] rounded-2xl font-bold text-[18px] text-white tracking-[0.5px] flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70"
+              className="w-full h-16 rounded-2xl font-black text-xs uppercase tracking-widest text-white flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 shadow-xl shadow-[#349DC5]/20 hover:shadow-[#349DC5]/40 hover:-translate-y-0.5"
               style={{ backgroundColor: "#349DC5" }}
             >
               {loading ? (
-                <div className="w-6 h-6 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-5 h-5 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Continue</span>
-                  <ArrowRight size={20} className="transition-transform" />
+                  <span>Continue Securely</span>
+                  <ArrowRight size={18} className="transition-transform" />
                 </>
               )}
             </button>
           </motion.div>
         </div>
-      </div>
 
-      <div className="fixed bottom-10 left-0 right-0 text-center pointer-events-none">
-        <p className="text-[14px] text-gray-400 dark:text-gray-500 font-medium">
-          © 2026 Streams of Joy International
-        </p>
+        <div className="absolute bottom-8 left-0 right-0 text-center pointer-events-none lg:hidden">
+          <p className="text-[12px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">
+            © 2026 Streams of Joy
+          </p>
+        </div>
       </div>
     </div>
   );

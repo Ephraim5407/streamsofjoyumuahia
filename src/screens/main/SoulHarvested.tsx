@@ -226,14 +226,14 @@ export default function SoulHarvestedScreen() {
           {loading ? (
             <div className="flex flex-col items-center py-20 gap-4">
               <div className="w-12 h-12 rounded-full border-4 border-[#349DC5] border-t-transparent animate-spin" />
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Synchronizing Cloud...</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Loading...</p>
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center py-32 gap-6">
-              <div className="w-24 h-24 rounded-[40px] bg-gray-50 dark:bg-white/5 flex items-center justify-center text-6xl shadow-inner animate-pulse">🔥</div>
-              <div className="text-center">
-                <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Souls Logged</p>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The harvest field is currently empty.<br />Log your first tactical victory today.</p>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center py-32 gap-6">
+                <div className="w-24 h-24 rounded-[40px] bg-gray-50 dark:bg-white/5 flex items-center justify-center text-6xl shadow-inner animate-pulse">🔥</div>
+                <div className="text-center">
+                  <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Souls Recorded</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The harvest field is currently empty.<br />Add the first soul you won today.</p>
               </div>
             </div>
           ) : (
@@ -254,7 +254,7 @@ export default function SoulHarvestedScreen() {
                         {soul.name}
                       </h3>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        Captured Registry {soul.date ? new Date(soul.date).getFullYear() : year}
+                        Soul Won in {soul.date ? new Date(soul.date).getFullYear() : year}
                       </p>
                     </div>
                   </div>
@@ -277,11 +277,11 @@ export default function SoulHarvestedScreen() {
                 </div>
 
                 <div className="space-y-4">
-                  <DetailRow label="Biological Gender" value={soul.gender} />
-                  <DetailRow label="Temporal Window" value={soul.age} />
-                  <DetailRow label="Contact Tether" value={soul.phone} />
-                  <DetailRow label="Strategic Bridge" value={soul.through} />
-                  <DetailRow label="Mission Location" value={soul.location} />
+                  <DetailRow label="Gender" value={soul.gender} />
+                  <DetailRow label="Age" value={soul.age} />
+                  <DetailRow label="Phone Number" value={soul.phone} />
+                  <DetailRow label="Converted Through" value={soul.through} />
+                  <DetailRow label="Location" value={soul.location} />
                   <DetailRow
                     label="Victory Date"
                     value={soul.date ? new Date(soul.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "—"}

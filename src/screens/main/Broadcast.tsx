@@ -150,7 +150,7 @@ export default function Broadcast() {
               <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight leading-[1.1] sm:leading-none">Broadcasts</h1>
               <div className="flex items-center gap-3 mt-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#2196F3] animate-pulse" />
-                <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Media Transmission Logs</span>
+                <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">Broadcast History</span>
               </div>
             </div>
           </div>

@@ -188,7 +188,7 @@ export default function MinistryDashboard() {
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
                     <span className="text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">
-                      {currentMinistry} Authority
+                      {currentMinistry} Admin
                     </span>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function MinistryDashboard() {
               )}
             </div>
 
-            {/* Unified Intelligence Controls */}
+            {/* Controls Container */}
             <div className="flex items-center gap-3 flex-wrap">
               {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
                 <button 
@@ -237,7 +237,7 @@ export default function MinistryDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-8">
-        {/* Core KPIs */}
+        {/* Key Statistics */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
           <div className="lg:col-span-8">
             <div className="bg-white dark:bg-[#1a1c1e] p-10 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden h-full flex flex-col justify-between group">
@@ -251,7 +251,7 @@ export default function MinistryDashboard() {
                       Total Number of Workers
                     </h3>
                     <p className="text-[10px] font-bold text-[#349DC5] uppercase mt-1">
-                      Active Unit Members
+                      Total Active Members
                     </p>
                   </div>
                 </div>
@@ -272,7 +272,7 @@ export default function MinistryDashboard() {
                   <Flame size={24} />
                 </div>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  No. of Soul Harvested
+                  Soul Records
                 </span>
               </div>
               <h3 className="text-4xl font-bold text-[#00204a] dark:text-white leading-none">
@@ -295,7 +295,7 @@ export default function MinistryDashboard() {
           </div>
         </div>
 
-        {/* Global Treasury Briefing */}
+        {/* Financial Summary */}
         <section className="mb-14">
           <div className="flex items-center gap-4 mb-8">
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">
@@ -320,7 +320,7 @@ export default function MinistryDashboard() {
                   ₦{(finTotals?.balance || 0).toLocaleString()}
                 </h3>
                 <p className="text-[10px] font-bold text-cyan-400 uppercase mt-4 tracking-widest">
-                  Current Liquidity Pool ({currentMinistry})
+                  Available Funds ({currentMinistry})
                 </p>
               </div>
               <div className="flex flex-col justify-end">
@@ -412,8 +412,8 @@ export default function MinistryDashboard() {
                 <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center mx-auto mb-6">
                   <Calendar size={40} className="text-gray-200" />
                 </div>
-                <p className="text-xs font-black text-gray-400 uppercase tracking-[0.4em]">Zero Active Registry</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-2 opacity-60">Awaiting central command broadcast</p>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-[0.4em]">No Events Recorded</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-2 opacity-60">Check back later for updates</p>
               </div>
             )}
           </div>
@@ -443,7 +443,7 @@ export default function MinistryDashboard() {
                     Menu
                   </h3>
                   <p className="text-[10px] font-bold text-gray-400 uppercase mt-2">
-                    Ministry Access
+                    Ministry Navigation
                   </p>
                 </div>
                 <button

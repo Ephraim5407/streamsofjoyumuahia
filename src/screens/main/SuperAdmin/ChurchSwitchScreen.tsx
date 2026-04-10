@@ -56,7 +56,7 @@ export default function SuperAdminChurchSwitchScreen() {
       }
     } catch (e: any) {
       if (e?.response?.status === 403) {
-        setError("Elevated permissions required for target synchronization.");
+        setError("You don't have permission to switch to this church.");
       } else {
         setError(e.response?.data?.message || "Failure in church discovery.");
       }
@@ -123,7 +123,7 @@ export default function SuperAdminChurchSwitchScreen() {
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
-                  Strategic Authority Switch Hub
+                  Switch Church
                 </span>
               </div>
             </div>

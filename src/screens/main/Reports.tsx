@@ -165,8 +165,8 @@ const ALL_TOOLS: ReportItem[] = [
     title: "Recovered Addicts",
     description: "Track rehabilitation and recovery milestones.",
     icon: HandHeart,
-    color: "text-yellow-700",
-    bg: "bg-yellow-50 dark:bg-yellow-900/10",
+    color: "text-[#494922]",
+    bg: "bg-yellow-50 dark:bg-[#494922]/10",
     path: "/recovered-addicts",
   },
   {
@@ -184,7 +184,7 @@ const ALL_TOOLS: ReportItem[] = [
     description: "Log and track first-time visitors.",
     icon: Users,
     color: "text-[#4d3a4d]",
-    bg: "bg-purple-50 dark:bg-purple-900/10",
+    bg: "bg-purple-50 dark:bg-[#4d3a4d]/20",
     path: "/reports/first-timers",
   },
   {
@@ -195,6 +195,42 @@ const ALL_TOOLS: ReportItem[] = [
     color: "text-sky-500",
     bg: "bg-sky-50 dark:bg-sky-900/10",
     path: "/reports/assigned",
+  },
+  {
+    key: "marriedMembers",
+    title: "Members That Got Married",
+    description: "Celebrate unit members that got married.",
+    icon: Heart,
+    color: "text-yellow-400",
+    bg: "bg-yellow-400/10",
+    path: "/reports/married",
+  },
+  {
+    key: "church",
+    title: "Church Attendance",
+    description: "Monitor service attendance.",
+    icon: Calendar,
+    color: "text-red-500",
+    bg: "bg-red-500/10",
+    path: "/attendance/main-church",
+  },
+  {
+    key: "equipment",
+    title: "Equipment",
+    description: "Manage, assign, and track media equipment.",
+    icon: LayoutDashboard,
+    color: "text-[#FF5722]",
+    bg: "bg-[#FF5722]/10",
+    path: "/reports/equipment",
+  },
+  {
+    key: "broadcast",
+    title: "Broadcast",
+    description: "Log live broadcasts and media transmissions.",
+    icon: Flame,
+    color: "text-[#2196F3]",
+    bg: "bg-[#2196F3]/10",
+    path: "/reports/broadcast",
   },
   {
     key: "membersList",
@@ -213,24 +249,6 @@ const ALL_TOOLS: ReportItem[] = [
     color: "text-[#349DC5]",
     bg: "bg-[#349DC5]/10",
     path: "/finance/history",
-  },
-  {
-    key: "equipment",
-    title: "Media Equipment",
-    description: "Manage, assign, and track media equipment.",
-    icon: LayoutDashboard,
-    color: "text-[#FF5722]",
-    bg: "bg-[#FF5722]/10",
-    path: "/reports/equipment",
-  },
-  {
-    key: "broadcast",
-    title: "Broadcasts",
-    description: "Log live broadcasts and media transmissions.",
-    icon: Flame,
-    color: "text-[#2196F3]",
-    bg: "bg-[#2196F3]/10",
-    path: "/reports/broadcast",
   },
 ];
 
@@ -373,7 +391,7 @@ export default function ReportsHub() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
         <div className="w-12 h-12 rounded-full border-4 border-[#349DC5] border-t-transparent animate-spin" />
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Loading Mission Control...</p>
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Loading Reports...</p>
       </div>
     );
   }
@@ -388,14 +406,14 @@ export default function ReportsHub() {
         title="Reporting Hub"
         tag="Coming Soon"
         subtitle="We are crafting a high-fidelity intelligence hub for your clearance level."
-        message="Our team is building an advanced data analytics engine for leadership. Check back shortly for the upgraded mission control experience."
+        message="Our team is currently building this module. Check back shortly for updates."
       />
     );
   }
 
   return (
-    <div className="pb-24 max-w-7xl mx-auto px-4 sm:px-6 pt-10 font-bold">
-      <header className="mb-12">
+    <div className="pb-24 max-w-7xl mx-auto px-4 sm:px-6 pt-6 font-bold">
+      <header className="mb-10 sticky top-0 z-20 bg-gray-50/90 dark:bg-[#121212]/90 backdrop-blur-md pt-4 pb-4">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-6">
             <div className="w-16 h-16 bg-[#00204a] text-white rounded-xl flex items-center justify-center shadow">

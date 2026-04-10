@@ -170,7 +170,7 @@ export default function Achievements() {
             <div className="w-24 h-24 rounded-[40px] bg-gray-50 dark:bg-white/5 flex items-center justify-center text-6xl shadow-inner animate-pulse">🏆</div>
             <div>
               <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Milestones Recorded</p>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The catalog of unit achievements is currently empty.<br/>Document your first strategic breakthrough.</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">No achievements recorded yet.<br/>Add your first unit achievement today.</p>
             </div>
           </div>
         ) : (
@@ -334,7 +334,7 @@ function AchievementForm({ item, onSuccess, onCancel }: any) {
           value={form.title}
           onChange={e => setForm({...form, title: e.target.value})}
           className="w-full h-16 px-6 bg-gray-50 dark:bg-white/5 rounded-2xl border-none outline-none font-bold text-[#00204a] dark:text-white ring-2 ring-transparent focus:ring-[#349DC5]/20 transition-all"
-          placeholder="e.g. Strategic Breakthrough"
+          placeholder="e.g. Souls Won This Month"
         />
       </div>
       <div className="space-y-2">

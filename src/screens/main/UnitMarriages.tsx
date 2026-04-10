@@ -97,7 +97,7 @@ export default function UnitMarriages() {
         await axios.post(`${BASE_URl}/api/marriages`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        toast.success("New marriage registered");
+        toast.success("Record saved");
       }
       setShowForm(false);
       resetForm();
@@ -152,12 +152,12 @@ export default function UnitMarriages() {
             </button>
             <div>
               <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight leading-[1.1] sm:leading-none">
-                Unit Members That Got Married
+                Married Members
               </h1>
               <div className="flex items-center gap-3 mt-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] animate-pulse" />
                 <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">
-                  Official Registry of Celebrations
+                  Marriage Records
                 </span>
               </div>
             </div>
@@ -167,7 +167,7 @@ export default function UnitMarriages() {
               <RefreshCw size={22} className={refreshing ? "animate-spin text-[#349DC5]" : "text-white/60"} />
             </button>
             <button onClick={() => { resetForm(); setShowForm(true); }} className="h-14 px-8 bg-[#349DC5] text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-3 active:scale-95 transition-all shadow-lg shadow-cyan-500/20">
-              <Plus size={18} /> Register Marriage
+              <Plus size={18} /> Add Record
             </button>
           </div>
         </div>
@@ -180,7 +180,7 @@ export default function UnitMarriages() {
             <Heart size={100} className="text-[#349DC5]" />
           </div>
           <div className="relative z-10">
-            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em] mb-3">Total Registered</p>
+            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em] mb-3">Total Records</p>
             <h2 className="text-6xl font-black text-[#00204a] dark:text-white leading-none tracking-tighter tabular-nums">
               {filteredMarriages.length}
             </h2>
@@ -202,7 +202,7 @@ export default function UnitMarriages() {
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors" size={24} />
           <input
             type="text"
-            placeholder="Search registry by member name..."
+            placeholder="Search records..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full h-20 pl-16 pr-8 bg-white dark:bg-[#1a1c1e] rounded-3xl shadow-sm border border-gray-100 dark:border-white/5 font-bold text-lg outline-none focus:border-[#349DC5]/20 transition-all placeholder:text-gray-200"
@@ -213,14 +213,14 @@ export default function UnitMarriages() {
           {loading ? (
             <div className="flex flex-col items-center py-24 gap-6 text-center">
               <div className="w-12 h-12 rounded-full border-4 border-[#349DC5] border-t-transparent animate-spin" />
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] animate-pulse">Syncing Union Registry...</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] animate-pulse">Loading...</p>
             </div>
           ) : filteredMarriages.length === 0 ? (
             <div className="flex flex-col items-center py-32 gap-6 text-center bg-white dark:bg-[#1a1c1e] rounded-[48px] border-2 border-dashed border-gray-100 dark:border-white/5">
               <div className="w-24 h-24 rounded-[40px] bg-pink-50 dark:bg-pink-900/10 flex items-center justify-center text-6xl shadow-inner animate-pulse">💍</div>
               <div>
-                <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Records Detected</p>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The registry of unit unions is currently empty.<br/>Record your first celebration today.</p>
+                <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Records Found</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The records list is currently empty.<br/>Add your first record today.</p>
               </div>
             </div>
           ) : (
@@ -258,7 +258,7 @@ export default function UnitMarriages() {
                   <DetailRow label="Marriage Date" value={m.date ? new Date(m.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : ""} />
                   {m.note && (
                     <div className="mt-6 pt-6 border-t border-gray-50 dark:border-white/5">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Celebration Notes</p>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Notes</p>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-300 leading-relaxed italic border-l-4 border-pink-400 pl-4 py-2 bg-pink-50/20 dark:bg-pink-900/5 rounded-r-2xl">
                         {m.note}
                       </p>
@@ -280,7 +280,7 @@ export default function UnitMarriages() {
                 <Heart size={160} className="text-[#349DC5]" />
               </div>
               <h3 className="text-3xl font-black text-[#00204a] dark:text-white uppercase mb-10 relative z-10">
-                {editing ? "Edit Registry Entry" : "Add Married Member"}
+                {editing ? "Edit Record" : "Add Marriage"}
               </h3>
               <div className="space-y-6 relative z-10">
                 <section>
@@ -304,7 +304,7 @@ export default function UnitMarriages() {
                 <div className="flex gap-4 pt-4">
                   <button onClick={() => { setShowForm(false); resetForm(); }} className="flex-1 h-18 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:text-rose-500 transition-all">Discard</button>
                   <button onClick={handleSubmit} disabled={submitting} className="flex-[2] h-18 bg-[#349DC5] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-3">
-                    {submitting ? <RefreshCw className="animate-spin" /> : editing ? "Update Entry" : "Register Ceremony"}
+                    {submitting ? <RefreshCw className="animate-spin" /> : editing ? "Update" : "Save Record"}
                   </button>
                 </div>
               </div>

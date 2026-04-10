@@ -189,7 +189,7 @@ export default function PeopleInvitedScreen() {
                 </div>
                 <div className="space-y-4">
                   <DetailRow label="Invitation Date" value={inv.invitedAt ? new Date(inv.invitedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "—"} />
-                  <DetailRow label="Contact Tether" value={inv.phone || "—"} />
+                  <DetailRow label="Phone Number" value={inv.phone || "—"} />
                   {inv.note && (
                     <div className="mt-6 pt-6 border-t border-gray-50 dark:border-white/5">
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Meeting Context</p>

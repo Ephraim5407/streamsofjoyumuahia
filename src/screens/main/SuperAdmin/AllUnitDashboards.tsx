@@ -74,7 +74,7 @@ export default function AllUnitDashboards() {
           }
         }
       } catch (e) {
-        toast.error("Sync Failure");
+        toast.error("Failed to load unit dashboards");
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -122,7 +122,6 @@ export default function AllUnitDashboards() {
           <button
             onClick={() => navigate(-1)}
             className="p-0.5 mr-2 text-[#222]"
-            hitSlop="16px"
           >
             <ArrowLeft size={22} />
           </button>

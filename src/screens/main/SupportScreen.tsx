@@ -212,7 +212,7 @@ export default function SupportScreen() {
               <div className="relative rounded-xl overflow-hidden group">
                 <img src={state.screenshotBase64} alt="Screenshot" className="w-full h-auto max-h-60 object-cover bg-gray-100" />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-sm">
-                  <label className="px-4 py-2 bg-white text-gray-900 rounded-lg text-xs font-bold cursor-pointer hover:scale-105 transition-transform">
+                  <label className="px-4 py-2 bg-white dark:bg-[#1a1c1e] text-gray-900 dark:text-white rounded-lg text-xs font-bold cursor-pointer hover:scale-105 transition-transform">
                     Replace
                     <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                   </label>

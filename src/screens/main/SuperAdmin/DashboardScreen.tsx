@@ -45,10 +45,10 @@ const MANAGEMENT_ROUTES = [
   { title: "Notifications", desc: "System notifications and alerts", route: "/notifications", icon: <Bell size={20} /> },
   { title: "Income History", desc: "Detailed revenue and donation records", route: "/admin-finance/income", icon: <TrendingUp size={20} /> },
   { title: "Expense History", desc: "Detailed expenditure records", route: "/admin-finance/expenses", icon: <Receipt size={20} /> },
-  { title: "Admin Finance Summary", desc: "Strategic financial briefing", route: "/admin-finance/summary", icon: <Shield size={20} /> },
-  { title: "Ministry Dashboard", desc: "Ministry admin operational console", route: "/sa/dashboard", icon: <LayoutGrid size={20} /> },
-  { title: "Workers Demographics", desc: "Personnel intelligence and data", route: "/member-list", icon: <Users size={20} /> },
-  { title: "First-Timers & New Members", desc: "Growth and pipeline management", route: "/member-list", icon: <UserCheck size={20} /> },
+  { title: "Admin Finance Summary", desc: "View financial overview", route: "/admin-finance/summary", icon: <Shield size={20} /> },
+  { title: "Ministry Dashboard", desc: "Ministry admin dashboard", route: "/sa/dashboard", icon: <LayoutGrid size={20} /> },
+  { title: "Workers Demographics", desc: "View worker information", route: "/member-list", icon: <Users size={20} /> },
+  { title: "First-Timers & New Members", desc: "Manage new and first-time members", route: "/member-list", icon: <UserCheck size={20} /> },
 ];
 
 export default function SuperAdminDashboard() {

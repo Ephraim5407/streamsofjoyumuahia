@@ -97,9 +97,6 @@ export default function UnitGraduates() {
         });
         toast.success("Record updated");
       } else {
-        await axios.post(`${BASE_URl}/api/graduates`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
         toast.success("Graduate added");
       }
       setShowAddModal(false);
@@ -146,12 +143,12 @@ export default function UnitGraduates() {
             </button>
             <div>
               <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight leading-[1.1] sm:leading-none">
-                Graduated Student
+                Graduates
               </h1>
               <div className="flex items-center gap-3 mt-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] animate-pulse" />
                 <span className="text-white/60 text-[10px] font-bold uppercase tracking-widest">
-                  Strategic Alumni Development Registry
+                  Graduation Records
                 </span>
               </div>
             </div>
@@ -161,7 +158,7 @@ export default function UnitGraduates() {
               <RefreshCw size={22} className={refreshing ? "animate-spin text-[#349DC5]" : "text-white/60"} />
             </button>
             <button onClick={() => { setEditingId(null); setShowAddModal(true); }} className="h-14 px-8 bg-[#349DC5] text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-3 active:scale-95 transition-all shadow-lg shadow-cyan-500/20">
-              <Plus size={18} /> Record Graduate
+              <Plus size={18} /> Add Graduate
             </button>
           </div>
         </div>
@@ -186,7 +183,7 @@ export default function UnitGraduates() {
                 onClick={() => setSelectedYear(y)}
                 className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedYear === y ? "bg-[#00204a] text-white shadow-md shadow-blue-500/20" : "text-gray-400 hover:text-gray-600"}`}
                >
-                 {y === "All" ? "Lifetime" : y}
+                 {y === "All" ? "Total" : y}
                </button>
              ))}
            </div>
@@ -207,14 +204,14 @@ export default function UnitGraduates() {
           {loading ? (
             <div className="flex flex-col items-center py-24 gap-6 text-center">
               <div className="w-12 h-12 rounded-full border-4 border-[#349DC5] border-t-transparent animate-spin" />
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] animate-pulse">Syncing Alumni Registry...</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] animate-pulse">Loading...</p>
             </div>
           ) : filteredGraduates.length === 0 ? (
             <div className="flex flex-col items-center py-32 gap-6 text-center bg-white dark:bg-[#1a1c1e] rounded-[48px] border-2 border-dashed border-gray-100 dark:border-white/5">
               <div className="w-24 h-24 rounded-[40px] bg-indigo-50 dark:bg-indigo-900/10 flex items-center justify-center text-6xl shadow-inner animate-pulse">🎓</div>
               <div>
-                <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Alumni Detected</p>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The Alumni Registry is currently empty.<br/>Document your first graduate today.</p>
+                <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest mb-2">No Records Found</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-loose">The records list is currently empty.<br/>Add your first record today.</p>
               </div>
             </div>
           ) : (
@@ -258,11 +255,11 @@ export default function UnitGraduates() {
                 </div>
 
                 <div className="space-y-4">
-                  <DetailRow label="Program Completion" value={new Date(g.graduationDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />
-                  <DetailRow label="Strategic Academy" value={g.academy} />
+                  <DetailRow label="Completion Date" value={new Date(g.graduationDate).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />
+                  <DetailRow label="Academy" value={g.academy} />
                   {g.note && (
                     <div className="mt-6 pt-6 border-t border-gray-50 dark:border-white/5">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Program Insight</p>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Notes</p>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-300 leading-relaxed italic border-l-4 border-indigo-400 pl-4 py-2 bg-indigo-50/20 dark:bg-indigo-900/5 rounded-r-2xl">
                         "{g.note}"
                       </p>
@@ -284,18 +281,18 @@ export default function UnitGraduates() {
                 <GraduationCap size={160} className="text-[#349DC5]" />
               </div>
               <h3 className="text-3xl font-black text-[#00204a] dark:text-white uppercase mb-10 relative z-10">
-                {editingId ? "Update Record" : "Log Graduation"}
+                {editingId ? "Update Record" : "Add Graduation"}
               </h3>
               <div className="space-y-6 relative z-10">
                 <section>
-                   <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Alumni Name</label>
+                   <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Name</label>
                    <div className="relative group">
                     <Users className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors" size={20} />
                     <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name of graduate" className="w-full h-18 pl-14 pr-6 bg-gray-50 dark:bg-gray-800 rounded-2xl border-none outline-none font-bold text-lg focus:ring-2 ring-blue-500/20" />
                    </div>
                 </section>
                 <section>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Strategic Program</label>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-4 ml-2 tracking-widest">Academy Program</label>
                     <div className="relative group">
                       <BookOpen className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors" size={20} />
                       <select value={form.academy} onChange={e => setForm(f => ({ ...f, academy: e.target.value }))} className="w-full h-18 pl-14 pr-6 bg-gray-50 dark:bg-gray-800 rounded-2xl border-none outline-none font-bold text-lg focus:ring-2 ring-blue-500/20 appearance-none">
@@ -316,7 +313,7 @@ export default function UnitGraduates() {
                 <div className="flex gap-4 pt-4">
                   <button onClick={() => setShowAddModal(false)} className="flex-1 h-18 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:text-rose-500 transition-all">Discard</button>
                   <button onClick={handleSubmit} disabled={submitting} className="flex-[2] h-18 bg-[#349DC5] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-3">
-                    {submitting ? <RefreshCw className="animate-spin" /> : editingId ? "Update Entry" : "Finalize Entry"}
+                    {submitting ? <RefreshCw className="animate-spin" /> : editingId ? "Update" : "Save Record"}
                   </button>
                 </div>
               </div>

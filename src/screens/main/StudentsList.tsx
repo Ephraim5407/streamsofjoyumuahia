@@ -41,10 +41,10 @@ export default function StudentsList() {
         </button>
         <div>
           <h1 className="text-2xl font-bold text-[#00204a] dark:text-white leading-none">
-            Registry Management
+            Member List
           </h1>
           <p className="text-[10px] font-bold text-gray-400 uppercase mt-2 tracking-widest">
-            {students.length} Total Personnel
+            {students.length} Total Members
           </p>
         </div>
       </header>
@@ -54,7 +54,7 @@ export default function StudentsList() {
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search Registry..."
+            placeholder="Search Members..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full h-14 pl-12 pr-4 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-xl shadow-sm text-sm font-medium text-[#00204a] dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#349DC5]/30 focus:shadow-md transition-all"
@@ -91,7 +91,7 @@ export default function StudentsList() {
                   {item.phone} • {item.regNo}
                 </span>
                 <span className="text-[10px] font-bold text-[#349DC5] uppercase tracking-widest mt-3">
-                  View Analytics Record
+                  View Profile
                 </span>
               </div>
               <ChevronRight size={20} className="text-gray-300 group-hover:text-[#349DC5] transition-colors" />

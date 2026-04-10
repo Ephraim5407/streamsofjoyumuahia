@@ -15,6 +15,8 @@ import { getUnitLeaderSummary } from "../../../api/unitLeader";
 import { listUnitMembers } from "../../../api/unitMembers";
 import { listUnitLeaders } from "../../../api/unitLeaders";
 import AsyncStorage from "../../../utils/AsyncStorage";
+import axios from "axios";
+import { BASE_URl } from "../../../api/users";
 
 const AVATAR_PLACEHOLDER = "https://www.w3schools.com/w3images/avatar2.png";
 
@@ -100,21 +102,58 @@ export default function UnitLeaderManageUnit() {
       setError(null);
       const token = await AsyncStorage.getItem("token");
       if (!token) throw new Error("Auth token missing");
+
       let activeUnitId = await AsyncStorage.getItem("activeUnitId");
+      if (activeUnitId === "global" || activeUnitId === "undefined" || activeUnitId === "null") activeUnitId = null;
+
+      let unit: any = null;
+
       if (!activeUnitId) {
-        const summary = await getUnitLeaderSummary(token);
-        activeUnitId = summary?.unit?._id || null;
-        setUnitContext(summary?.unit);
+        try {
+          const summary = await getUnitLeaderSummary(token);
+          activeUnitId = summary?.unit?._id || null;
+          if (summary?.unit) unit = summary.unit;
+        } catch (e: any) {
+          setError(e.message || "Failed to load unit summary");
+          setLoading(false);
+          return;
+        }
       }
-      if (!activeUnitId) throw new Error("No assigned unit found");
+
+      if (!activeUnitId) {
+        // Fallback checks just in case via users/me
+        try {
+          const meRes = await axios.get(`${BASE_URl}/api/users/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const u = meRes.data?.user;
+          if (u) {
+            let rawUnit =
+              u?.activeUnitId ||
+              u?.activeUnit ||
+              (u?.roles || []).find((r: any) => r.role === "UnitLeader" && r.unit)?.unit;
+            activeUnitId = typeof rawUnit === "object" && rawUnit !== null ? rawUnit._id : rawUnit;
+            if (activeUnitId) unit = { _id: activeUnitId };
+          }
+        } catch (e) {}
+      }
+
+      if (!activeUnitId) {
+        setError("No active unit context");
+        setLoading(false);
+        return;
+      }
+
+      // Fetch list data
       const [lRes, mRes] = await Promise.all([
         listUnitLeaders(activeUnitId, token),
         listUnitMembers(activeUnitId, token),
       ]);
       setLeaders(lRes?.leaders || []);
       setMembers(mRes?.members || []);
+      if (unit) setUnitContext(unit);
     } catch (e: any) {
-      setError(e.message || "Sync failure");
+      setError(e.message || "Failed to load unit data");
     } finally {
       setLoading(false);
     }
@@ -174,7 +213,7 @@ export default function UnitLeaderManageUnit() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Filter personnels..."
+              placeholder="Search members..."
               className="flex-1 bg-transparent text-sm font-bold outline-none text-[#00204a] dark:text-white"
             />
           </div>
@@ -213,7 +252,7 @@ export default function UnitLeaderManageUnit() {
               <section className="space-y-6">
                 <div className="flex items-center gap-4">
                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest shrink-0">
-                    Unit Command ({filteredLeaders.length})
+                    Unit Leaders ({filteredLeaders.length})
                   </h3>
                   <div className="h-px bg-gray-100 dark:bg-white/5 flex-1" />
                 </div>
@@ -233,14 +272,14 @@ export default function UnitLeaderManageUnit() {
               <section className="space-y-6">
                 <div className="flex items-center gap-4">
                   <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest shrink-0">
-                    Active Personnel ({filteredMembers.length})
+                    Members ({filteredMembers.length})
                   </h3>
                   <div className="h-px bg-gray-100 dark:bg-white/5 flex-1" />
                 </div>
                 <div className="grid gap-4">
                   {filteredMembers.length === 0 ? (
                     <p className="text-center text-[10px] font-bold text-gray-300 uppercase py-10">
-                      Empty Registry
+                      No Members Found
                     </p>
                   ) : (
                     filteredMembers.map((u) => (

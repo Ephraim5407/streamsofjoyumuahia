@@ -40,7 +40,7 @@ export default function TakeAttendance() {
   };
 
   const handleSubmit = () => {
-    toast.success("Attendance verified and published successfully");
+    toast.success("Attendance recorded successfully");
     navigate(-1);
   };
 
@@ -56,15 +56,15 @@ export default function TakeAttendance() {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-[#00204a] dark:text-white leading-none">
-              Initialize Session
+              Take Attendance
             </h1>
             <p className="text-[10px] font-bold text-gray-400 uppercase mt-2 tracking-widest">
-              Live Mobilization Data
+              Record attendance here
             </p>
           </div>
         </div>
         <button className="flex items-center gap-2 px-5 py-3.5 bg-[#349DC5]/10 text-[#349DC5] font-bold rounded-xl hover:bg-[#349DC5]/20 transition-colors uppercase text-xs">
-          <Plus size={16} /> Add Personnel
+          <Plus size={16} /> Add Member
         </button>
       </header>
 
@@ -72,7 +72,7 @@ export default function TakeAttendance() {
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
-          placeholder="Search Registry..."
+          placeholder="Search Members..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="w-full h-14 pl-12 pr-4 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-xl shadow-sm text-sm font-medium text-[#00204a] dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#349DC5]/30 focus:shadow-md transition-all"
@@ -119,7 +119,7 @@ export default function TakeAttendance() {
         onClick={handleSubmit}
         className="w-full h-16 bg-[#349DC5] text-white font-bold uppercase tracking-widest text-sm rounded-2xl shadow-xl shadow-[#349DC5]/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
       >
-        <Check size={20} /> Publish Session Data
+        <Check size={20} /> Save Attendance Records
       </button>
     </div>
   );
