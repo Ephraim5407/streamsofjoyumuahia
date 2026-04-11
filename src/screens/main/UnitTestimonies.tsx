@@ -6,10 +6,10 @@ import {
   ChevronDown, MessageSquare, Trash2, X, Sparkles,
   Edit3, Share2, Filter, Check, Star
 } from "lucide-react";
-import axios from "axios";
 import toast from "react-hot-toast";
-import { BASE_URl } from "../../api/users";
 import AsyncStorage from "../../utils/AsyncStorage";
+import apiClient from "../../api/client";
+import { getUnitContext } from "../../utils/context";
 
 interface Testimony {
   _id: string;
@@ -20,14 +20,7 @@ interface Testimony {
   unitId?: string;
 }
 
-const getUnitId = async () => {
-    const direct = await AsyncStorage.getItem("activeUnitId");
-    if (direct) return direct;
-    const rawUser = await AsyncStorage.getItem("user");
-    if (!rawUser) return null;
-    const u = JSON.parse(rawUser);
-    return u?.activeUnitId || u?.activeUnit?._id || u?.activeUnit || (u?.roles || []).find((r: any) => r.role === "UnitLeader" && r.unit)?.unit || (u?.roles || []).find((r: any) => r.role === "Member" && r.unit)?.unit || null;
-};
+// Robust context resolver
 
 export default function UnitTestimonies() {
   const navigate = useNavigate();
@@ -52,12 +45,10 @@ export default function UnitTestimonies() {
     if (!isRefresh) setLoading(true);
     else setRefreshing(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const uid = await getUnitId();
+      const uid = await getUnitContext();
       setUnitId(uid || "");
-      const res = await axios.get(`${BASE_URl}/api/testimonies`, {
+      const res = await apiClient.get(`/api/testimonies`, {
         params: { unitId: uid || undefined, year: selectedYear === "All" ? undefined : selectedYear },
-        headers: { Authorization: `Bearer ${token}` },
       });
       const data = res.data?.testimonies || res.data || [];
       setTestimonies(Array.isArray(data) ? data : []);
@@ -96,17 +87,13 @@ export default function UnitTestimonies() {
     }
     setSubmitting(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const payload = { ...form, unitId };
+      const resolvedUnitId = await getUnitContext();
+      const payload = { ...form, unitId: resolvedUnitId };
       if (editingId) {
-        await axios.put(`${BASE_URl}/api/testimonies/${editingId}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await apiClient.put(`/api/testimonies/${editingId}`, payload);
         toast.success("Testimony updated");
       } else {
-        await axios.post(`${BASE_URl}/api/testimonies`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await apiClient.post(`/api/testimonies`, payload);
         toast.success("Testimony recorded");
       }
       setShowAddModal(false);
@@ -123,10 +110,7 @@ export default function UnitTestimonies() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Delete this testimony?")) return;
     try {
-      const token = await AsyncStorage.getItem("token");
-      await axios.delete(`${BASE_URl}/api/testimonies/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await apiClient.delete(`/api/testimonies/${id}`);
       toast.success("Record deleted");
       fetchTestimonies();
     } catch (e) {

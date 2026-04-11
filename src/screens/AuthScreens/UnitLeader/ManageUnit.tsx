@@ -11,12 +11,11 @@ import {
   ShieldCheck,
   ChevronRight,
 } from "lucide-react";
-import { getUnitLeaderSummary } from "../../../api/unitLeader";
+import { getUnitContext } from "../../../utils/context";
 import { listUnitMembers } from "../../../api/unitMembers";
 import { listUnitLeaders } from "../../../api/unitLeaders";
 import AsyncStorage from "../../../utils/AsyncStorage";
-import axios from "axios";
-import { BASE_URl } from "../../../api/users";
+import apiClient from "../../../api/client";
 
 const AVATAR_PLACEHOLDER = "https://www.w3schools.com/w3images/avatar2.png";
 
@@ -33,30 +32,30 @@ function UserCard({ user, role }: { user: any; role: string }) {
       animate={{ opacity: 1, y: 0 }}
       className="flex items-center gap-4 p-4 bg-white dark:bg-[#1a1c1e] border border-[#EEF2F5] dark:border-white/5 rounded-2xl shadow-sm hover:border-[#349DC5] transition-all cursor-pointer group"
     >
-      <div className="w-12 h-12 rounded-full border-2 border-[#349DC5] p-0.5 overflow-hidden shrink-0 transition-transform group-hover:scale-105">
+      <div className="w-12 h-12 rounded-full border-2 border-primary p-0.5 overflow-hidden shrink-0 transition-transform group-hover:scale-105 bg-background">
         <img src={avatar} alt="avatar" className="w-full h-full object-cover rounded-full" />
       </div>
       <div className="flex-1">
-        <h4 className="text-sm font-bold text-[#00204a] dark:text-white leading-tight">
+        <h4 className="text-sm font-bold text-text-primary dark:text-dark-text-primary leading-tight">
           {fullName}
         </h4>
         <div className="flex items-center gap-1.5 mt-1">
           {role === "Leader" ? (
-            <ShieldCheck size={12} className="text-[#349DC5]" />
+            <ShieldCheck size={12} className="text-primary" />
           ) : (
-            <Users size={12} className="text-emerald-500" />
+            <Users size={12} className="text-success" />
           )}
           <span
             className={cn(
               "text-[10px] font-bold uppercase",
-              role === "Leader" ? "text-[#349DC5]" : "text-emerald-500",
+              role === "Leader" ? "text-primary" : "text-success",
             )}
           >
             {role}
           </span>
         </div>
       </div>
-      <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-[#349DC5] transition-colors">
+      <div className="w-8 h-8 rounded-full bg-background dark:bg-dark-background flex items-center justify-center text-text-muted group-hover:text-primary transition-colors border border-border dark:border-dark-border">
         <ChevronRight size={16} />
       </div>
     </motion.div>
@@ -103,46 +102,15 @@ export default function UnitLeaderManageUnit() {
       const token = await AsyncStorage.getItem("token");
       if (!token) throw new Error("Auth token missing");
 
-      let activeUnitId = await AsyncStorage.getItem("activeUnitId");
-      if (activeUnitId === "global" || activeUnitId === "undefined" || activeUnitId === "null") activeUnitId = null;
-
-      let unit: any = null;
-
+      const activeUnitId = await getUnitContext();
       if (!activeUnitId) {
-        try {
-          const summary = await getUnitLeaderSummary(token);
-          activeUnitId = summary?.unit?._id || null;
-          if (summary?.unit) unit = summary.unit;
-        } catch (e: any) {
-          setError(e.message || "Failed to load unit summary");
-          setLoading(false);
-          return;
-        }
+        throw new Error("No active unit context found for this leadership account. Please contact your administrator.");
       }
 
-      if (!activeUnitId) {
-        // Fallback checks just in case via users/me
-        try {
-          const meRes = await axios.get(`${BASE_URl}/api/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const u = meRes.data?.user;
-          if (u) {
-            let rawUnit =
-              u?.activeUnitId ||
-              u?.activeUnit ||
-              (u?.roles || []).find((r: any) => r.role === "UnitLeader" && r.unit)?.unit;
-            activeUnitId = typeof rawUnit === "object" && rawUnit !== null ? rawUnit._id : rawUnit;
-            if (activeUnitId) unit = { _id: activeUnitId };
-          }
-        } catch (e) {}
-      }
-
-      if (!activeUnitId) {
-        setError("No active unit context");
-        setLoading(false);
-        return;
-      }
+      // Load unit details if we only have the ID
+      const unitRes = await apiClient.get(`/api/units/${activeUnitId}`);
+      if (!unitRes.data?.ok) throw new Error("Unit data not found");
+      const unit = unitRes.data.unit || unitRes.data.item;
 
       // Fetch list data
       const [lRes, mRes] = await Promise.all([
@@ -180,67 +148,67 @@ export default function UnitLeaderManageUnit() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f1218] flex flex-col">
-      <div className="bg-[#00204a] p-10 pb-16">
+    <div className="min-h-screen bg-background dark:bg-dark-background flex flex-col transition-colors">
+      <div className="bg-surface dark:bg-dark-surface px-6 pt-10 pb-16 border-b border-border dark:border-dark-border">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigate(-1)}
-              className="p-3 bg-white/10 rounded-xl text-white hover:bg-white/20 transition-all active:scale-95"
+              className="p-3 bg-background dark:bg-dark-background rounded-xl text-text-primary dark:text-dark-text-primary hover:bg-border dark:hover:bg-dark-border transition-all active:scale-95 border border-border dark:border-dark-border"
             >
               <ChevronLeft size={24} />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white uppercase leading-none mb-2">
+              <h1 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary uppercase leading-none mb-2 tracking-tight">
                 Manage Unit
               </h1>
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] animate-pulse" />
-                <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
-                  {unitContext?.name || "Unit Dashboard"}
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                  {unitContext?.name || "Unit Operational Lead"}
                 </span>
               </div>
             </div>
           </div>
-          <Activity size={24} className="text-[#349DC5] opacity-30" />
+          <Activity size={24} className="text-primary opacity-30" />
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto w-full px-6 -mt-8 flex-1 pb-32">
         <section className="space-y-6">
-          <div className="flex items-center gap-3 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-2xl px-6 h-16 shadow-sm focus-within:border-[#349DC5] transition-all group">
-            <Search size={22} className="text-gray-300 group-focus-within:text-[#349DC5]" />
+          <div className="flex items-center gap-3 bg-surface dark:bg-dark-surface border border-border dark:border-dark-border rounded-2xl px-6 h-[48px] shadow-sm focus-within:ring-4 ring-primary/5 transition-all group">
+            <Search size={22} className="text-text-muted group-focus-within:text-primary" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search members..."
-              className="flex-1 bg-transparent text-sm font-bold outline-none text-[#00204a] dark:text-white"
+              placeholder="Search members by identity..."
+              className="flex-1 bg-transparent text-sm font-bold outline-none text-text-primary dark:text-dark-text-primary placeholder:text-text-muted"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => navigate("/ul/approve-members")}
-              className="flex flex-col items-center justify-center gap-3 p-6 rounded-3xl bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 shadow-sm text-[#349DC5] hover:bg-[#349DC5] hover:text-white transition-all active:scale-95 group"
+              className="group flex flex-col items-center justify-center gap-2 p-6 rounded-3xl bg-surface dark:bg-dark-surface border border-border dark:border-dark-border shadow-sm text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
             >
-              <CheckSquare size={28} className="group-hover:scale-110 transition-transform" />
+              <CheckSquare size={32} className="group-hover:rotate-6 transition-transform" />
               <span className="text-[10px] font-black uppercase tracking-widest">
-                Approve Requests
+                Approvals
               </span>
             </button>
             <button
               onClick={() => navigate("/ul/work-plans")}
-              className="flex flex-col items-center justify-center gap-3 p-6 rounded-3xl bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 shadow-sm text-[#349DC5] hover:bg-[#349DC5] hover:text-white transition-all active:scale-95 group"
+              className="group flex flex-col items-center justify-center gap-2 p-6 rounded-3xl bg-surface dark:bg-dark-surface border border-border dark:border-dark-border shadow-sm text-primary hover:bg-primary hover:text-white transition-all active:scale-95"
             >
-              <Briefcase size={28} className="group-hover:scale-110 transition-transform" />
+              <Briefcase size={32} className="group-hover:-rotate-6 transition-transform" />
               <span className="text-[10px] font-black uppercase tracking-widest">
-                Plans
+                Work Plans
               </span>
             </button>
           </div>
 
           {error && (
-            <div className="p-5 bg-rose-50 dark:bg-rose-950/20 text-rose-500 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center border border-rose-100 dark:border-rose-900/10">
+            <div className="p-5 bg-error/5 border border-error/20 text-error rounded-2xl text-[10px] font-black uppercase tracking-widest text-center">
               {error}
             </div>
           )}

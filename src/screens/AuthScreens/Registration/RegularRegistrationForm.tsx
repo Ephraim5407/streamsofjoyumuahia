@@ -103,7 +103,7 @@ function LabelInput({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         placeholder={placeholder}
-        className="w-full h-[44px] border border-[#D0D5DD] dark:border-[#333] rounded-lg px-[14px] text-sm text-[#101828] dark:text-white bg-white dark:bg-[#1a1c23] outline-none focus:border-[#2CA6FF] transition-all placeholder:text-[#98A2B3]"
+        className="w-full h-[48px] border border-border dark:border-dark-border rounded-xl px-4 text-sm text-text-primary dark:text-dark-text-primary bg-surface dark:bg-dark-surface outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-text-muted/50 shadow-sm"
       />
     </div>
   );
@@ -142,18 +142,18 @@ function Select({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setOpen((o) => !o)}
-        className={`w-full h-[44px] border border-[#D0D5DD] dark:border-[#333] rounded-lg px-[14px] text-sm text-left flex items-center justify-between bg-white dark:bg-[#1a1c23] ${disabled ? "opacity-50 grayscale cursor-not-allowed" : "focus:border-[#2CA6FF]"} transition-all`}
+        className={`w-full h-[48px] border border-border dark:border-dark-border rounded-xl px-4 text-sm text-left flex items-center justify-between bg-surface dark:bg-dark-surface ${disabled ? "opacity-50 grayscale cursor-not-allowed" : "focus:ring-2 focus:ring-primary/20 focus:border-primary"} transition-all shadow-sm`}
       >
         <span
           className={
-            selected ? "text-[#101828] dark:text-white font-medium" : "text-[#98A2B3]"
+            selected ? "text-text-primary dark:text-dark-text-primary font-medium" : "text-text-muted/50"
           }
         >
           {selected ? (selected.label ?? selected) : placeholder}
         </span>
         <ChevronDown
           size={18}
-          className={`text-gray-400 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`text-text-muted shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
       <AnimatePresence>
@@ -223,15 +223,15 @@ function MultiSelect({ label, value, onChange, options }: any) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full min-h-[44px] border border-[#D0D5DD] dark:border-[#333] rounded-lg px-[14px] py-2 text-sm text-left flex flex-wrap items-center gap-2 bg-white dark:bg-[#1a1c23] transition-all"
+        className="w-full min-h-[48px] border border-border dark:border-dark-border rounded-xl px-4 py-2 text-sm text-left flex flex-wrap items-center gap-2 bg-surface dark:bg-dark-surface transition-all shadow-sm"
       >
         {(value as string[]).length === 0 ? (
-          <span className="text-[#98A2B3]">Select fields</span>
+          <span className="text-text-muted/50">Select fields</span>
         ) : (
           (value as string[]).map((v: string) => (
             <span
               key={v}
-              className="inline-flex items-center gap-1.5 bg-[#EEF6FB] dark:bg-[#2CA6FF]/10 text-[#0A6375] dark:text-[#2CA6FF] text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider"
+              className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-[11px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider"
             >
               {v}
               <button
@@ -240,14 +240,14 @@ function MultiSelect({ label, value, onChange, options }: any) {
                   e.stopPropagation();
                   toggle(v);
                 }}
-                className="hover:text-black hover:bg-black/5 dark:hover:bg-white/10 rounded-full p-0.5 transition-colors text-[#0A6375]"
+                className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
               >
                 <X size={10} strokeWidth={4} />
               </button>
             </span>
           ))
         )}
-        <ChevronDown size={18} className={`text-gray-400 ml-auto shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={18} className={`text-text-muted ml-auto shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       <AnimatePresence>
         {open && (
@@ -322,11 +322,11 @@ function PasswordRules({ password }: { password: string }) {
         return (
           <div
             key={rule.label}
-            className={`flex items-center gap-1.5 text-[11px] ${ok ? "text-[#027A48]" : "text-[#667085]"}`}
+            className={`flex items-center gap-1.5 text-[11px] ${ok ? "text-success" : "text-text-muted"}`}
           >
             <Check
               size={11}
-              className={ok ? "text-[#027A48]" : "text-transparent"}
+              className={ok ? "text-success" : "text-transparent"}
             />
             {rule.label}
           </div>
@@ -728,8 +728,8 @@ export default function RegularRegistrationForm() {
   }
 
   return (
-    <div className="w-full min-h-[100dvh] bg-[#fff] dark:bg-[#080a0c] flex flex-col justify-start">
-      <div className="w-full max-w-md mx-auto flex flex-col h-full bg-[#fff] dark:bg-[#0f1218]">
+    <div className="w-full min-h-[100dvh] bg-background dark:bg-dark-background flex flex-col justify-start transition-colors">
+      <div className="w-full max-w-md mx-auto flex flex-col h-full bg-background dark:bg-dark-background shadow-2xl relative">
 
         {/* Scrollable Content Container */}
         <div className="flex-1 overflow-y-auto px-[28px] pt-[24px]">
@@ -737,12 +737,12 @@ export default function RegularRegistrationForm() {
           <div className="flex items-center mb-[18px]">
             <button
               onClick={() => (step === 1 ? navigate(-1) : setStep(1))}
-              className="w-8 h-8 flex items-center justify-center -ml-1 text-[#667085] hover:bg-gray-50 rounded"
+              className="w-10 h-10 flex items-center justify-center -ml-1 text-text-muted hover:bg-surface-alt dark:hover:bg-dark-surface-alt rounded-full transition-colors"
             >
-              <span className="text-[28px] leading-[32px] font-light">‹</span>
+              <ChevronLeft size={24} />
             </button>
-            <h1 className="text-[16px] font-semibold text-[#101828] dark:text-white ml-2">
-              Please complete your registration.
+            <h1 className="text-[18px] font-bold text-text-primary dark:text-dark-text-primary ml-2 uppercase tracking-tight">
+              Registration
             </h1>
           </div>
 

@@ -251,15 +251,15 @@ export default function DashboardMember() {
   if (loading) return null;
 
   return (
-    <div className="flex-1 bg-gray-50 dark:bg-[#0f1218] min-h-screen pb-24 md:pb-10">
+    <div className="flex-1 bg-background dark:bg-dark-background min-h-screen pb-24 md:pb-10 transition-colors">
       {/* Professional Header */}
-      <div className="bg-[#00204a] px-4 sm:px-6 pt-5 sm:pt-10 pb-12 sm:pb-16">
+      <div className="bg-surface dark:bg-dark-surface px-4 sm:px-6 pt-5 sm:pt-10 pb-12 sm:pb-16 border-b border-border dark:border-dark-border">
         <div className="max-w-7xl mx-auto flex flex-col gap-4 sm:gap-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 sm:gap-5 min-w-0">
               <div
                 onClick={() => navigate("/profile")}
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 cursor-pointer overflow-hidden shadow-lg group relative shrink-0"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20 cursor-pointer overflow-hidden shadow-lg group relative shrink-0"
               >
                 {profile?.profile?.avatar ? (
                   <img
@@ -268,18 +268,18 @@ export default function DashboardMember() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User size={24} className="text-white/40" />
+                  <User size={24} className="text-primary" />
                 )}
               </div>
               <div className="min-w-0">
-                <h2 className="text-base sm:text-xl md:text-2xl font-bold text-white leading-tight truncate">
+                <h2 className="text-base sm:text-xl md:text-2xl font-bold text-text-primary dark:text-dark-text-primary leading-tight truncate">
                   Welcome, {profile?.title ? `${profile.title} ` : ""}{profile?.firstName || "Member"}
                 </h2>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="px-2 py-0.5 bg-[#349DC5] text-white text-[8px] sm:text-[10px] font-bold uppercase rounded-md shadow-sm">
+                  <span className="px-2 py-0.5 bg-primary text-white text-[8px] sm:text-[10px] font-bold uppercase rounded-md shadow-sm">
                     {profile?.activeRole || "Member"}
                   </span>
-                  <span className="text-white/60 text-[9px] sm:text-xs font-bold uppercase tracking-wider truncate">
+                  <span className="text-text-muted text-[9px] sm:text-xs font-bold uppercase tracking-wider truncate">
                     {profile?.activeUnitName || "Unit Hub"}
                   </span>
                 </div>
@@ -289,15 +289,15 @@ export default function DashboardMember() {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => navigate("/notifications")}
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/10 flex items-center justify-center relative hover:bg-white/20 transition-all border border-white/10 active:scale-95"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-background dark:bg-dark-background flex items-center justify-center relative hover:bg-border dark:hover:bg-dark-border transition-all border border-border dark:border-dark-border active:scale-95"
             >
-              <Bell size={18} className="text-white" />
-              <div className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#00204a]" />
+              <Bell size={18} className="text-text-primary dark:text-dark-text-primary" />
+              <div className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface dark:border-dark-surface" />
             </button>
             {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
               <button
                 onClick={() => setSwitchModalVisible(true)}
-                className="h-10 sm:h-12 flex-1 sm:flex-none px-4 sm:px-6 bg-white text-[#00204a] rounded-xl font-bold text-[9px] sm:text-xs uppercase tracking-wider shadow-md active:scale-95 transition-all"
+                className="h-10 sm:h-12 flex-1 sm:flex-none px-4 sm:px-6 bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary rounded-xl font-bold text-[9px] sm:text-xs uppercase tracking-wider shadow-md active:scale-95 transition-all border border-border dark:border-dark-border"
               >
                 Switch Role
               </button>
@@ -309,54 +309,54 @@ export default function DashboardMember() {
       <div className="max-w-7xl mx-auto px-3 sm:px-6 -mt-6 sm:-mt-8">
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-10">
-          <div className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
+          <div className="bg-surface dark:bg-dark-surface p-3 sm:p-5 rounded-xl shadow-md border border-border dark:border-dark-border">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-              <div className="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-[#349DC5]">
+              <div className="p-1.5 bg-primary/10 rounded-lg text-primary">
                 <Users size={16} />
               </div>
-              <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">
+              <span className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider leading-tight">
                 Members
               </span>
             </div>
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#00204a] dark:text-white leading-none">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary dark:text-dark-text-primary leading-none">
               {unitSummary?.counts?.membersCount || 0}
             </h3>
-            <p className="text-[7px] sm:text-[9px] font-bold text-[#349DC5] uppercase mt-1 hidden sm:block">
+            <p className="text-[7px] sm:text-[9px] font-bold text-primary uppercase mt-1 hidden sm:block">
               Active Unit Members
             </p>
           </div>
 
-          <div className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5">
+          <div className="bg-surface dark:bg-dark-surface p-3 sm:p-5 rounded-xl shadow-md border border-border dark:border-dark-border">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-              <div className="p-1.5 bg-rose-50 dark:bg-rose-950/20 rounded-lg text-rose-500">
+              <div className="p-1.5 bg-error/10 rounded-lg text-error">
                 <Flame size={16} />
               </div>
-              <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-tight">
+              <span className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider leading-tight">
                 Souls
               </span>
             </div>
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#00204a] dark:text-white leading-none">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-primary dark:text-dark-text-primary leading-none">
               {unitCount || 0}
             </h3>
-            <p className="text-[7px] sm:text-[9px] font-bold text-gray-400 uppercase mt-1 hidden sm:block">
+            <p className="text-[7px] sm:text-[9px] font-bold text-text-muted uppercase mt-1 hidden sm:block">
               Soul Harvested (Unit)
             </p>
           </div>
 
           {hasFinSecDuty && (
-            <div className="col-span-2 bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col justify-between">
+            <div className="col-span-2 bg-surface dark:bg-dark-surface p-3 sm:p-5 rounded-xl shadow-md border border-border dark:border-dark-border flex flex-col justify-between">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg text-emerald-500">
+                  <div className="p-1.5 bg-success/10 rounded-lg text-success">
                     <Activity size={16} />
                   </div>
-                  <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  <span className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider">
                     Financial Summary
                   </span>
                 </div>
                 <button
                   onClick={() => navigate("/finance-summary")}
-                  className="text-[8px] sm:text-[10px] font-bold text-[#349DC5] uppercase hover:underline"
+                  className="text-[8px] sm:text-[10px] font-bold text-primary uppercase hover:underline"
                 >
                   Details
                 </button>
@@ -379,10 +379,10 @@ export default function DashboardMember() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[7px] sm:text-[9px] font-bold text-gray-400 uppercase mb-0.5">
+                  <p className="text-[7px] sm:text-[9px] font-bold text-text-muted uppercase mb-0.5">
                     Net
                   </p>
-                  <p className="text-xs sm:text-base font-bold text-[#00204a] dark:text-white tabular-nums">
+                  <p className="text-xs sm:text-base font-bold text-text-primary dark:text-dark-text-primary tabular-nums">
                     ₦{summaryTotals.net.toLocaleString()}
                   </p>
                 </div>
@@ -394,10 +394,10 @@ export default function DashboardMember() {
         {/* Links */}
         <section className="mb-6 sm:mb-12">
           <div className="flex items-center gap-3 mb-4 sm:mb-6">
-            <h3 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider leading-none">
+            <h3 className="text-xs sm:text-sm font-bold text-text-muted uppercase tracking-wider leading-none">
               Quick Links
             </h3>
-            <div className="h-px flex-1 bg-gray-100 dark:bg-white/5" />
+            <div className="h-px flex-1 bg-border dark:bg-dark-border" />
           </div>
 
           <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
@@ -408,18 +408,18 @@ export default function DashboardMember() {
                 <button
                   key={key}
                   onClick={() => navigate(card.route!, { state: card.state })}
-                  className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col items-center text-center group hover:border-[#349DC5]/30 transition-all active:scale-95"
+                  className="bg-surface dark:bg-dark-surface p-3 sm:p-5 md:p-6 rounded-xl shadow-md border border-border dark:border-dark-border flex flex-col items-center text-center group hover:border-primary/30 transition-all active:scale-95"
                 >
                   <div
                     className={cn(
-                      "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-4 group-hover:scale-110 transition-transform",
+                      "w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-4 group-hover:scale-110 transition-transform shadow-inner",
                       card.bg,
                       card.color,
                     )}
                   >
                     {card.icon}
                   </div>
-                  <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-[#00204a] dark:text-white uppercase leading-tight">
+                  <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-text-primary dark:text-dark-text-primary uppercase leading-tight">
                     {card.title}
                   </span>
                 </button>
@@ -432,14 +432,14 @@ export default function DashboardMember() {
         <section className="pb-4">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex items-center gap-3">
-              <h3 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider leading-none">
+              <h3 className="text-xs sm:text-sm font-bold text-text-muted uppercase tracking-wider leading-none">
                 Upcoming Events
               </h3>
-              <div className="h-px w-12 sm:w-24 bg-gray-100 dark:bg-white/5" />
+              <div className="h-px w-12 sm:w-24 bg-border dark:bg-dark-border" />
             </div>
             <button
               onClick={() => navigate("/notifications")}
-              className="text-[9px] sm:text-[10px] font-bold text-[#349DC5] uppercase hover:underline"
+              className="text-[9px] sm:text-[10px] font-bold text-primary uppercase hover:underline"
             >
               View All
             </button>
@@ -447,9 +447,9 @@ export default function DashboardMember() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
             {upcomingEvents.length === 0 ? (
-              <div className="col-span-full py-12 sm:py-16 text-center bg-white dark:bg-[#1a1c1e] rounded-xl border-2 border-dashed border-gray-100 dark:border-white/5">
-                <Calendar size={24} className="mx-auto text-gray-200 mb-3" />
-                <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase">
+              <div className="col-span-full py-12 sm:py-16 text-center bg-surface dark:bg-dark-surface rounded-xl border-2 border-dashed border-border dark:border-dark-border">
+                <Calendar size={24} className="mx-auto text-text-muted mb-3 opacity-40" />
+                <p className="text-[9px] sm:text-[10px] font-bold text-text-muted uppercase tracking-widest">
                   No Upcoming Events
                 </p>
               </div>
@@ -461,28 +461,28 @@ export default function DashboardMember() {
                     setSelectedEvent(ev);
                     setEventModalVisible(true);
                   }}
-                  className="bg-white dark:bg-[#1a1c1e] p-3 sm:p-5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 hover:border-[#349DC5]/20 group cursor-pointer transition-all flex flex-col h-full active:scale-95"
+                  className="bg-surface dark:bg-dark-surface p-3 sm:p-5 rounded-xl shadow-md border border-border dark:border-dark-border hover:border-primary/20 group cursor-pointer transition-all flex flex-col h-full active:scale-95"
                 >
                   <div className="flex items-center justify-between mb-3 sm:mb-5">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-50 dark:bg-blue-900/10 rounded-lg flex items-center justify-center text-[#349DC5]">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
                         <Clock size={16} />
                       </div>
-                      <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 uppercase tabular-nums">
+                      <span className="text-[8px] sm:text-[9px] font-bold text-text-muted uppercase tabular-nums">
                         {new Date(ev.date).toLocaleDateString()}
                       </span>
                     </div>
                     <ChevronRight
                       size={14}
-                      className="text-gray-200 group-hover:text-[#349DC5] transition-all"
+                      className="text-text-muted group-hover:text-primary transition-all"
                     />
                   </div>
-                  <h4 className="font-bold text-[10px] sm:text-xs text-[#00204a] dark:text-white uppercase mb-2 sm:mb-3 line-clamp-2">
+                  <h4 className="font-bold text-[10px] sm:text-xs text-text-primary dark:text-dark-text-primary uppercase mb-2 sm:mb-3 line-clamp-2 tracking-tight">
                     {ev.title}
                   </h4>
-                  <div className="mt-auto flex items-center gap-2 py-2 border-t border-gray-50 dark:border-white/5">
-                    <MapPin size={12} className="text-gray-300 shrink-0" />
-                    <span className="text-[8px] sm:text-[10px] font-semibold text-gray-400 uppercase truncate">
+                  <div className="mt-auto flex items-center gap-2 py-2 border-t border-border dark:border-dark-border">
+                    <MapPin size={12} className="text-text-muted shrink-0" />
+                    <span className="text-[8px] sm:text-[10px] font-semibold text-text-muted uppercase truncate">
                       {ev.venue || "Church Venue"}
                     </span>
                   </div>
@@ -511,25 +511,25 @@ export default function DashboardMember() {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-xl bg-white dark:bg-[#1a1c1e] rounded-t-2xl sm:rounded-xl overflow-hidden shadow-2xl"
             >
-              <div className="bg-[#00204a] p-5 sm:p-8 text-white relative h-28 sm:h-36 flex flex-col justify-end">
+              <div className="bg-primary/90 p-5 sm:p-8 text-white relative h-28 sm:h-36 flex flex-col justify-end">
                 <Calendar
                   size={60}
-                  className="absolute -top-3 -right-3 opacity-10 rotate-12"
+                  className="absolute -top-3 -right-3 opacity-10 rotate-12 text-white"
                 />
-                <h3 className="text-lg sm:text-xl font-bold uppercase leading-tight mb-1">
+                <h3 className="text-lg sm:text-xl font-bold uppercase leading-tight mb-1 text-white">
                   {selectedEvent.title}
                 </h3>
-                <p className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase">
+                <p className="text-[9px] sm:text-[10px] font-bold text-white/50 uppercase">
                   {new Date(selectedEvent.date).toLocaleString()}
                 </p>
               </div>
               <div className="p-5 sm:p-8">
-                <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium leading-relaxed mb-5 sm:mb-8">
+                <p className="text-text-muted dark:text-dark-text-muted text-xs sm:text-sm font-medium leading-relaxed mb-5 sm:mb-8">
                   {selectedEvent.description || "No event description available."}
                 </p>
                 <button
                   onClick={() => setEventModalVisible(false)}
-                  className="w-full h-10 sm:h-12 bg-[#349DC5] text-white rounded-xl font-bold text-[10px] sm:text-xs uppercase shadow-md active:scale-95 transition-all"
+                  className="w-full h-12 bg-primary text-white rounded-xl font-bold text-[10px] sm:text-xs uppercase shadow-md shadow-primary/20 active:scale-95 transition-all"
                 >
                   Close
                 </button>

@@ -1,27 +1,25 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Calendar, Plus, Phone, MessageSquare, Edit2,
   Trash2, X, ArrowLeft, RefreshCw, User, MapPin,
   ShieldCheck, Share2, Filter, Check, Star, ExternalLink, ChevronDown
 } from "lucide-react";
-import axios from "axios";
 import toast from "react-hot-toast";
-import { BASE_URl } from "../../api/users";
 import AsyncStorage from "../../utils/AsyncStorage";
+import apiClient from "../../api/client";
+import { getUnitContext } from "../../utils/context";
 
-const getUnitId = async () => {
-    const direct = await AsyncStorage.getItem("activeUnitId");
-    if (direct) return direct;
-    const rawUser = await AsyncStorage.getItem("user");
-    if (!rawUser) return null;
-    const u = JSON.parse(rawUser);
-    return u?.activeUnitId || u?.activeUnit?._id || u?.activeUnit || (u?.roles || []).find((r: any) => r.role === "UnitLeader" && r.unit)?.unit || (u?.roles || []).find((r: any) => r.role === "Member" && r.unit)?.unit || null;
-};
+
+// Local resolver replaced by robust getUnitContext
 
 export default function PeopleInvitedScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as { scope?: "mine" | "unit" } | null;
+  const scope = state?.scope || "mine";
+
   const [invites, setInvites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,21 +32,10 @@ export default function PeopleInvitedScreen() {
     if (!isRefresh) setLoading(true);
     else setRefreshing(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const rawUser = await AsyncStorage.getItem("user");
-      const u = rawUser ? JSON.parse(rawUser) : null;
-      let scope = "mine";
-      if (u?.activeRole === "SuperAdmin" || u?.activeRole === "MinistryAdmin") {
-          scope = "all";
-      } else if (u?.activeRole === "UnitLeader") {
-          scope = "unit";
-      }
-      
-      const targetUnitId = await getUnitId();
+      const targetUnitId = await getUnitContext();
 
-      const res = await axios.get(`${BASE_URl}/api/invites`, {
+      const res = await apiClient.get(`/api/invites`, {
         params: { scope, unitId: scope === "unit" ? targetUnitId : undefined, year: selectedYear === "All" ? undefined : selectedYear },
-        headers: { Authorization: `Bearer ${token}` },
       });
       const data = res.data?.invites || res.data || [];
       setInvites(Array.isArray(data) ? data : []);
@@ -58,7 +45,7 @@ export default function PeopleInvitedScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedYear]);
+  }, [selectedYear, scope]);
 
   useEffect(() => { fetchInvites(); }, [fetchInvites]);
 
@@ -75,10 +62,7 @@ export default function PeopleInvitedScreen() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Delete this invitation record?")) return;
     try {
-      const token = await AsyncStorage.getItem("token");
-      await axios.delete(`${BASE_URl}/api/invites/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await apiClient.delete(`/api/invites/${id}`);
       toast.success("Record purged");
       fetchInvites(true);
     } catch (e) {
@@ -240,12 +224,11 @@ function InviteForm({ invite, onSuccess, onCancel }: any) {
     if (!formData.name) { toast.error("Name is required"); return; }
     setSubmitting(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const unitId = await getUnitId();
+      const unitId = await getUnitContext();
       if (invite) {
-        await axios.put(`${BASE_URl}/api/invites/${invite._id}`, formData, { headers: { Authorization: `Bearer ${token}` } });
+        await apiClient.put(`/api/invites/${invite._id}`, formData);
       } else {
-        await axios.post(`${BASE_URl}/api/invites`, { ...formData, unitId }, { headers: { Authorization: `Bearer ${token}` } });
+        await apiClient.post(`/api/invites`, { ...formData, unitId });
       }
       onSuccess();
     } catch { toast.error("Submission failed"); }

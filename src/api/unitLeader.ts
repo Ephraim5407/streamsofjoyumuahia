@@ -1,5 +1,4 @@
-import axios from "axios";
-import { BASE_URl } from "./users";
+import apiClient from "./client";
 
 export interface UnitLeaderSummary {
   ok: boolean;
@@ -16,9 +15,8 @@ export async function getUnitLeaderSummary(
   unitId?: string | null,
 ): Promise<UnitLeaderSummary> {
   const qs = unitId ? `?unitId=${encodeURIComponent(unitId)}` : "";
-  const res = await axios.get(
-    `${BASE_URl}/api/reports/unit-leader/summary${qs}`,
-    { headers: { Authorization: `Bearer ${token}` } },
+  const res = await apiClient.get(
+    `/api/reports/unit-leader/summary${qs}`,
   );
   return res.data as UnitLeaderSummary;
 }

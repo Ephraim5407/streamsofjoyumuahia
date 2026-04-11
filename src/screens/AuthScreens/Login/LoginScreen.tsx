@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import axios from "axios";
+import apiClient from "../../../api/client";
 import {
   Eye,
   EyeOff,
@@ -92,8 +92,8 @@ export default function LoginScreen() {
       }
       const controller = new AbortController();
       const t = setTimeout(() => controller.abort(), 8000);
-      const resp = await axios.post(
-        `${BASE_URl}/api/users/lookup-email`,
+      const resp = await apiClient.post(
+        `/api/users/lookup-email`,
         { email },
         { signal: controller.signal },
       );
@@ -169,7 +169,7 @@ export default function LoginScreen() {
           .toLowerCase()
           .replace(/\s+/g, "")
           .replace(/[.,;:]+$/, "");
-        const resp = await axios.post(`${BASE_URl}/api/users/lookup-email`, {
+          const resp = await apiClient.post(`/api/users/lookup-email`, {
           email: cleaned,
         });
         if (resp.data?.ok && resp.data.exists)
@@ -191,7 +191,7 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
-      const res = await axios.post(`${BASE_URl}/api/auth/login`, {
+      const res = await apiClient.post(`/api/auth/login`, {
         userId: finalUserId,
         password,
       });
@@ -248,11 +248,11 @@ export default function LoginScreen() {
                   <div className="flex items-center justify-between mb-8">
                     <button
                       onClick={() => setDeactivatedUser(null)}
-                      className="p-2 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                      className="p-2 rounded-xl bg-surface dark:bg-dark-surface hover:bg-border dark:hover:bg-dark-border transition-colors border border-border dark:border-dark-border"
                     >
                       <ChevronLeft size={24} color="#349DC5" />
                     </button>
-                    <h2 className="text-lg font-bold text-slate-800 dark:text-white">
+                    <h2 className="text-lg font-bold text-text-primary dark:text-dark-text-primary">
                       Account Access
                     </h2>
                     <div className="w-10" />
@@ -277,17 +277,17 @@ export default function LoginScreen() {
                         <LockKeyhole size={14} color="white" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2 text-center">
+                    <h3 className="text-xl font-bold text-text-primary dark:text-dark-text-primary mb-2 text-center">
                       Hello, {deactivatedUser.firstName}
                     </h3>
-                    <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-2xl p-4 mb-6 w-full">
+                    <div className="flex items-start gap-3 bg-error/5 dark:bg-error/10 border border-error/20 dark:border-error/30 rounded-2xl p-4 mb-6 w-full">
                       <AlertCircle
                         size={20}
-                        className="text-amber-500 shrink-0 mt-0.5"
+                        className="text-error shrink-0 mt-0.5"
                       />
-                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                      <p className="text-sm text-text-muted dark:text-dark-text-muted leading-relaxed font-medium">
                         Your account has been{" "}
-                        <span className="text-amber-600 dark:text-amber-400 font-bold underline decoration-2 underline-offset-2">
+                        <span className="text-error font-bold underline decoration-2 underline-offset-2">
                           deactivated
                         </span>{" "}
                         by administration.
@@ -304,7 +304,7 @@ export default function LoginScreen() {
                     </button>
                     <button
                       onClick={() => setDeactivatedUser(null)}
-                      className="text-sm text-slate-400 hover:text-[#349DC5] font-semibold transition-colors py-2"
+                      className="text-sm text-text-muted dark:text-dark-text-muted hover:text-primary font-semibold transition-colors py-2"
                     >
                       Return to Login
                     </button>
@@ -403,7 +403,7 @@ export default function LoginScreen() {
           )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1a1c1e] border-t-2 border-[#eee] flex justify-around w-full h-[10vh] pt-[10px] pb-[1.2vh]">
+        <div className="fixed bottom-0 left-0 right-0 bg-surface dark:bg-dark-surface border-t border-border dark:border-dark-border flex justify-around w-full h-[10vh] pt-[10px] pb-[1.2vh] shadow-lg">
           <button
             onClick={() => setActiveTab("login")}
             className="flex-1 flex flex-col items-center justify-center"

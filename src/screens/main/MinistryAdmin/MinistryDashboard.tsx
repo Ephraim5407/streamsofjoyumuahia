@@ -161,9 +161,9 @@ export default function MinistryDashboard() {
   if (loading) return null;
 
   return (
-    <div className="flex-1 bg-gray-50 dark:bg-[#0f1218] min-h-screen pb-32">
+    <div className="flex-1 bg-background dark:bg-dark-background min-h-screen pb-32 transition-colors">
       {/* Ministry Header */}
-      <div className="bg-[#00204a] px-6 py-12 pb-20">
+      <div className="bg-surface dark:bg-dark-surface px-6 py-12 pb-20 border-b border-border dark:border-dark-border">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col gap-10">
             {/* Identity & Actions Container */}
@@ -171,10 +171,10 @@ export default function MinistryDashboard() {
               <div className="flex items-center gap-4">
                 <div 
                   onClick={() => navigate("/profile")}
-                  className="w-16 h-16 rounded-2xl bg-[#349DC5] border-4 border-white/10 shadow-xl overflow-hidden cursor-pointer active:scale-95 transition-all"
+                  className="w-16 h-16 rounded-2xl bg-primary shadow-xl overflow-hidden cursor-pointer active:scale-95 transition-all flex items-center justify-center p-3"
                 >
                    {profile?.profile?.avatar ? (
-                    <img src={profile.profile.avatar} className="w-full h-full object-cover" alt="Profile" />
+                    <img src={profile.profile.avatar} className="w-full h-full object-cover rounded-xl" alt="Profile" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white">
                       <User size={30} />
@@ -182,12 +182,12 @@ export default function MinistryDashboard() {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-white leading-tight uppercase tracking-tight">
+                  <h2 className="text-2xl font-black text-text-primary dark:text-dark-text-primary leading-tight uppercase tracking-tight">
                     {profile?.firstName ? `Welcome, ${profile?.title ? profile.title + ' ' : ''}${profile.firstName}` : "Ministry Admin"}
                   </h2>
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                    <span className="text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <span className="text-text-muted text-[9px] font-black uppercase tracking-[0.2em]">
                       {currentMinistry} Admin
                     </span>
                   </div>
@@ -197,9 +197,9 @@ export default function MinistryDashboard() {
               {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
                 <button 
                   onClick={() => AppEventBus.emit("openRoleSwitcher")}
-                  className="hidden sm:flex items-center gap-3 px-6 py-3 bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-xl transition-all active:scale-95"
+                  className="hidden sm:flex items-center gap-3 px-6 py-3 bg-background dark:bg-dark-background hover:bg-border dark:hover:bg-dark-border text-text-primary dark:text-dark-text-primary border border-border dark:border-dark-border rounded-xl transition-all active:scale-95"
                 >
-                  <LayoutGrid size={18} className="text-[#349DC5]" />
+                  <LayoutGrid size={18} className="text-primary" />
                   <span className="text-[10px] font-black uppercase tracking-widest leading-none">Switch Role</span>
                 </button>
               )}
@@ -210,25 +210,25 @@ export default function MinistryDashboard() {
               {Array.isArray(profile?.roles) && profile.roles.length > 1 && (
                 <button 
                   onClick={() => AppEventBus.emit("openRoleSwitcher")}
-                  className="w-14 h-14 rounded-2xl bg-white text-[#00204a] flex items-center justify-center shadow-lg active:scale-95 transition-all border-2 border-white/20"
+                  className="w-14 h-14 rounded-2xl bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary flex items-center justify-center shadow-lg active:scale-95 transition-all border border-border dark:border-dark-border"
                   title="Switch Role"
                 >
-                  <LayoutGrid size={22} className="text-[#349DC5]" />
+                  <LayoutGrid size={22} className="text-primary" />
                 </button>
               )}
               
               <button
                 onClick={() => fetchData(true)}
-                className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-white/60 hover:bg-white/10 transition-all active:scale-95"
+                className="w-14 h-14 rounded-2xl bg-background dark:bg-dark-background flex items-center justify-center border border-border dark:border-dark-border text-text-muted hover:bg-border dark:hover:bg-dark-border transition-all active:scale-95"
               >
-                <RefreshCw size={22} className={refreshing ? "animate-spin text-[#349DC5]" : "text-white"} />
+                <RefreshCw size={22} className={refreshing ? "animate-spin text-primary" : "text-text-primary dark:text-dark-text-primary"} />
               </button>
               
               <button
                 onClick={() => navigate("/notifications")}
-                className="flex-1 sm:flex-none h-14 px-6 bg-white/5 text-white rounded-2xl border border-white/10 hover:bg-white/10 transition-all active:scale-95 flex items-center justify-center gap-3"
+                className="flex-1 sm:flex-none h-14 px-6 bg-background dark:bg-dark-background text-text-primary dark:text-dark-text-primary rounded-2xl border border-border dark:border-dark-border hover:bg-border dark:hover:bg-dark-border transition-all active:scale-95 flex items-center justify-center gap-3"
               >
-                <Bell size={20} className="text-[#349DC5]" />
+                <Bell size={20} className="text-primary" />
                 <span className="text-[10px] font-black uppercase tracking-widest leading-none">Notifications</span>
               </button>
             </div>
@@ -240,22 +240,22 @@ export default function MinistryDashboard() {
         {/* Key Statistics */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
           <div className="lg:col-span-8">
-            <div className="bg-white dark:bg-[#1a1c1e] p-10 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 relative overflow-hidden h-full flex flex-col justify-between group">
+            <div className="bg-surface dark:bg-dark-surface p-10 rounded-xl shadow-md border border-border dark:border-dark-border relative overflow-hidden h-full flex flex-col justify-between group transition-all">
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-[#00204a] dark:text-[#349DC5]">
+                  <div className="p-3 bg-primary/10 rounded-xl text-primary">
                     <Users size={32} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                    <h3 className="text-sm font-bold text-text-muted uppercase tracking-widest">
                       Total Number of Workers
                     </h3>
-                    <p className="text-[10px] font-bold text-[#349DC5] uppercase mt-1">
+                    <p className="text-[10px] font-bold text-primary uppercase mt-1">
                       Total Active Members
                     </p>
                   </div>
                 </div>
-                <h2 className="text-7xl font-bold text-[#00204a] dark:text-white leading-none tabular-nums">
+                <h2 className="text-7xl font-bold text-text-primary dark:text-dark-text-primary leading-none tabular-nums tracking-tighter">
                   {(summary?.totals?.workersTotal || 0).toLocaleString()}
                 </h2>
               </div>
@@ -266,29 +266,29 @@ export default function MinistryDashboard() {
           </div>
 
           <div className="lg:col-span-4 flex flex-col gap-6">
-            <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col justify-center">
+            <div className="bg-surface dark:bg-dark-surface p-8 rounded-xl shadow-md border border-border dark:border-dark-border flex flex-col justify-center transition-all">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/20 text-rose-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-error/10 text-error flex items-center justify-center">
                   <Flame size={24} />
                 </div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                   Soul Records
                 </span>
               </div>
-              <h3 className="text-4xl font-bold text-[#00204a] dark:text-white leading-none">
+              <h3 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary leading-none">
                 {(summary?.totals?.soulsWon || 0).toLocaleString()}
               </h3>
             </div>
-            <div className="bg-white dark:bg-[#1a1c1e] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 flex flex-col justify-center">
+            <div className="bg-surface dark:bg-dark-surface p-8 rounded-xl shadow-md border border-border dark:border-dark-border flex flex-col justify-center transition-all">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-success/10 text-success flex items-center justify-center">
                   <UserCheck size={24} />
                 </div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                   Average Attendance
                 </span>
               </div>
-              <h3 className="text-4xl font-bold text-[#00204a] dark:text-white leading-none">
+              <h3 className="text-4xl font-bold text-text-primary dark:text-dark-text-primary leading-none">
                 {avgAttendance.toLocaleString()}
               </h3>
             </div>
@@ -298,44 +298,44 @@ export default function MinistryDashboard() {
         {/* Financial Summary */}
         <section className="mb-14">
           <div className="flex items-center gap-4 mb-8">
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest leading-none">
+            <h3 className="text-sm font-bold text-text-muted uppercase tracking-widest leading-none">
               Financial Summary
             </h3>
-            <div className="h-px flex-1 bg-gray-100 dark:bg-white/5" />
+            <div className="h-px flex-1 bg-border dark:bg-dark-border" />
           </div>
 
           <div
             onClick={() => navigate("/admin-finance/summary", { state: { ministry: currentMinistry } })}
-            className="bg-[#00204a] p-10 rounded-xl text-white shadow-lg cursor-pointer group relative overflow-hidden"
+            className="bg-surface dark:bg-dark-surface p-10 rounded-xl text-text-primary dark:text-dark-text-primary shadow-xl border border-border dark:border-dark-border cursor-pointer group relative overflow-hidden transition-all"
           >
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-10">
               <div className="md:col-span-2">
                 <div className="flex items-center gap-4 mb-6">
-                  <Wallet size={20} className="text-cyan-400" />
-                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                  <Wallet size={20} className="text-primary" />
+                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                     Total Balance
                   </span>
                 </div>
-                <h3 className="text-5xl font-bold leading-none tabular-nums">
+                <h3 className="text-5xl font-bold leading-none tabular-nums text-text-primary dark:text-dark-text-primary">
                   ₦{(finTotals?.balance || 0).toLocaleString()}
                 </h3>
-                <p className="text-[10px] font-bold text-cyan-400 uppercase mt-4 tracking-widest">
+                <p className="text-[10px] font-bold text-primary uppercase mt-4 tracking-widest">
                   Available Funds ({currentMinistry})
                 </p>
               </div>
               <div className="flex flex-col justify-end">
-                <p className="text-[10px] font-bold text-white/30 uppercase mb-4 tracking-widest">
+                <p className="text-[10px] font-bold text-text-muted uppercase mb-4 tracking-widest">
                   Total Income
                 </p>
-                <h4 className="text-2xl font-bold text-emerald-400">
+                <h4 className="text-2xl font-bold text-success">
                   ₦{(finTotals?.totalIncome || 0).toLocaleString()}
                 </h4>
               </div>
               <div className="flex flex-col justify-end">
-                <p className="text-[10px] font-bold text-white/30 uppercase mb-4 tracking-widest">
+                <p className="text-[10px] font-bold text-text-muted uppercase mb-4 tracking-widest">
                   Total Expenditure
                 </p>
-                <h4 className="text-2xl font-bold text-rose-400">
+                <h4 className="text-2xl font-bold text-error">
                   ₦{(finTotals?.totalExpense || 0).toLocaleString()}
                 </h4>
               </div>
@@ -350,15 +350,15 @@ export default function MinistryDashboard() {
         <section className="mb-20">
           <div className="flex items-center justify-between mb-10 px-2">
             <div className="flex items-center gap-4">
-              <div className="w-1.5 h-8 bg-[#349DC5] rounded-full" />
+              <div className="w-1.5 h-8 bg-primary rounded-full" />
               <div>
-                <h3 className="text-xl font-black text-[#00204a] dark:text-white uppercase tracking-tighter">Upcoming Events</h3>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1 opacity-60">Latest church activities & services</p>
+                <h3 className="text-xl font-black text-text-primary dark:text-dark-text-primary uppercase tracking-tighter">Upcoming Events</h3>
+                <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">Latest church activities & services</p>
               </div>
             </div>
             <button
                onClick={() => navigate("/sa/events-announcements")}
-              className="px-6 py-3 rounded-xl bg-gray-50 dark:bg-white/5 text-[10px] font-black text-[#349DC5] uppercase tracking-widest hover:bg-[#349DC5] hover:text-white transition-all shadow-sm"
+              className="px-6 py-3 rounded-xl bg-background dark:bg-dark-background text-[10px] font-black text-primary uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-sm border border-border dark:border-dark-border"
             >
               View Full Feed
             </button>
@@ -376,11 +376,11 @@ export default function MinistryDashboard() {
                     setSelectedEvent(ev);
                     setEventModalOpen(true);
                   }}
-                  className="bg-white dark:bg-[#1a1c1e] p-7 rounded-[32px] shadow-sm border border-gray-100 dark:border-white/5 cursor-pointer group hover:shadow-2xl hover:shadow-blue-900/5 transition-all relative overflow-hidden"
+                  className="bg-surface dark:bg-dark-surface p-7 rounded-[32px] shadow-md border border-border dark:border-dark-border cursor-pointer group hover:shadow-2xl hover:shadow-primary/5 transition-all relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 w-24 h-24 bg-[#349DC5]/5 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform" />
                   <div className="flex items-center gap-4 mb-8">
-                    <div className="w-14 h-14 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/10 dark:to-white/5 rounded-2xl flex flex-col items-center justify-center text-[#349DC5] border border-blue-100 dark:border-blue-900/20 shadow-inner shrink-0 group-hover:rotate-6 transition-transform">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary/10 to-transparent rounded-2xl flex flex-col items-center justify-center text-primary border border-primary/20 shadow-inner shrink-0 group-hover:rotate-6 transition-transform">
                       <span className="text-[8px] font-black uppercase tracking-tighter mb-0.5 opacity-60 font-mono">
                          {ev._d.toLocaleDateString(undefined, { month: "short" })}
                       </span>
@@ -389,31 +389,31 @@ export default function MinistryDashboard() {
                       </span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-black text-[#00204a] dark:text-white uppercase leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-[#349DC5] transition-colors tracking-tight">
+                      <h4 className="text-sm font-black text-text-primary dark:text-dark-text-primary uppercase leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors tracking-tight">
                         {ev.title}
                       </h4>
                     </div>
                   </div>
-                  <div className="pt-5 border-t border-gray-50 dark:border-white/5 flex items-center justify-between">
+                  <div className="pt-5 border-t border-border dark:border-dark-border flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <MapPin size={12} className="text-gray-300" />
-                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest truncate max-w-[100px]">
+                      <MapPin size={12} className="text-text-muted" />
+                      <span className="text-[9px] font-black text-text-muted uppercase tracking-widest truncate max-w-[100px]">
                         {ev.venue || "HQ Ops"}
                       </span>
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300 group-hover:bg-[#349DC5] group-hover:text-white transition-all shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-background dark:bg-dark-background flex items-center justify-center text-text-muted group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                       <ChevronRight size={18} />
                     </div>
                   </div>
                 </motion.div>
               ))
             ) : (
-              <div className="col-span-full py-24 text-center bg-white/50 dark:bg-white/[0.02] rounded-[40px] border-2 border-dashed border-gray-100 dark:border-white/5">
-                <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center mx-auto mb-6">
-                  <Calendar size={40} className="text-gray-200" />
+              <div className="col-span-full py-24 text-center bg-surface dark:bg-dark-surface rounded-[40px] border-2 border-dashed border-border dark:border-dark-border">
+                <div className="w-20 h-20 rounded-full bg-background dark:bg-dark-background flex items-center justify-center mx-auto mb-6">
+                  <Calendar size={40} className="text-text-muted opacity-40" />
                 </div>
-                <p className="text-xs font-black text-gray-400 uppercase tracking-[0.4em]">No Events Recorded</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-2 opacity-60">Check back later for updates</p>
+                <p className="text-xs font-black text-text-muted uppercase tracking-[0.4em]">No Events Recorded</p>
+                <p className="text-[10px] text-text-muted uppercase tracking-widest mt-2 opacity-60">Check back later for updates</p>
               </div>
             )}
           </div>
@@ -435,20 +435,20 @@ export default function MinistryDashboard() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-4xl bg-white dark:bg-[#1a1c1e] rounded-[32px] p-10 overflow-hidden shadow-2xl"
+              className="relative w-full max-w-4xl bg-surface dark:bg-dark-surface rounded-[32px] p-10 overflow-hidden shadow-2xl border border-border dark:border-dark-border"
             >
               <div className="flex items-center justify-between mb-10">
                 <div>
-                  <h3 className="text-2xl font-bold text-[#00204a] dark:text-white uppercase leading-none">
+                  <h3 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary uppercase leading-none tracking-tighter">
                     Menu
                   </h3>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase mt-2">
+                  <p className="text-[10px] font-bold text-text-muted uppercase mt-2 tracking-widest">
                     Ministry Navigation
                   </p>
                 </div>
                 <button
                   onClick={() => setIsMenuOpen(false)}
-                  className="p-3 bg-gray-50 dark:bg-white/5 rounded-xl text-gray-400 hover:text-rose-500 transition-all border border-gray-100 dark:border-white/5"
+                  className="p-3 bg-background dark:bg-dark-background rounded-xl text-text-muted hover:text-error transition-all border border-border dark:border-dark-border"
                 >
                   <X size={24} />
                 </button>
@@ -461,17 +461,17 @@ export default function MinistryDashboard() {
                       navigate(m.route);
                       setIsMenuOpen(false);
                     }}
-                    className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-[#349DC5]/10 group transition-all border border-transparent hover:border-[#349DC5]/20"
+                    className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-background dark:bg-dark-background hover:bg-primary/10 group transition-all border border-border dark:border-dark-border hover:border-primary/20"
                   >
                     <div
                       className={cn(
-                        "w-14 h-14 rounded-xl flex items-center justify-center text-white shadow shadow-blue-900/10 group-hover:scale-110 transition-transform",
+                        "w-14 h-14 rounded-xl flex items-center justify-center text-white shadow shadow-primary/10 group-hover:scale-110 transition-transform",
                         m.color,
                       )}
                     >
                       {m.icon}
                     </div>
-                    <span className="text-[10px] font-bold text-[#00204a] dark:text-white uppercase tracking-wider text-center">
+                    <span className="text-[10px] font-bold text-text-primary dark:text-dark-text-primary uppercase tracking-wider text-center">
                       {m.title}
                     </span>
                   </button>
@@ -491,26 +491,26 @@ export default function MinistryDashboard() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-xl bg-white dark:bg-[#1a1c1e] rounded-xl overflow-hidden shadow-2xl"
+              className="w-full max-w-xl bg-surface dark:bg-dark-surface rounded-xl overflow-hidden shadow-2xl border border-border dark:border-dark-border"
             >
-              <div className="bg-[#00204a] p-10 text-white relative flex flex-col justify-end h-44">
-                <Calendar size={80} className="absolute -top-4 -right-4 opacity-10 rotate-12" />
-                <h3 className="text-2xl font-bold uppercase leading-tight mb-3">
+              <div className="bg-primary/90 p-10 text-white relative flex flex-col justify-end h-44">
+                <Calendar size={80} className="absolute -top-4 -right-4 opacity-10 rotate-12 text-white" />
+                <h3 className="text-2xl font-bold uppercase leading-tight mb-3 text-white">
                   {selectedEvent.title}
                 </h3>
-                <div className="flex items-center gap-4 text-white/40 text-[10px] font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-4 text-white/60 text-[10px] font-bold uppercase tracking-widest">
                   <span className="flex items-center gap-2">
                     <Clock size={12} /> {selectedEvent._d.toLocaleString()}
                   </span>
                 </div>
               </div>
               <div className="p-10">
-                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed mb-10">
+                <p className="text-text-muted dark:text-dark-text-muted text-sm font-medium leading-relaxed mb-10">
                   {selectedEvent.description || "No event details available."}
                 </p>
                 <button
                   onClick={() => setEventModalOpen(false)}
-                  className="w-full h-14 bg-[#349DC5] text-white rounded-xl font-bold text-xs uppercase shadow hover:bg-[#2d8ab0] transition-all active:scale-95"
+                  className="w-full h-14 bg-primary text-white rounded-xl font-bold text-xs uppercase shadow-lg shadow-primary/20 hover:brightness-110 transition-all active:scale-95"
                 >
                   Close
                 </button>

@@ -5,10 +5,10 @@ import {
   ArrowLeft, Search, Plus, X, ChevronDown, Check,
   Heart, Calendar, RefreshCw, User, ShieldCheck, Edit3, Trash2
 } from "lucide-react";
-import axios from "axios";
 import toast from "react-hot-toast";
-import { BASE_URl } from "../../api/users";
 import AsyncStorage from "../../utils/AsyncStorage";
+import apiClient from "../../api/client";
+import { getUnitContext } from "../../utils/context";
 
 interface MarriageDoc {
   _id: string;
@@ -18,14 +18,8 @@ interface MarriageDoc {
   unitId?: string;
 }
 
-const getUnitId = async () => {
-    const direct = await AsyncStorage.getItem("activeUnitId");
-    if (direct) return direct;
-    const rawUser = await AsyncStorage.getItem("user");
-    if (!rawUser) return null;
-    const u = JSON.parse(rawUser);
-    return u?.activeUnitId || u?.activeUnit?._id || u?.activeUnit || (u?.roles || []).find((r: any) => r.role === "UnitLeader" && r.unit)?.unit || (u?.roles || []).find((r: any) => r.role === "Member" && r.unit)?.unit || null;
-};
+
+// Context resolver
 
 export default function UnitMarriages() {
   const navigate = useNavigate();
@@ -48,12 +42,10 @@ export default function UnitMarriages() {
     if (!isRefresh) setLoading(true);
     else setRefreshing(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const uid = await getUnitId();
+      const uid = await getUnitContext();
       setUnitId(uid || "");
-      const res = await axios.get(`${BASE_URl}/api/marriages`, {
+      const res = await apiClient.get(`/api/marriages`, {
         params: { unitId: uid || undefined, year: selectedYear === "All" ? undefined : selectedYear },
-        headers: { Authorization: `Bearer ${token}` },
       });
       const data = res.data?.marriages || res.data || [];
       setMarriages(Array.isArray(data) ? data : []);
@@ -86,17 +78,13 @@ export default function UnitMarriages() {
     }
     setSubmitting(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      const payload = { name, date: new Date(date).toISOString(), note, unitId };
+      const resolvedUnitId = await getUnitContext();
+      const payload = { name, date: new Date(date).toISOString(), note, unitId: resolvedUnitId };
       if (editing) {
-        await axios.put(`${BASE_URl}/api/marriages/${editing._id}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await apiClient.put(`/api/marriages/${editing._id}`, payload);
         toast.success("Entry updated successfully");
       } else {
-        await axios.post(`${BASE_URl}/api/marriages`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await apiClient.post(`/api/marriages`, payload);
         toast.success("Record saved");
       }
       setShowForm(false);
@@ -112,10 +100,7 @@ export default function UnitMarriages() {
   const remove = async (id: string) => {
     if (!confirm("Are you sure you want to remove this record?")) return;
     try {
-      const token = await AsyncStorage.getItem("token");
-      await axios.delete(`${BASE_URl}/api/marriages/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await apiClient.delete(`/api/marriages/${id}`);
       toast.success("Record removed");
       fetchMarriages();
     } catch (e) {

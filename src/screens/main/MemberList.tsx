@@ -133,17 +133,31 @@ export default function MemberListScreen() {
       const u = rawUser ? JSON.parse(rawUser) : null;
       setViewer(u);
 
+      // Find the most relevant unit ID from any valid source
+      const roles = u?.roles || [];
+      const activeRoleUnit = roles.find((r: any) => r.role === u?.activeRole && r.unit)?.unit;
+      const unitLeaderRole = roles.find((r: any) => r.role === "UnitLeader" && r.unit)?.unit;
+      const memberRole = roles.find((r: any) => r.role === "Member" && r.unit)?.unit;
+      const anyUnitRole = roles.find((r: any) => r.unit)?.unit;
+
       const targetUnitId =
         unitId ||
         u?.activeUnitId ||
-        u?.activeUnit?._id ||
         u?.activeUnit ||
-        (u?.roles || []).find((r: any) => r.role === "UnitLeader" && r.unit)?.unit ||
-        (u?.roles || []).find((r: any) => r.role === "Member" && r.unit)?.unit;
-      if (!targetUnitId) {
-        toast.error("No active unit context found");
+        (typeof activeRoleUnit === "object" ? activeRoleUnit._id : activeRoleUnit) ||
+        (typeof unitLeaderRole === "object" ? unitLeaderRole._id : unitLeaderRole) ||
+        (typeof memberRole === "object" ? memberRole._id : memberRole) ||
+        (typeof anyUnitRole === "object" ? anyUnitRole._id : anyUnitRole);
+
+      if (!targetUnitId || targetUnitId === "global") {
+        toast.error("No active unit context found for this account.");
         setLoading(false);
         return;
+      }
+
+      // Persist the context if it was missing
+      if (targetUnitId && targetUnitId !== "global") {
+        await AsyncStorage.setItem("activeUnitId", String(targetUnitId));
       }
 
       const [membersRes, summaryRes] = await Promise.all([
@@ -515,30 +529,30 @@ export default function MemberListScreen() {
   };
 
   return (
-    <div className="flex w-full min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-gray-50 dark:bg-[#0f1218]">
+    <div className="flex w-full min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-background dark:bg-dark-background transition-colors">
       {/* Left List Pane */}
       <div className={cn(
-        "flex-1 flex flex-col bg-gray-50 dark:bg-[#0f1218]",
-        selectedMember ? "lg:flex lg:w-[45%] lg:flex-none lg:border-r lg:border-gray-100 lg:dark:border-white/5 lg:overflow-y-auto hide-scrollbar" : "lg:w-full lg:overflow-y-auto hide-scrollbar"
+        "flex-1 flex flex-col bg-background dark:bg-dark-background",
+        selectedMember ? "lg:flex lg:w-[45%] lg:flex-none lg:border-r lg:border-border lg:dark:border-dark-border lg:overflow-y-auto hide-scrollbar" : "lg:w-full lg:overflow-y-auto hide-scrollbar"
       )}>
       {/* Mobile-Style Header Strategy */}
-      <div className="bg-[#00204a] px-4 sm:px-6 py-8 sm:py-12 pb-16 sm:pb-20 shrink-0">
+      <div className="bg-surface dark:bg-dark-surface px-4 sm:px-6 py-8 sm:py-12 pb-16 sm:pb-20 shrink-0 border-b border-border dark:border-dark-border">
         <div className="max-w-7xl mx-auto flex flex-col gap-6 sm:gap-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 sm:gap-6">
               <button
                 onClick={() => navigate(-1)}
-                className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/10 text-white hover:bg-white/20 transition-all active:scale-95 shadow-lg border border-white/10"
+                className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-background dark:bg-dark-background text-text-primary dark:text-dark-text-primary hover:bg-border transition-all active:scale-95 shadow-lg border border-border dark:border-dark-border"
               >
                 <ArrowLeft size={20} />
               </button>
               <div>
-                <h1 className="text-xl sm:text-3xl font-black text-white leading-tight uppercase tracking-tight">
+                <h1 className="text-xl sm:text-3xl font-black text-text-primary dark:text-dark-text-primary leading-tight uppercase tracking-tight">
                   Members
                 </h1>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] animate-pulse" />
-                  <p className="text-white/40 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <p className="text-text-muted text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em]">
                     Directory
                   </p>
                 </div>
@@ -547,7 +561,7 @@ export default function MemberListScreen() {
 
             <button
               onClick={() => fetchData()}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/10 text-white/60 hover:text-[#349DC5] transition-all hover:bg-white/20 border border-white/10"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-background dark:bg-dark-background text-text-muted hover:text-primary transition-all hover:bg-border border border-border dark:border-dark-border"
             >
               <RefreshCw
                 size={20}
@@ -558,17 +572,17 @@ export default function MemberListScreen() {
 
           {/* Stats — scrollable row on mobile, grid on md+ */}
           <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide md:grid md:grid-cols-3 md:gap-6">
-            <div className="bg-white/5 backdrop-blur-md p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-white/10 shrink-0 min-w-[120px] sm:min-w-0">
-              <p className="text-white/40 text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Total</p>
-              <h3 className="text-2xl sm:text-3xl font-black text-white">{stats.total}</h3>
+            <div className="bg-surface-alt dark:bg-dark-surface-alt p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-border dark:border-dark-border shrink-0 min-w-[120px] sm:min-w-0">
+              <p className="text-text-muted text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Total</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-text-primary dark:text-dark-text-primary">{stats.total}</h3>
             </div>
-            <div className="bg-blue-500/10 backdrop-blur-md p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-blue-500/20 shrink-0 min-w-[120px] sm:min-w-0">
-              <p className="text-blue-400 text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Male</p>
-              <h3 className="text-2xl sm:text-3xl font-black text-blue-400">{stats.male}</h3>
+            <div className="bg-primary/5 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-primary/20 shrink-0 min-w-[120px] sm:min-w-0">
+              <p className="text-primary text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Male</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-primary">{stats.male}</h3>
             </div>
-            <div className="bg-rose-500/10 backdrop-blur-md p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-rose-500/20 shrink-0 min-w-[120px] sm:min-w-0">
-              <p className="text-rose-400 text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Female</p>
-              <h3 className="text-2xl sm:text-3xl font-black text-rose-400">{stats.female}</h3>
+            <div className="bg-error/5 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-error/20 shrink-0 min-w-[120px] sm:min-w-0">
+              <p className="text-error text-[9px] font-black uppercase tracking-widest mb-1 sm:mb-2">Female</p>
+              <h3 className="text-2xl sm:text-3xl font-black text-error">{stats.female}</h3>
             </div>
           </div>
         </div>
@@ -579,13 +593,13 @@ export default function MemberListScreen() {
         <section className="mb-10 flex flex-col lg:flex-row gap-6">
           <div className="relative flex-1 group">
             <Search
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors"
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors"
               size={20}
             />
             <input
               type="text"
-              placeholder="Search by name, phone, or email..."
-              className="w-full h-16 pl-16 pr-8 bg-white dark:bg-[#1a1c1e] rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border-2 border-transparent focus:border-[#349DC5]/40 outline-none font-bold text-sm transition-all text-[#00204a] dark:text-white"
+              placeholder="Search members by identity..."
+              className="w-full h-[48px] pl-16 pr-8 bg-surface dark:bg-dark-surface rounded-[24px] shadow-sm border border-border dark:border-dark-border focus:ring-4 ring-primary/5 outline-none font-bold text-sm transition-all text-text-primary dark:text-dark-text-primary"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -633,10 +647,10 @@ export default function MemberListScreen() {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
-              "h-16 px-10 rounded-[24px] shadow-sm flex items-center justify-center gap-3 font-black text-[11px] uppercase transition-all active:scale-95 border-2",
+              "h-[48px] px-10 rounded-[24px] shadow-sm flex items-center justify-center gap-3 font-black text-[11px] uppercase transition-all active:scale-95 border",
               showFilters
-                ? "bg-[#349DC5] text-white border-[#349DC5]"
-                : "bg-white dark:bg-[#1a1c1e] text-gray-400 border-transparent",
+                ? "bg-primary text-white border-primary"
+                : "bg-surface dark:bg-dark-surface text-text-muted border-border dark:border-dark-border",
             )}
           >
             <Filter size={20} /> Registry Filters

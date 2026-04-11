@@ -193,50 +193,49 @@ export default function ManageUnit() {
   const UserRow = ({ user }: { user: DisplayUser }) => (
     <button
       onClick={() => navigate(`/sa/profile-detail/${user.id}`)}
-      className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 shadow-sm hover:border-[#349DC5] transition-all text-left group"
+      className="flex items-center gap-4 w-full p-4 rounded-2xl bg-surface dark:bg-dark-surface border border-border dark:border-dark-border shadow-sm hover:border-primary transition-all text-left group"
     >
       <div className="relative">
         {user.avatarUri ? (
           <img
             src={user.avatarUri}
             alt={user.name}
-            className="w-12 h-12 rounded-full border-2 object-cover"
-            style={{ borderColor: PRIMARY }}
+            className="w-12 h-12 rounded-full border-2 border-primary object-cover"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full border-2 border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 flex items-center justify-center shrink-0">
-            <User size={24} className="text-gray-300" />
+          <div className="w-12 h-12 rounded-full border-2 border-border dark:border-dark-border bg-background dark:bg-dark-background flex items-center justify-center shrink-0">
+            <User size={24} className="text-text-muted transition-colors group-hover:text-primary" />
           </div>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-[#00204a] dark:text-white truncate group-hover:text-[#349DC5] transition-colors">{user.name}</p>
-        <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">
+        <p className="text-sm font-bold text-text-primary dark:text-dark-text-primary truncate group-hover:text-primary transition-colors">{user.name}</p>
+        <p className="text-[10px] font-bold text-text-muted uppercase mt-1">
           {user.role} {user.unit ? `· ${user.unit}` : ""}
         </p>
       </div>
-      <ChevronLeft size={18} className="text-gray-300 rotate-180 group-hover:text-[#349DC5] transition-colors" />
+      <ChevronLeft size={18} className="text-text-muted rotate-180 group-hover:text-primary transition-colors" />
     </button>
   );
 
   return (
     <div className="min-h-screen bg-background dark:bg-dark-background flex flex-col">
-      <div className="bg-primary-dark p-10 pb-16">
+      <div className="bg-surface dark:bg-dark-surface p-10 pb-16 border-b border-border dark:border-dark-border">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigate(-1)}
-              className="p-3 bg-white/10 rounded-xl text-white hover:bg-white/20 transition-all active:scale-95"
+              className="p-3 bg-background dark:bg-dark-background rounded-xl text-text-primary dark:text-dark-text-primary hover:bg-border dark:hover:bg-dark-border transition-all active:scale-95 border border-border dark:border-dark-border"
             >
               <ChevronLeft size={24} />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white uppercase leading-none mb-2">
+              <h1 className="text-2xl font-bold text-text-primary dark:text-dark-text-primary uppercase leading-none mb-2">
                 Manage Registry
               </h1>
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] animate-pulse" />
-                <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                   Global Administrative Control
                 </span>
               </div>

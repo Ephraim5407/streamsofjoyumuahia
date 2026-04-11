@@ -14,6 +14,29 @@ import {
 import toast from "react-hot-toast";
 import AsyncStorage from "../../utils/AsyncStorage";
 import apiClient from "../../api/client";
+import { getUnitContext } from "../../utils/context";
+import { cn } from "../../components/LayoutWrapper";
+
+const UNIT_CONTEXT_RECOVERY =
+  "We could not determine your unit. Open your unit dashboard once, or sign out and back in, then try again.";
+
+async function resolveWorkPlanUnitContext(): Promise<{
+  unitId: string | null;
+  superAdminExempt: boolean;
+}> {
+  let superAdminExempt = false;
+  try {
+    const raw = await AsyncStorage.getItem("user");
+    if (raw) {
+      const u = JSON.parse(raw);
+      superAdminExempt = u?.activeRole === "SuperAdmin";
+    }
+  } catch {
+    /* ignore */
+  }
+  const unitId = await getUnitContext();
+  return { unitId, superAdminExempt };
+}
 
 // ------------------------------------------------------------------
 // Types
@@ -72,7 +95,8 @@ function serialize(
   startDate: string,
   endDate: string,
   plans: PlanDraft[],
-  status?: string
+  status?: string,
+  unit?: string | null
 ) {
   return {
     title: title || "Untitled Work Plan",
@@ -80,6 +104,7 @@ function serialize(
     startDate: startDate || undefined,
     endDate: endDate || undefined,
     ...(status ? { status } : {}),
+    ...(unit ? { unit } : {}),
     plans: plans.map((pl) => ({
       title: pl.title || "Untitled Plan",
       activities: pl.activities.map((a) => {
@@ -335,11 +360,21 @@ export default function NewWorkPlan() {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         if (!token) { toast.error("Missing auth token"); return; }
-        const userRaw = await AsyncStorage.getItem("user");
-        const user = userRaw ? JSON.parse(userRaw) : {};
-        const activeUnitId = user.activeUnitId || null;
-        const body = serialize(title, generalGoal, startDate, endDate, plans,
-          planStatus === "rejected" ? "pending" : undefined);
+        const { unitId: activeUnitId, superAdminExempt } = await resolveWorkPlanUnitContext();
+        if (!superAdminExempt && !activeUnitId) {
+          toast.error(UNIT_CONTEXT_RECOVERY);
+          return;
+        }
+
+        const body = serialize(
+          title, 
+          generalGoal, 
+          startDate, 
+          endDate, 
+          plans,
+          planStatus === "rejected" ? "pending" : undefined,
+          activeUnitId
+        );
         const resp = await apiClient.put(`/api/workplans/${editingId}`, body);
         if (!resp.data?.ok) { toast.error(resp.data?.error || "Failed"); return; }
         if (planStatus === "rejected") toast.success("Plan Resubmitted ✓ — back in pending review.");
@@ -356,10 +391,13 @@ export default function NewWorkPlan() {
         setSubmitting(true);
         const token = await AsyncStorage.getItem("token");
         if (!token) { toast.error("Missing auth token"); return; }
-        const userRaw = await AsyncStorage.getItem("user");
-        const user = userRaw ? JSON.parse(userRaw) : {};
-        const activeUnitId = user.activeUnitId || null;
-        const body = serialize(title, generalGoal, startDate, endDate, plans);
+        const { unitId: activeUnitId, superAdminExempt } = await resolveWorkPlanUnitContext();
+        if (!superAdminExempt && !activeUnitId) {
+          toast.error(UNIT_CONTEXT_RECOVERY);
+          return;
+        }
+
+        const body = serialize(title, generalGoal, startDate, endDate, plans, undefined, activeUnitId);
         const resp = await apiClient.put(`/api/workplans/${editingId}`, body);
         if (!resp.data?.ok) { toast.error(resp.data?.error || "Failed"); return; }
         toast.success("Draft saved");
@@ -374,10 +412,13 @@ export default function NewWorkPlan() {
       setSubmitting(true);
       const token = await AsyncStorage.getItem("token");
       if (!token) { toast.error("Missing auth token"); return; }
-      const userRaw = await AsyncStorage.getItem("user");
-      const user = userRaw ? JSON.parse(userRaw) : {};
-      const activeUnitId = user.activeUnitId || null;
-      const body = serialize(title, generalGoal, startDate, endDate, plans, "draft");
+      const { unitId: activeUnitId, superAdminExempt } = await resolveWorkPlanUnitContext();
+      if (!superAdminExempt && !activeUnitId) {
+        toast.error(UNIT_CONTEXT_RECOVERY);
+        return;
+      }
+
+      const body = serialize(title, generalGoal, startDate, endDate, plans, "draft", activeUnitId);
       const resp = await apiClient.post("/api/workplans", body);
       if (!resp.data?.ok) { toast.error(resp.data?.error || "Failed"); return; }
       toast.success("Draft saved");
@@ -385,6 +426,7 @@ export default function NewWorkPlan() {
     } catch (e: any) { toast.error(e.message); }
     finally { setSubmitting(false); }
   };
+
 
   // ------ Publish ------
   const publish = async () => {
@@ -398,10 +440,13 @@ export default function NewWorkPlan() {
       setSubmitting(true);
       const token = await AsyncStorage.getItem("token");
       if (!token) { toast.error("Missing auth token"); return; }
-      const userRaw = await AsyncStorage.getItem("user");
-      const user = userRaw ? JSON.parse(userRaw) : {};
-      const activeUnitId = user.activeUnitId || null;
-      const body = serialize(title, generalGoal, startDate, endDate, plans, "pending");
+      const { unitId: activeUnitId, superAdminExempt } = await resolveWorkPlanUnitContext();
+      if (!superAdminExempt && !activeUnitId) {
+        toast.error(UNIT_CONTEXT_RECOVERY);
+        return;
+      }
+
+      const body = serialize(title, generalGoal, startDate, endDate, plans, "pending", activeUnitId);
       let resp;
       if (editingId) {
         resp = await apiClient.put(`/api/workplans/${editingId}`, body);

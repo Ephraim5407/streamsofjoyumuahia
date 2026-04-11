@@ -1,5 +1,4 @@
-import axios from "axios";
-import { BASE_URl } from "./users";
+import apiClient from "./client";
 
 export interface UnitMemberLite {
   name?: string;
@@ -20,8 +19,6 @@ export interface UnitMemberLite {
 }
 
 export async function listUnitMembers(unitId: string, token: string) {
-  const res = await axios.get(`${BASE_URl}/api/units/${unitId}/members/list`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await apiClient.get(`/api/units/${unitId}/members/list`);
   return res.data as { ok?: boolean; members: UnitMemberLite[] };
 }

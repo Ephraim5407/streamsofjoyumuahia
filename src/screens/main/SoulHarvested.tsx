@@ -5,10 +5,10 @@ import {
   ArrowLeft, Search, Plus, X, ChevronDown, Check, Filter,
   User, Phone, MapPin, Calendar, Heart, Edit3, Trash2, Flame
 } from "lucide-react";
-import axios from "axios";
 import toast from "react-hot-toast";
-import { BASE_URl } from "../../api/users";
 import AsyncStorage from "../../utils/AsyncStorage";
+import apiClient from "../../api/client";
+import { getUnitContext } from "../../utils/context";
 
 interface SoulDoc {
   _id: string;
@@ -26,14 +26,8 @@ const AGE_RANGES = ["Under 16", "16 - 20", "21 - 30", "31 - 40", "41 - 50", "51+
 const CONVERTED_THROUGH = ["Evangelism", "Sunday Service", "Youth Programme", "A Friend", "Social Media", "Workshop", "Others"];
 const GENDER_OPTIONS = ["Male", "Female"];
 
-const getUnitId = async () => {
-  const direct = await AsyncStorage.getItem("activeUnitId");
-  if (direct) return direct;
-  const rawUser = await AsyncStorage.getItem("user");
-  if (!rawUser) return null;
-  const u = JSON.parse(rawUser);
-  return u?.activeUnitId || u?.activeUnit?._id || u?.activeUnit || (u?.roles || []).find((r: any) => r.role === "UnitLeader" && r.unit)?.unit || (u?.roles || []).find((r: any) => r.role === "Member" && r.unit)?.unit || null;
-};
+
+// Removed local getUnitId in favor of centralized getUnitContext
 
 export default function SoulHarvestedScreen() {
   const navigate = useNavigate();
@@ -71,12 +65,10 @@ export default function SoulHarvestedScreen() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const token = await AsyncStorage.getItem("token");
-      const uid = await getUnitId();
+      const uid = await getUnitContext();
       setUnitId(uid || "");
-      const res = await axios.get(`${BASE_URl}/api/souls`, {
+      const res = await apiClient.get(`/api/souls`, {
         params: { unitId: uid || undefined, year },
-        headers: { Authorization: `Bearer ${token}` }
       });
       const data = Array.isArray(res.data) ? res.data : res.data?.souls || [];
       setSouls(Array.isArray(data) ? data : []);
@@ -119,13 +111,12 @@ export default function SoulHarvestedScreen() {
     if (!name.trim() || !gender || !date) { toast.error("Please fill in required fields"); return; }
     setSubmitting(true);
     try {
-      const token = await AsyncStorage.getItem("token");
       const payload = { name, gender, phone, age, through, location: location2, date, unitId: unitId || undefined };
       if (editing) {
-        await axios.put(`${BASE_URl}/api/souls/${editing._id}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+        await apiClient.put(`/api/souls/${editing._id}`, payload);
         toast.success("Record updated");
       } else {
-        await axios.post(`${BASE_URl}/api/souls`, payload, { headers: { Authorization: `Bearer ${token}` } });
+        await apiClient.post(`/api/souls`, payload);
         toast.success("Soul Harvested recorded");
       }
       setShowForm(false); resetForm(); load();
@@ -136,8 +127,7 @@ export default function SoulHarvestedScreen() {
   const remove = async (id: string) => {
     if (!confirm("Delete this record?")) return;
     try {
-      const token = await AsyncStorage.getItem("token");
-      await axios.delete(`${BASE_URl}/api/souls/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await apiClient.delete(`/api/souls/${id}`);
       toast.success("Record deleted"); load();
     } catch { toast.error("Failed to delete"); }
   };
@@ -211,13 +201,13 @@ export default function SoulHarvestedScreen() {
 
         {/* Search + Add */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="flex-1 flex items-center gap-3 bg-white dark:bg-[#1a1c1e] rounded-[24px] px-6 py-4 border border-gray-100 dark:border-white/5 shadow-sm focus-within:border-[#349DC5]/30 transition-all">
+          <div className="flex-1 flex items-center gap-3 bg-white dark:bg-[#1a1c1e] rounded-2xl px-6 h-12 border border-gray-100 dark:border-white/5 shadow-sm focus-within:border-[#349DC5]/30 transition-all">
             <Search size={18} className="text-gray-300 shrink-0" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search record by name..." className="flex-1 bg-transparent text-sm font-bold text-[#00204a] dark:text-white placeholder:text-gray-200 outline-none uppercase tracking-wide" />
           </div>
           {canMutate && (
-            <button onClick={openNew} className="h-16 px-8 bg-[#349DC5] text-white rounded-[24px] text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10 active:scale-95 transition-all whitespace-nowrap">
-              <Plus size={18} /> Add Souls
+            <button onClick={openNew} className="h-12 px-6 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-primary/10 active:scale-95 transition-all whitespace-nowrap">
+              <Plus size={16} /> Add Souls
             </button>
           )}
         </div>
@@ -315,12 +305,12 @@ export default function SoulHarvestedScreen() {
                 {/* Name */}
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Full Name *</label>
-                  <input value={name} onChange={e => setName(e.target.value)} placeholder="Enter full name" className="w-full px-4 py-3 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a] text-sm font-bold text-[#00204a] dark:text-white outline-none" />
+                  <input value={name} onChange={e => setName(e.target.value)} placeholder="Enter full name" className="w-full px-4 h-12 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a] text-sm font-bold text-[#00204a] dark:text-white outline-none" />
                 </div>
                 {/* Gender */}
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Gender *</label>
-                  <button onClick={() => setShowGenderPicker(true)} className="w-full flex items-center justify-between px-4 py-3 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a]">
+                  <button onClick={() => setShowGenderPicker(true)} className="w-full flex items-center justify-between px-4 h-12 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a]">
                     <span className={`text-sm font-bold ${gender ? "text-[#00204a] dark:text-white" : "text-gray-300"}`}>{gender || "Select gender"}</span>
                     <ChevronDown size={16} className="text-gray-400" />
                   </button>
@@ -328,12 +318,12 @@ export default function SoulHarvestedScreen() {
                 {/* Phone */}
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Phone Number</label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g., 08040356328" className="w-full px-4 py-3 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a] text-sm font-bold text-[#00204a] dark:text-white outline-none" />
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g., 08040356328" className="w-full px-4 h-12 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a] text-sm font-bold text-[#00204a] dark:text-white outline-none" />
                 </div>
                 {/* Age */}
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Age</label>
-                  <button onClick={() => setShowAgePicker(true)} className="w-full flex items-center justify-between px-4 py-3 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a]">
+                  <button onClick={() => setShowAgePicker(true)} className="w-full flex items-center justify-between px-4 h-12 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a]">
                     <span className={`text-sm font-bold ${age ? "text-[#00204a] dark:text-white" : "text-gray-300"}`}>{age || "Select age range"}</span>
                     <ChevronDown size={16} className="text-gray-400" />
                   </button>
@@ -341,7 +331,7 @@ export default function SoulHarvestedScreen() {
                 {/* Converted Through */}
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Converted Through</label>
-                  <button onClick={() => setShowThroughPicker(true)} className="w-full flex items-center justify-between px-4 py-3 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a]">
+                  <button onClick={() => setShowThroughPicker(true)} className="w-full flex items-center justify-between px-4 h-12 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a]">
                     <span className={`text-sm font-bold ${through ? "text-[#00204a] dark:text-white" : "text-gray-300"}`}>{through || "How were they converted?"}</span>
                     <ChevronDown size={16} className="text-gray-400" />
                   </button>
@@ -349,17 +339,17 @@ export default function SoulHarvestedScreen() {
                 {/* Location */}
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Location</label>
-                  <input value={location2} onChange={e => setLocation2(e.target.value)} placeholder="e.g., Aba" className="w-full px-4 py-3 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a] text-sm font-bold text-[#00204a] dark:text-white outline-none" />
+                  <input value={location2} onChange={e => setLocation2(e.target.value)} placeholder="e.g., Aba" className="w-full px-4 h-12 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a] text-sm font-bold text-[#00204a] dark:text-white outline-none" />
                 </div>
                 {/* Date */}
                 <div>
                   <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Date *</label>
-                  <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-4 py-3 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a] text-sm font-bold text-[#00204a] dark:text-white outline-none" />
+                  <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-4 h-12 border border-gray-100 dark:border-white/10 rounded-2xl bg-white dark:bg-[#2a2a2a] text-sm font-bold text-[#00204a] dark:text-white outline-none" />
                 </div>
               </div>
               <div className="px-6 py-4 border-t border-gray-50 dark:border-white/5 flex gap-3">
-                <button onClick={() => { setShowForm(false); resetForm(); }} className="flex-1 py-4 rounded-2xl border border-gray-200 dark:border-white/10 text-xs font-black text-gray-400 uppercase tracking-widest">Cancel</button>
-                <button onClick={submit} disabled={submitting} className="flex-1 py-4 bg-[#349DC5] text-white rounded-2xl font-black text-xs uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2">
+                <button onClick={() => { setShowForm(false); resetForm(); }} className="flex-1 h-12 rounded-2xl border border-gray-200 dark:border-white/10 text-[10px] font-black text-gray-400 uppercase tracking-widest">Cancel</button>
+                <button onClick={submit} disabled={submitting} className="flex-1 h-12 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2">
                   {submitting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                   {editing ? "Update" : "Save"}
                 </button>

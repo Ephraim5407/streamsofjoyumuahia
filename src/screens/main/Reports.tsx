@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import {
   Search, Heart, GraduationCap, Music, Car,
   MessageSquare, Users, UserPlus, Flame, Handshake,
-  Calendar, Award, TrendingUp, ChevronRight, ShieldCheck,
-  LayoutDashboard, HandHeart, RefreshCw, DollarSign,
+  Calendar, TrendingUp,
+  LayoutDashboard, HandHeart, DollarSign,
 } from "lucide-react";
 import axios from "axios";
 import { BASE_URl } from "../../api/users";
@@ -398,9 +398,10 @@ export default function ReportsHub() {
 
   const safeRole = String(activeRole || "");
   const normalizedRole = safeRole.toLowerCase().replace(/[^a-z]/g, "");
-  const isAltAdmin = normalizedRole.includes("superadmin") || normalizedRole.includes("ministryadmin");
+  /* Matches App/src/screens/Tab/ReportScreen.tsx: SuperAdmin → ComingSoon */
+  const isSuperAdminTab = normalizedRole.includes("superadmin");
 
-  if (isAltAdmin) {
+  if (isSuperAdminTab) {
     return (
       <ComingSoon
         title="Reporting Hub"
@@ -412,80 +413,71 @@ export default function ReportsHub() {
   }
 
   return (
-    <div className="pb-24 max-w-7xl mx-auto px-4 sm:px-6 pt-6 font-bold">
-      <header className="mb-10 sticky top-0 z-20 bg-gray-50/90 dark:bg-[#121212]/90 backdrop-blur-md pt-4 pb-4">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-[#00204a] text-white rounded-xl flex items-center justify-center shadow">
-              <LayoutDashboard size={32} />
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold text-[#00204a] dark:text-white leading-none uppercase tracking-tight">
-                Reports
-              </h1>
-              <p className="text-[10px] font-black text-[#349DC5] uppercase mt-2 tracking-widest">
-                {unitName || "Unit Hub"}
-              </p>
-            </div>
-          </div>
+    <div className="flex flex-col min-h-full bg-[#f7f9fb] dark:bg-[#121212] font-bold">
+      {/* Fixed header bar — same hierarchy as App UnitLeader ReportScreen (PRIMARY_BLUE bar + Reports title) */}
+      <header className="shrink-0 z-30 bg-[#349DC5] text-white shadow-sm">
+        <div className="px-5 pt-4 pb-5 max-w-7xl mx-auto w-full">
+          <h1 className="text-2xl sm:text-[25px] font-bold capitalize tracking-tight text-white">
+            Reports
+          </h1>
+          {unitName ? (
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/85 mt-1">
+              {unitName}
+            </p>
+          ) : null}
         </div>
-        <div className="relative group max-w-2xl">
-          <Search
-            className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#349DC5] transition-colors"
-            size={20}
-          />
-          <input
-            type="text"
-            placeholder="Search report modules..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-16 pl-14 pr-6 bg-white dark:bg-[#1a1c1e] rounded-xl shadow-sm border border-gray-100 dark:border-white/5 font-bold text-sm outline-none focus:border-[#349DC5]/20 transition-all placeholder:text-gray-300 text-[#00204a] dark:text-white uppercase"
-          />
+        <div className="px-5 pb-4 max-w-7xl mx-auto w-full">
+          <div className="relative max-w-2xl">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50"
+              size={18}
+            />
+            <input
+              type="search"
+              placeholder="Search reports…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/15 border border-white/25 text-white text-sm font-semibold placeholder:text-white/50 outline-none focus:bg-white/20 focus:border-white/40"
+            />
+          </div>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredTools.map((tool, index) => (
-          <motion.div
-            key={tool.key}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.03 }}
-            onClick={() => navigate(tool.path)}
-            className="group bg-white dark:bg-[#1a1c1e] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 cursor-pointer hover:border-[#349DC5]/30 transition-all active:scale-95 flex flex-col items-center text-center"
-          >
-            <div className={cn("w-16 h-16 rounded-full flex items-center justify-center mb-6 transition-transform group-hover:scale-110 shadow-inner", tool.bg, tool.color)}>
-              <tool.icon size={28} />
-            </div>
-            <h3 className="text-base font-bold text-[#00204a] dark:text-white mb-2 group-hover:text-[#349DC5] transition-colors leading-snug">
-              {tool.title}
-            </h3>
-            <p className="text-gray-400 font-medium text-xs leading-relaxed mb-6 flex-1">
-              {tool.description}
-            </p>
-            <div className="mt-auto flex items-center gap-2 text-[10px] font-bold text-[#349DC5] uppercase bg-blue-50 dark:bg-blue-900/10 px-5 py-2.5 rounded-xl group-hover:bg-[#349DC5] group-hover:text-white transition-all">
-              Open <ChevronRight size={14} />
-            </div>
-          </motion.div>
-        ))}
+      <div className="flex-1 px-3 sm:px-5 py-5 max-w-7xl mx-auto w-full pb-28 md:pb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {filteredTools.map((tool, index) => (
+            <motion.button
+              type="button"
+              key={tool.key}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.02 }}
+              onClick={() => navigate(tool.path)}
+              title={tool.description}
+              className="group flex flex-col items-center justify-center min-h-[130px] rounded-[10px] bg-white dark:bg-[#1a1c1e] p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-none border border-[#eee] dark:border-white/5 active:scale-[0.98] transition-transform text-center"
+            >
+              <div
+                className={cn(
+                  "w-14 h-14 rounded-full flex items-center justify-center mb-2",
+                  tool.bg,
+                  tool.color,
+                )}
+              >
+                <tool.icon size={26} />
+              </div>
+              <span className="text-sm font-bold text-[#333] dark:text-white leading-snug">
+                {tool.title}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+
+        {filteredTools.length === 0 && (
+          <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4 text-[#333] dark:text-white">
+            <p className="text-sm font-bold">No reports match your search</p>
+          </div>
+        )}
       </div>
-
-      {filteredTools.length === 0 && (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] gap-6">
-          <div className="w-20 h-20 rounded-[40px] bg-gray-50 dark:bg-white/5 flex items-center justify-center text-5xl">📋</div>
-          <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest">No modules match your search</p>
-        </div>
-      )}
-
-      <footer className="mt-20 py-10 border-t border-gray-100 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 opacity-60">
-        <div className="flex items-center gap-3">
-          <ShieldCheck size={18} className="text-emerald-500" />
-          <span className="text-[9px] font-bold uppercase text-[#00204a] dark:text-white">Secure Deployment Link</span>
-        </div>
-        <p className="text-[9px] font-bold uppercase text-gray-400 text-center">
-          © 2025 STREAMS OF JOY • UNIT DASHBOARD
-        </p>
-      </footer>
     </div>
   );
 }
