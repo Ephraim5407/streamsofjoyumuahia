@@ -213,16 +213,16 @@ export default function LoginScreen() {
   }, [pendingUserId, password, navigate, storedEmail, user]);
 
   return (
-    <div className="min-h-[100dvh] w-full bg-white dark:bg-[#0f1218] flex flex-col items-center justify-start pt-10 px-5">
+    <div className="min-h-[100dvh] w-full bg-background dark:bg-dark-background flex flex-col items-center justify-start pt-10 px-5">
       <div className="w-full max-w-md flex flex-col relative z-10 pb-[120px]">
         {/* Top bar */}
         {activeTab === "login" && (
           <div className="flex justify-end w-full mb-8 mt-2">
             <button
               onClick={() => toast.success("Login to access notifications")}
-              className="p-[6px] hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              className="p-[6px] hover:bg-surface-alt dark:hover:bg-dark-surface-alt transition-colors"
             >
-              <Bell size={28} color="#349DC5" strokeWidth={1.5} />
+              <Bell size={28} className="text-primary" strokeWidth={1.5} />
             </button>
           </div>
         )}
@@ -298,7 +298,7 @@ export default function LoginScreen() {
                         setDeactivatedUser(null);
                         setActiveTab("support");
                       }}
-                      className="w-full py-4 rounded-2xl bg-[#349DC5] hover:bg-[#2d8ab0] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all active:scale-95 mb-4"
+                      className="w-full h-[48px] rounded-2xl bg-primary hover:opacity-90 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95 mb-4"
                     >
                       <Headset size={18} /> Talk to Support
                     </button>
@@ -314,7 +314,7 @@ export default function LoginScreen() {
                 /* Normal login form */
                 <div className="flex flex-col w-full px-5">
                   <div className="text-center mb-[30px]">
-                    <p className="text-[17px] font-medium text-[#555555ff]">
+                    <p className="text-[17px] font-medium text-text-secondary dark:text-dark-text-secondary">
                       {user
                         ? `Welcome back, ${user?.surname || ""} ${user?.firstName || ""}!`
                         : "Welcome back!"}
@@ -322,10 +322,10 @@ export default function LoginScreen() {
                   </div>
 
                   <div className="w-full mb-[10px]">
-                    <label className="block text-[14px] font-medium text-[#555555ff] mb-2 px-1">
+                    <label className="block text-[14px] font-medium text-text-secondary dark:text-dark-text-secondary mb-2 px-1">
                       Password
                     </label>
-                    <div className="flex items-center w-full border border-[#e0e0e0] rounded-lg bg-[#fafcff] px-2.5 h-[48px] transition-all duration-200">
+                    <div className="flex items-center w-full border border-border dark:border-dark-border rounded-lg bg-surface-alt dark:bg-dark-surface-alt px-2.5 h-[48px] transition-all duration-200">
                       <input
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter password"
@@ -334,11 +334,11 @@ export default function LoginScreen() {
                         onKeyDown={(e) =>
                           e.key === "Enter" && handlePasswordLogin()
                         }
-                        className="flex-1 h-full text-[16px] text-[#222] bg-transparent outline-none px-2 font-normal placeholder:text-[#666]"
+                        className="flex-1 h-full text-[16px] text-text-primary dark:text-dark-text-primary bg-transparent outline-none px-2 font-normal placeholder:text-text-muted dark:placeholder:text-dark-text-muted"
                       />
                       <button
                         onClick={() => setShowPassword((p) => !p)}
-                        className="p-2 transition-transform active:scale-90 text-[#555555ff]"
+                        className="p-2 transition-transform active:scale-90 text-text-secondary dark:text-dark-text-secondary"
                       >
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
@@ -363,8 +363,7 @@ export default function LoginScreen() {
                     <button
                       onClick={handlePasswordLogin}
                       disabled={loading}
-                      style={{ backgroundColor: "#349DC5" }}
-                      className="w-[90%] h-[50px] rounded-lg text-white font-semibold text-[16px] flex items-center justify-center disabled:opacity-60 transition-all cursor-pointer"
+                      className="w-[90%] h-[48px] rounded-lg bg-primary text-white font-semibold text-[16px] flex items-center justify-center disabled:opacity-60 transition-all cursor-pointer shadow-lg shadow-primary/20"
                     >
                       {loading ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -386,8 +385,7 @@ export default function LoginScreen() {
                           { icon: "📱" },
                         )
                       }
-                      style={{ backgroundColor: "#349DC5" }}
-                      className="w-[90%] h-[50px] rounded-lg text-white font-semibold text-[16px] flex items-center justify-center transition-all cursor-pointer"
+                      className="w-[90%] h-[48px] rounded-lg bg-primary text-white font-semibold text-[16px] flex items-center justify-center transition-all cursor-pointer shadow-lg shadow-primary/20"
                     >
                       <Fingerprint size={22} className="shrink-0 mr-[2px]" />
                       <span>Biometric</span>
@@ -410,15 +408,15 @@ export default function LoginScreen() {
             onClick={() => setActiveTab("login")}
             className="flex-1 flex flex-col items-center justify-center"
           >
-            <LockKeyhole size={25} color="#349DC5" />
-            <span className="text-[12px] text-[#349DC5] font-bold mt-[2px]">Login</span>
+            <LockKeyhole size={25} className="text-primary" />
+            <span className="text-[12px] text-primary font-bold mt-[2px]">Login</span>
           </button>
           <button
             onClick={() => setActiveTab("support")}
             className="flex-1 flex flex-col items-center justify-center"
           >
-            <Headset size={25} color="#349DC5" />
-            <span className="text-[12px] text-[#349DC5] font-bold mt-[2px]">Support</span>
+            <Headset size={25} className="text-primary" />
+            <span className="text-[12px] text-primary font-bold mt-[2px]">Support</span>
           </button>
         </div>
       </div>

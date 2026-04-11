@@ -5,35 +5,64 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  /* ============================================================
+     STREAMS OF JOY — MOBILE PARITY THEME
+     ============================================================ */
   --color-primary: #349DC5;
+  --color-primary-light: #7DC3E8;
+  --color-primary-dark: #1f7aa0;
+  --color-primary-muted: rgba(52, 157, 197, 0.12);
+
   --color-background: #F5F7FA;
+  --color-background-alt: #F9FAFB;
   --color-surface: #ffffff;
-  --color-card: #ffffff;
-  --color-text: #111827;
+  --color-surface-alt: #F8FAFC;
+  --color-surface-raised: #ffffff;
+
+  --color-text-primary: #111827;
   --color-text-secondary: #374151;
   --color-text-muted: #6B7280;
+  --color-text-inverse: #FFFFFF;
+  --color-text-on-primary: #FFFFFF;
+  --color-text-link: #349DC5;
+
   --color-border: #E6EEF5;
   --color-border-light: #F3F4F6;
-  --color-notification: #349DC5;
+  --color-border-focus: #349DC5;
 
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Dark Theme Overrides */
+  --color-dark-primary: #4EB8DC;
   --color-dark-background: #0f1117;
+  --color-dark-background-alt: #141720;
   --color-dark-surface: #1e2130;
-  --color-dark-card: #1e2130;
-  --color-dark-text: #F1F5F9;
+  --color-dark-surface-alt: #252939;
+  --color-dark-surface-raised: #1e2130;
+
+  --color-dark-text-primary: #F1F5F9;
   --color-dark-text-secondary: #CBD5E1;
+  --color-dark-text-muted: #64748B;
+  --color-dark-text-inverse: #FFFFFF;
+  --color-dark-text-on-primary: #FFFFFF;
+  --color-dark-text-link: #4EB8DC;
+
   --color-dark-border: #2a3045;
+  --color-dark-border-light: #1e2534;
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-background text-text transition-colors duration-300 font-sans;
+    @apply bg-background text-text-primary transition-colors duration-300 font-sans;
   }
 }
 
 .dark body {
-  @apply bg-dark-background text-dark-text;
+  @apply bg-dark-background text-dark-text-primary;
 }
 
 /* Base resets that mimic React Native defaults for Web */

@@ -42,6 +42,13 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Auto-inject active unit context for Unit Leaders / Admins
+    const activeUnitId = await AsyncStorage.getItem("activeUnitId");
+    if (activeUnitId && activeUnitId !== "global") {
+      config.headers["x-active-unit"] = String(activeUnitId);
+    }
+
     return config;
   },
   (error) => Promise.reject(error),

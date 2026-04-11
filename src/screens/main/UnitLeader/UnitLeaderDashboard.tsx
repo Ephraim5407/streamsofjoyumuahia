@@ -20,8 +20,8 @@ import {
   X,
   User,
 } from "lucide-react";
-import axios from "axios";
 import toast from "react-hot-toast";
+import apiClient from "../../../api/client";
 import { BASE_URl } from "../../../api/users";
 import {
   getUnitLeaderSummary,
@@ -61,9 +61,7 @@ export default function UnitLeaderDashboard() {
 
         let u: any = null;
         try {
-          const meRes = await axios.get(`${BASE_URl}/api/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const meRes = await apiClient.get(`/api/users/me`);
           if (meRes.data?.ok) {
             u = meRes.data.user;
             const aid = await AsyncStorage.getItem("activeUnitId");
@@ -78,16 +76,8 @@ export default function UnitLeaderDashboard() {
         const unitId = u?.activeUnitId || u?.activeUnit?._id || u?.activeUnit || null;
         const [sumRes, convRes, eventsRes] = await Promise.all([
           getUnitLeaderSummary(token, unitId),
-          axios
-            .get(`${BASE_URl}/api/messages/conversations`, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-            .catch(() => null),
-          axios
-            .get(`${BASE_URl}/api/events`, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-            .catch(() => ({ data: [] })),
+          apiClient.get(`/api/messages/conversations`).catch(() => null),
+          apiClient.get(`/api/events`).catch(() => ({ data: [] })),
         ]);
 
         if (sumRes?.ok) setSummary(sumRes);

@@ -408,13 +408,19 @@ export default function RegularRegistrationForm() {
     title &&
     surname &&
     firstName &&
+    middleName &&
     churchId &&
-    (activeRole !== "UnitLeader" || unitLead) &&
+    workerSelection &&
+    (activeRole === "UnitLeader"
+      ? unitLead && unitMember
+      : activeRole === "Member"
+        ? unitMember
+        : true) &&
     gender &&
     phone &&
     phoneStatus === "free" &&
     allRulesOk &&
-    passwordsMatch,
+    passwordsMatch
   );
   /* Build worker (ministry) options from selected church */ const workerOptions =
     useMemo(() => {
@@ -659,6 +665,7 @@ export default function RegularRegistrationForm() {
         employmentStatus,
         maritalStatus,
         churchId: churchId || undefined,
+        ministryName: workerSelection || undefined,
         specificFields,
         workFields,
       };
@@ -814,19 +821,21 @@ export default function RegularRegistrationForm() {
                     value={unitLead}
                     onChange={setUnitLead}
                     options={unitOptions}
-                    placeholder="Select the unit you lead"
+                    placeholder={!workerSelection ? "Select ministry first" : "Select the unit you lead"}
+                    disabled={!workerSelection || unitOptions.length === 0}
                   />
                 )}{" "}
-                {/* {(activeRole === "UnitLeader" || activeRole === "Member") && (
-                <Select
-                  label="Unit Where You Belong"
-                  sublabel="You may eventually belong to more than one unit. For now, select only one."
-                  value={unitMember}
-                  onChange={setUnitMember}
-                  options={unitOptions}
-                  placeholder="Select a unit"
-                />
-              )}{" "} */}
+                {(activeRole === "UnitLeader" || activeRole === "Member") && (
+                  <Select
+                    label="Unit Where You Belong"
+                    sublabel="You may eventually belong to more than one unit. For now, select only one."
+                    value={unitMember}
+                    onChange={setUnitMember}
+                    options={unitOptions}
+                    placeholder={!workerSelection ? "Select ministry first" : "Select a unit"}
+                    disabled={!workerSelection || unitOptions.length === 0}
+                  />
+                )}
                 <Select
                   label="Gender"
                   value={gender}

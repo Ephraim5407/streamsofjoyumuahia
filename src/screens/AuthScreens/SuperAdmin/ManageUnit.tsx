@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ChevronLeft, Search, Briefcase, CheckSquare, User, ShieldCheck } from "lucide-react";
+import apiClient from "../../../api/client";
 import { BASE_URl } from "../../../api/users";
 import AsyncStorage from "../../../utils/AsyncStorage";
 
@@ -18,6 +19,7 @@ interface DisplayUser {
 interface BackendRole {
   role: string;
   unit?: any;
+  unitName?: string;
   ministryName?: string;
 }
 
@@ -79,17 +81,19 @@ export default function ManageUnit() {
         const name = `${u.firstName || ""} ${u.surname || ""}`.trim() || "Unnamed";
         (u.roles || []).forEach((r) => {
           const rk = (r.role || "").toLowerCase();
+          // Normalized checks for consistency
           if (rk === "superadmin") {
-            if (rLower === "superadmin" && !saMap.has(u._id))
+            if (activeUserRole === "SuperAdmin" && !saMap.has(u._id))
               saMap.set(u._id, { id: u._id, name, role: "Super Admin", avatarUri: avatar, unit: "" });
           } else if (rk === "ministryadmin") {
-            if ((rLower === "superadmin" || (rLower === "ministryadmin" && r.ministryName === ministry)) && !saMap.has(u._id))
+            const mMatch = r.ministryName === ministry;
+            if ((activeUserRole === "SuperAdmin" || (activeUserRole === "MinistryAdmin" && mMatch)) && !saMap.has(u._id))
               saMap.set(u._id, { id: u._id, name, role: "Super Admin", avatarUri: avatar, unit: "" });
             if (!maMap.has(u._id))
               maMap.set(u._id, { id: u._id, name, role: "Ministry Admin", avatarUri: avatar, unit: r.ministryName || "" });
           } else if (rk === "unitleader") {
-            if ((rLower === "superadmin" || r.ministryName === ministry) && !ulMap.has(u._id)) {
-              const unitName = r.unit?.name || r.unit || "";
+            if ((activeUserRole === "SuperAdmin" || r.ministryName === ministry) && !ulMap.has(u._id)) {
+              const unitName = r.unit?.name || r.unitName || r.unit || "";
               ulMap.set(u._id, { id: u._id, name, role: "Unit Leader", avatarUri: avatar, unit: unitName });
             }
           }
@@ -108,7 +112,7 @@ export default function ManageUnit() {
         unitLeaders: Array.from(ulMap.values()),
       };
     },
-    [],
+    [activeUserRole],
   );
 
   const fetchAll = useCallback(async () => {
@@ -120,8 +124,8 @@ export default function ManageUnit() {
         return;
       }
       const [meResp, usersResp] = await Promise.allSettled([
-        axios.get(`${BASE_URl}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${BASE_URl}/api/users`, { headers: { Authorization: `Bearer ${token}` } }),
+        apiClient.get(`/api/users/me`),
+        apiClient.get(`/api/users`),
       ]);
 
       let currentUser: BackendUser | null = null;
@@ -162,8 +166,8 @@ export default function ManageUnit() {
       if (!token) return;
       const h = { Authorization: `Bearer ${token}` };
       const [ul, wp] = await Promise.allSettled([
-        axios.get(`${BASE_URl}/api/users/pending/list?type=unit-leaders`, { headers: h }),
-        axios.get(`${BASE_URl}/api/workplans?status=pending`, { headers: h }),
+        apiClient.get(`/api/users/pending/list?type=unit-leaders`),
+        apiClient.get(`/api/workplans?status=pending`),
       ]);
       if (ul.status === "fulfilled")
         setPendingUnits((ul.value.data.users || []).filter((u: any) => u.roles?.some((r: any) => r.role === "UnitLeader")).length);
@@ -216,8 +220,8 @@ export default function ManageUnit() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f1218] flex flex-col">
-      <div className="bg-[#00204a] p-10 pb-16">
+    <div className="min-h-screen bg-background dark:bg-dark-background flex flex-col">
+      <div className="bg-primary-dark p-10 pb-16">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-6">
             <button
@@ -249,7 +253,7 @@ export default function ManageUnit() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search administrator identity..."
-            className="w-full h-16 pl-16 pr-8 bg-white dark:bg-[#1a1c1e] border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm text-sm font-bold text-[#00204a] dark:text-white placeholder:text-gray-300 outline-none focus:ring-4 ring-[#349DC5]/5"
+            className="w-full h-[48px] pl-16 pr-8 bg-surface dark:bg-dark-surface border border-border dark:border-dark-border rounded-2xl shadow-sm text-sm font-bold text-text-primary dark:text-dark-text-primary placeholder:text-text-muted outline-none focus:ring-4 ring-primary/5"
           />
         </div>
 
@@ -257,12 +261,12 @@ export default function ManageUnit() {
           <div className="relative">
             <button
               onClick={() => navigate("/sa/approve-unit-leaders")}
-              className="w-full h-16 flex items-center justify-center gap-3 bg-white dark:bg-[#1a1c1e] text-[#349DC5] border border-gray-100 dark:border-white/5 rounded-2xl font-black text-[10px] uppercase shadow-sm hover:bg-[#349DC5] hover:text-white transition-all active:scale-95 group"
+              className="w-full h-[48px] flex items-center justify-center gap-3 bg-surface dark:bg-dark-surface text-primary border border-border dark:border-dark-border rounded-2xl font-black text-[10px] uppercase shadow-sm hover:bg-primary hover:text-white transition-all active:scale-95 group"
             >
               <CheckSquare size={20} className="group-hover:scale-110 transition-transform" /> Approve Unit Leaders
             </button>
             {pendingUnits > 0 && (
-              <span className="absolute -top-3 -right-3 w-7 h-7 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg border-4 border-gray-50 dark:border-[#0f1218]">
+              <span className="absolute -top-3 -right-3 w-7 h-7 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg border-4 border-background dark:border-dark-background">
                 {pendingUnits}
               </span>
             )}
@@ -270,12 +274,12 @@ export default function ManageUnit() {
           <div className="relative">
             <button
               onClick={() => navigate("/sa/work-plans")}
-              className="w-full h-16 flex items-center justify-center gap-3 bg-white dark:bg-[#1a1c1e] text-[#349DC5] border border-gray-100 dark:border-white/5 rounded-2xl font-black text-[10px] uppercase shadow-sm hover:bg-[#349DC5] hover:text-white transition-all active:scale-95 group"
+              className="w-full h-[48px] flex items-center justify-center gap-3 bg-surface dark:bg-dark-surface text-primary border border-border dark:border-dark-border rounded-2xl font-black text-[10px] uppercase shadow-sm hover:bg-primary hover:text-white transition-all active:scale-95 group"
             >
               <Briefcase size={20} className="group-hover:scale-110 transition-transform" /> Work Plans
             </button>
             {pendingWork > 0 && (
-              <span className="absolute -top-3 -right-3 w-7 h-7 bg-amber-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg border-4 border-gray-50 dark:border-[#0f1218]">
+              <span className="absolute -top-3 -right-3 w-7 h-7 bg-amber-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg border-4 border-background dark:border-dark-background">
                 {pendingWork}
               </span>
             )}

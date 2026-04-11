@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
+import apiClient from "../../api/client";
 import AsyncStorage from "../../utils/AsyncStorage";
 import { BASE_URl } from "../../api/users";
 import SuperAdminDashboard from "./SuperAdmin/DashboardScreen";
@@ -23,9 +24,7 @@ export default function HomeScreen() {
 
         // Always fetch fresh from API so profile stays up-to-date
         try {
-          const res = await axios.get(`${BASE_URl}/api/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await apiClient.get(`/api/users/me`);
           if (res.data?.ok) {
             const user = res.data.user;
             // Merge any locally stored activeUnitId
@@ -58,9 +57,9 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-[#0f1218]">
-        <div className="w-14 h-14 border-4 border-[#349DC5] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-[10px] font-bold text-[#349DC5] uppercase tracking-[0.3em] animate-pulse">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background dark:bg-dark-background">
+        <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em] animate-pulse">
           Establishing Connection...
         </p>
       </div>

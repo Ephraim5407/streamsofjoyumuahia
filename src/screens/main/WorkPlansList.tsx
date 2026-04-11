@@ -5,11 +5,10 @@ import {
   ArrowLeft, Plus, FileText, Search, Star, StarHalf,
   ChevronRight, Calendar, AlertCircle, RefreshCw, MoreVertical, Trash2, Edit3, Eye, CheckCircle2
 } from "lucide-react";
-import axios from "axios";
-import { BASE_URl } from "../../api/users";
 import toast from "react-hot-toast";
-
-const token = () => localStorage.getItem("token");
+import apiClient from "../../api/client";
+import { BASE_URl } from "../../api/users";
+import AsyncStorage from "../../utils/AsyncStorage";
 
 interface Activity {
   title?: string;
@@ -74,7 +73,7 @@ export default function WorkPlansList() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get(`${BASE_URl}/api/users/me`, { headers: { Authorization: `Bearer ${token()}` } });
+        const res = await apiClient.get(`/api/users/me`);
         if (res.data?.ok) {
           const u = res.data.user;
           setCurrentUserId(u._id);
@@ -101,23 +100,9 @@ export default function WorkPlansList() {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const uRes = await axios.get(`${BASE_URl}/api/users/me`, { headers: { Authorization: `Bearer ${token()}` } }).catch(() => null);
-      let activeUnitId = null;
-      if (uRes?.data?.ok) {
-        const u = uRes.data.user;
-        activeUnitId = u.activeUnitId;
-        if (!activeUnitId) {
-          const match = (u.roles || []).find((r: any) => r.role === u.activeRole && r.unit);
-          activeUnitId = match ? match.unit : null;
-        }
-      }
-      const headers: any = { Authorization: `Bearer ${token()}` };
-      if (activeUnitId) headers["x-active-unit"] = activeUnitId;
-
-      const res = await axios.get(`${BASE_URl}/api/workplans`, { headers });
+      const res = await apiClient.get("/api/workplans");
       if (res.data?.ok) {
-        const remote = res.data.items || [];
-        setItems(remote); // Local drafts logic skipped to prioritize backend sync parity
+        setItems(res.data.items || []);
       } else throw new Error(res.data?.error || "Failed to load");
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
@@ -143,7 +128,7 @@ export default function WorkPlansList() {
   const doDelete = async (id: string) => {
     setDeleting(true);
     try {
-      await axios.delete(`${BASE_URl}/api/workplans/${id}`, { headers: { Authorization: `Bearer ${token()}` } });
+      await apiClient.delete(`/api/workplans/${id}`);
       setItems(cur => cur.filter(i => i._id !== id));
       setShowDeleteModal(null);
       toast.success("Work Plan deleted");
@@ -154,18 +139,6 @@ export default function WorkPlansList() {
 
   const publishDraft = async (draft: WorkPlanSummary) => {
     try {
-      const headers: any = { "Content-Type": "application/json", Authorization: `Bearer ${token()}` };
-      const uRes = await axios.get(`${BASE_URl}/api/users/me`, { headers }).catch(() => null);
-      let activeUnitId = null;
-      if (uRes?.data?.ok) {
-        const u = uRes.data.user;
-        activeUnitId = u.activeUnitId;
-        if (!activeUnitId) {
-          const match = (u.roles || []).find((r: any) => r.role === u.activeRole && r.unit);
-          activeUnitId = match ? match.unit : null;
-        }
-      }
-      if (activeUnitId) headers["x-active-unit"] = activeUnitId;
       const body: any = {
         title: draft.title,
         startDate: draft.startDate || null,
@@ -181,7 +154,7 @@ export default function WorkPlansList() {
           })),
         })),
       };
-      await axios.put(`${BASE_URl}/api/workplans/${draft._id}`, body, { headers });
+      await apiClient.put(`/api/workplans/${draft._id}`, body);
       toast.success("Draft published — pending review");
       load();
     } catch (e: any) {

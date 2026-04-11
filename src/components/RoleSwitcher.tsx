@@ -159,19 +159,19 @@ export default function RoleSwitcher({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative w-full max-w-lg bg-white dark:bg-[#1a1c1e] rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl border-t sm:border border-white/20 dark:border-white/5 pb-safe"
+              className="relative w-full max-w-lg bg-surface dark:bg-dark-surface rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl border-t sm:border border-border dark:border-dark-border pb-safe"
             >
-              <div className="px-8 pt-8 pb-6 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
+              <div className="px-8 pt-8 pb-6 flex items-center justify-between border-b border-border-light dark:border-dark-border-light">
                 <div>
-                  <h3 className="text-xl font-bold text-[#00204a] dark:text-white flex items-center gap-2">
-                    <RefreshCw className={cn("w-5 h-5 text-[#349DC5]", loading && "animate-spin")} />
+                  <h3 className="text-xl font-bold text-text-primary dark:text-dark-text-primary flex items-center gap-2">
+                    <RefreshCw className={cn("w-5 h-5 text-primary", loading && "animate-spin")} />
                     Switch Active Identity
                   </h3>
-                  <p className="text-sm text-gray-500 font-bold uppercase mt-1">Authorized Roles</p>
+                  <p className="text-sm text-text-muted font-bold uppercase mt-1">Authorized Roles</p>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                  className="p-2 rounded-xl bg-surface-alt dark:bg-dark-surface-alt text-text-muted hover:text-text-primary dark:hover:text-dark-text-primary transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -180,8 +180,8 @@ export default function RoleSwitcher({
               <div className="p-6 max-h-[50vh] overflow-y-auto no-scrollbar space-y-3">
                 {loading ? (
                   <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-10 h-10 border-4 border-[#349DC5] border-t-transparent rounded-full animate-spin mb-4" />
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-[0.2em]">Syncing permissions...</p>
+                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+                    <p className="text-xs text-text-muted font-bold uppercase tracking-[0.2em]">Syncing permissions...</p>
                   </div>
                 ) : (
                   profile?.roles?.map((r: any, idx: number) => {
@@ -206,16 +206,16 @@ export default function RoleSwitcher({
                         className={cn(
                           "w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left group relative overflow-hidden",
                           isItemSelected
-                            ? "border-[#349DC5] bg-blue-50/50 dark:bg-[#349DC5]/10"
-                            : "border-gray-50 dark:border-white/5 hover:border-[#349DC5]/30 hover:bg-gray-50 dark:hover:bg-white/5"
+                            ? "border-primary bg-primary-muted dark:bg-dark-primary-muted"
+                            : "border-border-light dark:border-dark-border-light hover:border-primary/30 hover:bg-surface-alt dark:hover:bg-dark-surface-alt"
                         )}
                       >
                         <div
                           className={cn(
                             "w-12 h-12 rounded-xl flex items-center justify-center transition-all shrink-0",
                             isItemSelected
-                              ? "bg-[#349DC5] text-white shadow-lg shadow-blue-500/20"
-                              : "bg-gray-100 dark:bg-white/5 text-gray-400 group-hover:text-[#349DC5]"
+                              ? "bg-primary text-white shadow-lg shadow-primary/20"
+                              : "bg-surface-alt dark:bg-dark-surface-alt text-text-muted group-hover:text-primary"
                           )}
                         >
                           {r.role === "SuperAdmin" ? (
@@ -230,27 +230,27 @@ export default function RoleSwitcher({
                           <h4
                             className={cn(
                               "text-sm font-bold transition-colors uppercase",
-                              isItemSelected ? "text-[#349DC5]" : "text-[#00204a] dark:text-white"
+                              isItemSelected ? "text-primary" : "text-text-primary dark:text-dark-text-primary"
                             )}
                           >
                             {displayLabel}
                           </h4>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase truncate mt-0.5">
+                          <p className="text-[10px] font-bold text-text-muted uppercase truncate mt-0.5">
                             {subLabel}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           {isActiveFlag && (
-                            <span className="text-[9px] font-bold text-white bg-[#349DC5] px-2 py-0.5 rounded-full shadow-sm">
+                            <span className="text-[9px] font-bold text-white bg-primary px-2 py-0.5 rounded-full shadow-sm">
                               CURRENT
                             </span>
                           )}
                           {isItemSelected ? (
-                            <CheckCircle2 size={18} className="text-[#349DC5]" />
+                            <CheckCircle2 size={18} className="text-primary" />
                           ) : (
                             <ChevronRight
                               size={18}
-                              className="text-gray-200 group-hover:text-[#349DC5] transition-all"
+                              className="text-border dark:text-dark-border group-hover:text-primary transition-all"
                             />
                           )}
                         </div>
@@ -260,17 +260,17 @@ export default function RoleSwitcher({
                 )}
               </div>
 
-              <div className="p-6 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-white/5 flex gap-3">
+              <div className="p-6 bg-surface-alt dark:bg-dark-surface-alt border-t border-border-light dark:border-dark-border-light flex gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 h-12 bg-white dark:bg-[#1a1c1e] text-[#00204a] dark:text-white rounded-2xl text-[10px] font-bold uppercase border border-gray-200 dark:border-white/10 hover:bg-gray-50 transition-colors"
+                  className="flex-1 h-12 bg-surface dark:bg-dark-surface text-text-primary dark:text-dark-text-primary rounded-2xl text-[10px] font-bold uppercase border border-border dark:border-dark-border hover:bg-surface-alt transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleConfirm}
                   disabled={!selectedKey || loading}
-                  className="flex-[2] h-12 bg-[#349DC5] text-white rounded-2xl text-[10px] font-bold uppercase shadow-lg shadow-blue-500/20 hover:bg-[#2d8ab0] transition-all disabled:opacity-50"
+                  className="flex-[2] h-12 bg-primary text-white rounded-2xl text-[10px] font-bold uppercase shadow-lg shadow-primary/20 hover:opacity-90 transition-all disabled:opacity-50"
                 >
                   Switch Identity
                 </button>

@@ -5,10 +5,8 @@ import {
   ArrowLeft, Search, Star, StarHalf, CopyX, CheckCircle2,
   XCircle, Clock, AlertCircle, X
 } from "lucide-react";
-import axios from "axios";
+import apiClient from "../../api/client";
 import { BASE_URl } from "../../api/users";
-
-const token = () => localStorage.getItem("token");
 
 interface WorkPlanSummary {
   _id: string;
@@ -72,9 +70,7 @@ export default function AdminWorkPlansList() {
       const params = new URLSearchParams();
       if (activeFilter !== "all") params.append("status", activeFilter);
       if (q) params.append("q", q);
-      const res = await axios.get(`${BASE_URl}/api/workplans?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token()}` }
-      });
+      const res = await apiClient.get(`/api/workplans?${params.toString()}`);
       if (res.data?.ok) setItems(res.data.items || []);
       else throw new Error("Failed to load");
     } catch (e: any) { setError(e.message); }
@@ -123,26 +119,26 @@ export default function AdminWorkPlansList() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#111] pb-24">
+    <div className="min-h-screen bg-background dark:bg-dark-background pb-24">
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 pt-10 sticky top-0 z-20">
+      <div className="bg-surface dark:bg-dark-surface border-b border-border dark:border-dark-border pt-10 sticky top-0 z-20">
         <div className="flex items-center px-4 mb-4 gap-3">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-500">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-2xl bg-surface-alt dark:bg-dark-surface-alt flex items-center justify-center text-text-muted">
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-base font-black text-[#00204a] dark:text-white flex-1 text-center pr-10">Review Work Plans</h1>
+          <h1 className="text-base font-black text-text-primary dark:text-dark-text-primary flex-1 text-center pr-10">Review Work Plans</h1>
         </div>
         
         {/* Search */}
         <div className="px-4 mb-2">
-          <div className="flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2">
-            <Search size={16} className="text-gray-400 mr-2" />
+          <div className="flex items-center h-[48px] bg-surface-alt dark:bg-dark-surface-alt border border-border dark:border-dark-border rounded-xl px-3">
+            <Search size={16} className="text-text-muted mr-2" />
             <input 
               value={searchValue} 
               onChange={e => setSearchValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && setQ(searchValue.trim())}
               placeholder="Search work plans"
-              className="flex-1 bg-transparent text-sm font-medium outline-none dark:text-white"
+              className="flex-1 bg-transparent text-sm font-medium outline-none text-text-primary dark:text-dark-text-primary placeholder:text-text-muted"
             />
             {searchValue && (
               <button onClick={() => { setSearchValue(""); setQ(""); }}>
@@ -160,7 +156,7 @@ export default function AdminWorkPlansList() {
               <button 
                 key={f.key} 
                 onClick={() => setActiveFilter(f.key)}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors ${act ? "bg-[#349DC5] text-white" : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400"}`}
+                className={`shrink-0 px-4 h-[32px] rounded-full text-[13px] font-bold transition-colors ${act ? "bg-primary text-white" : "bg-surface-alt dark:bg-dark-surface-alt text-text-muted dark:text-dark-text-secondary"}`}
               >
                 {f.label}
               </button>
@@ -198,11 +194,11 @@ export default function AdminWorkPlansList() {
                 <motion.div 
                   initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                   key={item._id}
-                  onClick={() => navigate(`/admin-work-plans/${item._id}`)} // Wait, AdminViewWorkPlan route. We will build it.
-                  className="bg-white dark:bg-[#1e1e1e] rounded-xl border border-gray-200 dark:border-white/10 p-3.5 shadow-sm cursor-pointer"
+                  onClick={() => navigate(`/admin-work-plans/${item._id}`)} 
+                  className="bg-surface dark:bg-dark-surface rounded-xl border border-border dark:border-dark-border p-3.5 shadow-sm cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-bold text-[#0f172a] dark:text-white flex-1 pr-2">{title}</p>
+                    <p className="text-sm font-bold text-text-primary dark:text-dark-text-primary flex-1 pr-2">{title}</p>
                     <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${sc.bg} ${sc.color}`}>
                       {item.status}
                     </span>

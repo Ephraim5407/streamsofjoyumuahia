@@ -26,10 +26,8 @@ export default function LayoutWrapper({
   children: React.ReactNode;
 }) {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    return (
-      localStorage.getItem("theme") === "dark" ||
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    );
+    // Default to Light Mode unless explicitly saved as dark
+    return localStorage.getItem("theme") === "dark";
   });
   const [isRoleSwitcherOpen, setIsRoleSwitcherOpen] = useState(false);
 
@@ -88,7 +86,7 @@ export default function LayoutWrapper({
   }, [location.pathname, hideNav, navigate]);
   if (hideNav) {
     return (
-      <div className="flex min-h-[100dvh] w-full flex-col bg-background dark:bg-dark-background text-text dark:text-dark-text">
+      <div className="flex min-h-[100dvh] w-full flex-col bg-background dark:bg-dark-background text-text-primary dark:text-dark-text-primary">
         {children}
       </div>
     );

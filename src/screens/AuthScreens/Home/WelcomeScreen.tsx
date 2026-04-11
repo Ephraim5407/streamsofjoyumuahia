@@ -52,7 +52,7 @@ function GradientModal({
               </p>
               <button
                 onClick={onClose}
-                className="w-full mt-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-bold rounded-2xl text-[16px] hover:opacity-90 active:scale-[0.98] transition-all"
+                className="w-full mt-8 h-[48px] bg-text-primary dark:bg-dark-text-primary text-text-inverse dark:text-dark-text-inverse font-bold rounded-2xl text-[16px] hover:opacity-90 active:scale-[0.98] transition-all"
               >
                 Got it
               </button>
@@ -238,7 +238,7 @@ export default function WelcomeScreen() {
   }
 
   return (
-    <div className="min-h-[100dvh] w-full bg-white dark:bg-[#0f1218] flex flex-col lg:flex-row items-stretch justify-center overflow-hidden">
+    <div className="min-h-[100dvh] w-full bg-background dark:bg-dark-background flex flex-col lg:flex-row items-stretch justify-center overflow-hidden">
       <GradientModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -298,12 +298,12 @@ export default function WelcomeScreen() {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="text-center lg:text-left mb-10"
           >
-            <h1 className="text-3xl lg:text-4xl xl:text-[40px] font-black text-[#00204a] dark:text-white leading-tight tracking-tight uppercase">
+            <h1 className="text-3xl lg:text-4xl xl:text-[40px] font-black text-text-primary dark:text-dark-text-primary leading-tight tracking-tight uppercase">
               {storedUser?.firstName || storedUser?.title
-                ? <>Welcome Back<span className="text-[#349DC5]">.</span><br/><span className="text-xl lg:text-2xl mt-1 block truncate text-[#349DC5]">{storedUser?.title ? storedUser.title + " " : ""}{storedUser?.firstName}</span></>
-                : <>Welcome<span className="text-[#349DC5]">.</span></>}
+                ? <>Welcome Back<span className="text-primary">.</span><br/><span className="text-xl lg:text-2xl mt-1 block truncate text-primary">{storedUser?.title ? storedUser.title + " " : ""}{storedUser?.firstName}</span></>
+                : <>Welcome<span className="text-primary">.</span></>}
             </h1>
-            <p className="text-[15px] lg:text-[16px] text-[#64748B] dark:text-gray-400 mt-4 leading-6 font-medium">
+            <p className="text-[15px] lg:text-[16px] text-text-secondary dark:text-dark-text-secondary mt-4 leading-6 font-medium">
               Access your digital sanctuary.
             </p>
           </motion.div>
@@ -317,19 +317,19 @@ export default function WelcomeScreen() {
           >
             <div>
               <div
-                className={`flex items-center h-16 rounded-2xl border-[2px] px-5 transition-all duration-300 bg-white dark:bg-[#1A1F26] shadow-sm ${
+                className={`flex items-center h-[48px] rounded-2xl border-[2px] px-5 transition-all duration-300 bg-surface dark:bg-dark-surface shadow-sm ${
                   inputFocused 
-                  ? "border-[#349DC5] shadow-[0_10px_30px_-10px_rgba(52,157,197,0.3)] bg-blue-50/50 dark:bg-blue-900/10" 
-                  : "border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10"
+                  ? "border-primary shadow-[0_10px_30px_-10px_rgba(52,157,197,0.3)] bg-blue-50/50 dark:bg-blue-900/10" 
+                  : "border-border dark:border-dark-border hover:border-gray-200 dark:hover:border-white/10"
                 }`}
               >
                 <Mail 
                   size={20} 
-                  className={`mr-4 shrink-0 transition-colors duration-300 ${inputFocused ? "text-[#349DC5]" : "text-gray-400"}`} 
+                  className={`mr-4 shrink-0 transition-colors duration-300 ${inputFocused ? "text-primary" : "text-text-muted"}`} 
                 />
                 <input
                   type="email"
-                  className="flex-1 text-[16px] font-bold text-[#00204a] dark:text-white outline-none bg-transparent placeholder:text-gray-400 dark:placeholder:text-gray-600 placeholder:font-medium"
+                  className="flex-1 text-[16px] font-bold text-text-primary dark:text-dark-text-primary outline-none bg-transparent placeholder:text-text-muted dark:placeholder:text-dark-text-muted placeholder:font-medium"
                   placeholder="Enter your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -344,7 +344,7 @@ export default function WelcomeScreen() {
             <button
               onClick={continueButtonPress}
               disabled={loading}
-              className="w-full h-16 rounded-2xl font-black text-xs uppercase tracking-widest text-white flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 shadow-xl shadow-[#349DC5]/20 hover:shadow-[#349DC5]/40 hover:-translate-y-0.5"
+              className="w-full h-[48px] rounded-2xl font-black text-xs uppercase tracking-widest text-white flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5"
               style={{ backgroundColor: "#349DC5" }}
             >
               {loading ? (

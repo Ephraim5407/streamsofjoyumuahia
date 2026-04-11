@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import AsyncStorage from "../../utils/AsyncStorage";
-import { BASE_URl } from "../../api/users";
+import apiClient from "../../api/client";
 
 // ------------------------------------------------------------------
 // Types
@@ -33,9 +33,7 @@ interface PlanDraft {
 
 const uuid = () => Math.random().toString(36).slice(2, 10);
 
-const API_BASE =
-  (import.meta as any).env?.VITE_API_BASE ||
-  "https://streamsofjoyumuahia-api-n6na.onrender.com";
+// Removed hardcoded API_BASE to use standardized apiClient.
 
 // ------------------------------------------------------------------
 // Validation
@@ -269,16 +267,9 @@ export default function NewWorkPlan() {
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) throw new Error("Auth token missing");
-      const resp = await fetch(`${API_BASE}/api/workplans/${editingId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!resp.ok) {
-        const t = await resp.text();
-        throw new Error(`Fetch failed (${resp.status}) ${t}`);
-      }
-      const json = await resp.json();
-      if (!json.ok) throw new Error(json.error || "Failed");
-      const it = json.item;
+      const resp = await apiClient.get(`/api/workplans/${editingId}`);
+      if (!resp.data?.ok) throw new Error(resp.data?.error || "Failed to load plan");
+      const it = resp.data.item;
       setTitle(it.title || "");
       setGeneralGoal(it.generalGoal || "");
       setStartDate(it.startDate ? it.startDate.slice(0, 10) : "");
@@ -349,21 +340,11 @@ export default function NewWorkPlan() {
         const activeUnitId = user.activeUnitId || null;
         const body = serialize(title, generalGoal, startDate, endDate, plans,
           planStatus === "rejected" ? "pending" : undefined);
-        const resp = await fetch(`${API_BASE}/api/workplans/${editingId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            ...(activeUnitId ? { "x-active-unit": String(activeUnitId) } : {}),
-          },
-          body: JSON.stringify(body),
-        });
-        if (!resp.ok) { const t = await resp.text(); toast.error(`Update failed (${resp.status}): ${t}`); return; }
-        const json = await resp.json();
-        if (!json.ok) { toast.error(json.error || "Failed"); return; }
+        const resp = await apiClient.put(`/api/workplans/${editingId}`, body);
+        if (!resp.data?.ok) { toast.error(resp.data?.error || "Failed"); return; }
         if (planStatus === "rejected") toast.success("Plan Resubmitted ✓ — back in pending review.");
         else toast.success("Work Plan updated");
-        navigate(`/work-plans/${json.item._id}`, { replace: true });
+        navigate(`/work-plans/${resp.data.item._id}`, { replace: true });
       } catch (e: any) { toast.error(e.message); }
       finally { setSubmitting(false); }
       return;
@@ -379,18 +360,8 @@ export default function NewWorkPlan() {
         const user = userRaw ? JSON.parse(userRaw) : {};
         const activeUnitId = user.activeUnitId || null;
         const body = serialize(title, generalGoal, startDate, endDate, plans);
-        const resp = await fetch(`${API_BASE}/api/workplans/${editingId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            ...(activeUnitId ? { "x-active-unit": String(activeUnitId) } : {}),
-          },
-          body: JSON.stringify(body),
-        });
-        if (!resp.ok) { const t = await resp.text(); toast.error(`Save failed: ${t}`); return; }
-        const json = await resp.json();
-        if (!json.ok) { toast.error(json.error || "Failed"); return; }
+        const resp = await apiClient.put(`/api/workplans/${editingId}`, body);
+        if (!resp.data?.ok) { toast.error(resp.data?.error || "Failed"); return; }
         toast.success("Draft saved");
         navigate(-1);
       } catch (e: any) { toast.error(e.message); }
@@ -407,18 +378,8 @@ export default function NewWorkPlan() {
       const user = userRaw ? JSON.parse(userRaw) : {};
       const activeUnitId = user.activeUnitId || null;
       const body = serialize(title, generalGoal, startDate, endDate, plans, "draft");
-      const resp = await fetch(`${API_BASE}/api/workplans`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          ...(activeUnitId ? { "x-active-unit": String(activeUnitId) } : {}),
-        },
-        body: JSON.stringify(body),
-      });
-      if (!resp.ok) { const t = await resp.text(); toast.error(`Save failed: ${t}`); return; }
-      const json = await resp.json();
-      if (!json.ok) { toast.error(json.error || "Failed"); return; }
+      const resp = await apiClient.post("/api/workplans", body);
+      if (!resp.data?.ok) { toast.error(resp.data?.error || "Failed"); return; }
       toast.success("Draft saved");
       navigate(-1);
     } catch (e: any) { toast.error(e.message); }
@@ -441,33 +402,15 @@ export default function NewWorkPlan() {
       const user = userRaw ? JSON.parse(userRaw) : {};
       const activeUnitId = user.activeUnitId || null;
       const body = serialize(title, generalGoal, startDate, endDate, plans, "pending");
-      let resp: Response;
+      let resp;
       if (editingId) {
-        resp = await fetch(`${API_BASE}/api/workplans/${editingId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            ...(activeUnitId ? { "x-active-unit": String(activeUnitId) } : {}),
-          },
-          body: JSON.stringify(body),
-        });
+        resp = await apiClient.put(`/api/workplans/${editingId}`, body);
       } else {
-        resp = await fetch(`${API_BASE}/api/workplans`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            ...(activeUnitId ? { "x-active-unit": String(activeUnitId) } : {}),
-          },
-          body: JSON.stringify(body),
-        });
+        resp = await apiClient.post("/api/workplans", body);
       }
-      if (!resp.ok) { const t = await resp.text(); toast.error(`Publish failed (${resp.status}): ${t}`); return; }
-      const json = await resp.json();
-      if (!json.ok) { toast.error(json.error || "Failed"); return; }
+      if (!resp.data?.ok) { toast.error(resp.data?.error || "Failed"); return; }
       toast.success("Work Plan published — pending review");
-      navigate(`/work-plans/${json.item._id}`, { replace: true });
+      navigate(`/work-plans/${resp.data.item._id}`, { replace: true });
     } catch (e: any) { toast.error(e.message || "Connection failed"); }
     finally { setSubmitting(false); }
   };
@@ -477,17 +420,17 @@ export default function NewWorkPlan() {
   const isNonDraftEdit = isEditMode && planStatus && planStatus !== "draft";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0f1218] pb-32">
+    <div className="min-h-screen bg-background dark:bg-dark-background pb-32">
       {/* Header */}
-      <div className="bg-white dark:bg-[#1a1c1e] border-b border-gray-100 dark:border-white/5 px-4 pt-10 pb-3 sticky top-0 z-20">
+      <div className="bg-surface dark:bg-dark-surface border-b border-border dark:border-dark-border px-4 pt-10 pb-3 sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-500 shrink-0"
+            className="w-10 h-10 rounded-2xl bg-surface-alt dark:bg-dark-surface-alt flex items-center justify-center text-text-muted shrink-0"
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-base font-black text-[#00204a] dark:text-white leading-tight">
+          <h1 className="text-base font-black text-text-primary dark:text-dark-text-primary leading-tight">
             {isEditMode ? "Edit Work Plan" : "New Work Plan"}
           </h1>
         </div>
@@ -524,7 +467,7 @@ export default function NewWorkPlan() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Give this work plan a title"
-            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm font-bold text-[#00204a] dark:text-white outline-none focus:border-[#349DC5]/60 transition-colors"
+            className="w-full h-[48px] px-4 rounded-xl bg-surface-alt dark:bg-dark-surface-alt border border-border dark:border-dark-border text-sm font-bold text-text-primary dark:text-dark-text-primary outline-none focus:border-primary/60 transition-colors"
           />
         </div>
 
@@ -540,7 +483,7 @@ export default function NewWorkPlan() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full pl-9 pr-3 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-[#00204a] dark:text-white outline-none focus:border-[#349DC5]/60 transition-colors"
+                className="w-full h-[48px] pl-9 pr-3 rounded-xl bg-surface-alt dark:bg-dark-surface-alt border border-border dark:border-dark-border text-xs font-bold text-text-primary dark:text-dark-text-primary outline-none focus:border-primary/60 transition-colors"
               />
             </div>
             <div className="relative">
@@ -549,7 +492,7 @@ export default function NewWorkPlan() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full pl-9 pr-3 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs font-bold text-[#00204a] dark:text-white outline-none focus:border-[#349DC5]/60 transition-colors"
+                className="w-full h-[48px] pl-9 pr-3 rounded-xl bg-surface-alt dark:bg-dark-surface-alt border border-border dark:border-dark-border text-xs font-bold text-text-primary dark:text-dark-text-primary outline-none focus:border-primary/60 transition-colors"
               />
             </div>
           </div>
@@ -565,7 +508,7 @@ export default function NewWorkPlan() {
             onChange={(e) => setGeneralGoal(e.target.value)}
             placeholder="Enter your general goal"
             rows={3}
-            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm font-medium text-[#00204a] dark:text-white outline-none resize-none focus:border-[#349DC5]/60 transition-colors"
+            className="w-full px-4 py-3 rounded-xl bg-surface-alt dark:bg-dark-surface-alt border border-border dark:border-dark-border text-sm font-medium text-text-primary dark:text-dark-text-primary outline-none resize-none focus:border-primary/60 transition-colors"
           />
         </div>
 
@@ -580,10 +523,10 @@ export default function NewWorkPlan() {
               return (
                 <div
                   key={pl.id}
-                  className="border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden"
+                  className="border border-border dark:border-dark-border rounded-2xl overflow-hidden"
                 >
                   {/* Plan header */}
-                  <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-white/5">
+                  <div className="flex items-center gap-2 px-4 py-3 bg-surface-alt dark:bg-dark-surface-alt">
                     <button
                       onClick={() =>
                         setExpandedPlans((e) => ({ ...e, [pl.id]: !isExpanded }))
@@ -615,7 +558,7 @@ export default function NewWorkPlan() {
                         value={pl.title}
                         onChange={(e) => updatePlan(pl.id, { title: e.target.value })}
                         placeholder="Plan title / summary"
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm font-bold text-[#00204a] dark:text-white outline-none focus:border-[#349DC5]/60 transition-colors"
+                        className="w-full h-[48px] px-4 rounded-xl bg-surface-alt dark:bg-dark-surface-alt border border-border dark:border-dark-border text-sm font-bold text-text-primary dark:text-dark-text-primary outline-none focus:border-primary/60 transition-colors"
                       />
 
                       {/* Activities */}
@@ -624,7 +567,7 @@ export default function NewWorkPlan() {
                         {pl.activities.map((a, aIdx) => (
                           <div
                             key={a.id}
-                            className="bg-gray-50 dark:bg-white/5 rounded-xl p-3 border border-gray-100 dark:border-white/5 space-y-3"
+                            className="bg-surface-alt dark:bg-dark-surface-alt rounded-xl p-3 border border-border-light dark:border-dark-border-light space-y-3"
                           >
                             {/* Activity header */}
                             <div className="flex items-center justify-between">
@@ -647,7 +590,7 @@ export default function NewWorkPlan() {
                                 updateActivity(pl.id, a.id, { title: e.target.value })
                               }
                               placeholder="Activity Title"
-                              className="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-[#1a1c1e] border border-gray-200 dark:border-white/10 text-sm font-bold text-[#00204a] dark:text-white outline-none focus:border-[#349DC5]/60 transition-colors"
+                              className="w-full h-[44px] px-3 rounded-lg bg-surface dark:bg-dark-surface border border-border dark:border-dark-border text-sm font-bold text-text-primary dark:text-dark-text-primary outline-none focus:border-primary/60 transition-colors"
                             />
 
                             <textarea
@@ -657,7 +600,7 @@ export default function NewWorkPlan() {
                               }
                               placeholder="Description"
                               rows={2}
-                              className="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-[#1a1c1e] border border-gray-200 dark:border-white/10 text-sm font-medium text-[#00204a] dark:text-white outline-none resize-none focus:border-[#349DC5]/60 transition-colors"
+                              className="w-full px-3 py-2.5 rounded-lg bg-surface dark:bg-dark-surface border border-border dark:border-dark-border text-sm font-medium text-text-primary dark:text-dark-text-primary outline-none resize-none focus:border-primary/60 transition-colors"
                             />
 
                             {/* Resources chips */}
@@ -697,7 +640,7 @@ export default function NewWorkPlan() {
                                   }
                                 }}
                                 placeholder="Type a resource and press Enter"
-                                className="w-full px-3 py-2.5 rounded-lg bg-white dark:bg-[#1a1c1e] border border-gray-200 dark:border-white/10 text-sm text-[#00204a] dark:text-white outline-none focus:border-[#349DC5]/60 transition-colors"
+                                className="w-full h-[44px] px-3 rounded-lg bg-surface dark:bg-dark-surface border border-border dark:border-dark-border text-sm text-text-primary dark:text-dark-text-primary outline-none focus:border-primary/60 transition-colors"
                               />
                             </div>
 
@@ -708,7 +651,7 @@ export default function NewWorkPlan() {
                       {/* Add Activity */}
                       <button
                         onClick={() => addActivity(pl.id)}
-                        className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#349DC5]/40 flex items-center justify-center gap-2 text-xs font-black text-[#349DC5] hover:border-[#349DC5] hover:bg-[#349DC5]/5 transition-colors"
+                        className="w-full h-[44px] rounded-xl border-2 border-dashed border-primary/40 flex items-center justify-center gap-2 text-xs font-black text-primary hover:border-primary hover:bg-primary/5 transition-colors"
                       >
                         <Plus size={14} /> Add Activity
                       </button>
@@ -722,7 +665,7 @@ export default function NewWorkPlan() {
           {/* Add Plan */}
           <button
             onClick={addPlan}
-            className="mt-3 w-full py-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-white/10 flex items-center justify-center gap-2 text-xs font-black text-gray-400 hover:border-[#349DC5] hover:text-[#349DC5] transition-colors"
+            className="mt-3 w-full h-[48px] rounded-xl border-2 border-dashed border-border dark:border-dark-border flex items-center justify-center gap-2 text-xs font-black text-text-muted hover:border-primary hover:text-primary transition-colors"
           >
             <Plus size={14} /> Add Another Plan
           </button>
@@ -730,21 +673,21 @@ export default function NewWorkPlan() {
       </div>
 
       {/* Footer Action Buttons — Fixed */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-[#1a1c1e] border-t border-gray-100 dark:border-white/10 px-4 pb-safe pt-3 flex gap-3 max-w-2xl mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-surface dark:bg-dark-surface border-t border-border dark:border-dark-border px-4 pb-safe pt-3 flex gap-3 max-w-2xl mx-auto">
         {/* New plan or editing draft: show Save Draft + Publish */}
         {(!isEditMode || isDraft) && !isNonDraftEdit && (
           <>
             <button
               disabled={submitting}
               onClick={submit}
-              className="flex-1 py-3.5 rounded-2xl bg-gray-100 dark:bg-white/10 text-[#0f172a] dark:text-white font-black text-xs uppercase tracking-wider disabled:opacity-50 active:scale-95 transition-all"
+              className="flex-1 h-[48px] rounded-2xl bg-surface-alt dark:bg-dark-surface-alt text-text-primary dark:text-dark-text-primary font-black text-xs uppercase tracking-wider disabled:opacity-50 active:scale-95 transition-all border border-border dark:border-dark-border"
             >
               {submitting ? "Saving..." : isEditMode ? "Save Changes" : "Save Draft"}
             </button>
             <button
               disabled={submitting}
               onClick={publish}
-              className="flex-1 py-3.5 rounded-2xl bg-[#349DC5] text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-[#349DC5]/20 disabled:opacity-50 active:scale-95 transition-all"
+              className="flex-1 h-[48px] rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-primary/20 disabled:opacity-50 active:scale-95 transition-all"
             >
               {submitting ? "Publishing..." : "Publish"}
             </button>
@@ -756,8 +699,10 @@ export default function NewWorkPlan() {
           <button
             disabled={submitting}
             onClick={submit}
-            style={{ backgroundColor: isRejected ? "#dc2626" : "#349DC5" }}
-            className="flex-1 py-3.5 rounded-2xl text-white font-black text-xs uppercase tracking-wider shadow-lg disabled:opacity-50 active:scale-95 transition-all"
+            className={cn(
+               "flex-1 h-[48px] rounded-2xl text-white font-black text-xs uppercase tracking-wider shadow-lg disabled:opacity-50 active:scale-95 transition-all",
+               isRejected ? "bg-red-600" : "bg-primary"
+            )}
           >
             {submitting
               ? isRejected ? "Resubmitting..." : "Saving..."
@@ -781,7 +726,7 @@ export default function NewWorkPlan() {
               initial={{ scale: 0.92, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 20 }}
-              className="relative w-full max-w-sm bg-white dark:bg-[#1a1c1e] rounded-3xl overflow-hidden shadow-2xl"
+              className="relative w-full max-w-sm bg-surface dark:bg-dark-surface rounded-3xl overflow-hidden shadow-2xl border border-border dark:border-dark-border"
             >
               {/* Header */}
               <div className="flex items-start gap-3 px-5 pt-6 pb-4 border-b border-gray-50 dark:border-white/5">
