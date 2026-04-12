@@ -28,6 +28,7 @@ import { BASE_URl } from "../../api/users";
 import { listUnitMembers } from "../../api/unitMembers";
 import { getUnitSummaryById } from "../../api/unitSummary";
 import AsyncStorage from "../../utils/AsyncStorage";
+import { resolveActiveUnitId } from "../../utils/context";
 
 function cn(...inputs: any[]) {
   return inputs.filter(Boolean).join(" ");
@@ -130,34 +131,28 @@ export default function MemberListScreen() {
         return;
       }
       const rawUser = await AsyncStorage.getItem("user");
-      const u = rawUser ? JSON.parse(rawUser) : null;
+      let u = rawUser ? JSON.parse(rawUser) : null;
       setViewer(u);
 
-      // Find the most relevant unit ID from any valid source
-      const roles = u?.roles || [];
-      const activeRoleUnit = roles.find((r: any) => r.role === u?.activeRole && r.unit)?.unit;
-      const unitLeaderRole = roles.find((r: any) => r.role === "UnitLeader" && r.unit)?.unit;
-      const memberRole = roles.find((r: any) => r.role === "Member" && r.unit)?.unit;
-      const anyUnitRole = roles.find((r: any) => r.unit)?.unit;
+      let targetUnitId: string | null = unitId;
+      if (!targetUnitId || targetUnitId === "global") {
+        targetUnitId = await resolveActiveUnitId();
+      }
 
-      const targetUnitId =
-        unitId ||
-        u?.activeUnitId ||
-        u?.activeUnit ||
-        (typeof activeRoleUnit === "object" ? activeRoleUnit._id : activeRoleUnit) ||
-        (typeof unitLeaderRole === "object" ? unitLeaderRole._id : unitLeaderRole) ||
-        (typeof memberRole === "object" ? memberRole._id : memberRole) ||
-        (typeof anyUnitRole === "object" ? anyUnitRole._id : anyUnitRole);
+      const rawAfter = await AsyncStorage.getItem("user");
+      if (rawAfter) {
+        try {
+          u = JSON.parse(rawAfter);
+          setViewer(u);
+        } catch {
+          /* keep prior u */
+        }
+      }
 
       if (!targetUnitId || targetUnitId === "global") {
         toast.error("No active unit context found for this account.");
         setLoading(false);
         return;
-      }
-
-      // Persist the context if it was missing
-      if (targetUnitId && targetUnitId !== "global") {
-        await AsyncStorage.setItem("activeUnitId", String(targetUnitId));
       }
 
       const [membersRes, summaryRes] = await Promise.all([

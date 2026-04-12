@@ -28,15 +28,12 @@ axiosRetry(apiClient, {
 // Request interceptor to add token
 apiClient.interceptors.request.use(
   async (config) => {
-    // dynamically setting baseURL — prioritize .env but allow for storage override if explicitly set
-    const dynamicBase = await AsyncStorage.getItem("API_BASE_URL");
-    const envBase = import.meta.env.VITE_API_BASE_URL;
-
-    if (dynamicBase) {
-       config.baseURL = dynamicBase;
-    } else if (envBase) {
-       config.baseURL = envBase;
-    }
+    const trim = (u: string | null | undefined) =>
+      (u || "").trim().replace(/\/+$/, "");
+    const dynamicBase = trim(await AsyncStorage.getItem("API_BASE_URL"));
+    const envBase = trim(import.meta.env.VITE_API_BASE_URL || "");
+    // Keep in sync with users.ts BASE_URl (updates after OTP discovery, etc.)
+    config.baseURL = dynamicBase || envBase || BASE_URl;
 
     const token = await AsyncStorage.getItem("token");
     if (token) {

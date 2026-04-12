@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   ChevronRight,
 } from "lucide-react";
-import { getUnitContext } from "../../../utils/context";
+import { resolveActiveUnitId } from "../../../utils/context";
 import { listUnitMembers } from "../../../api/unitMembers";
 import { listUnitLeaders } from "../../../api/unitLeaders";
 import AsyncStorage from "../../../utils/AsyncStorage";
@@ -102,24 +102,33 @@ export default function UnitLeaderManageUnit() {
       const token = await AsyncStorage.getItem("token");
       if (!token) throw new Error("Auth token missing");
 
-      const activeUnitId = await getUnitContext();
+      const activeUnitId = await resolveActiveUnitId();
       if (!activeUnitId) {
         throw new Error("No active unit context found for this leadership account. Please contact your administrator.");
       }
 
-      // Load unit details if we only have the ID
-      const unitRes = await apiClient.get(`/api/units/${activeUnitId}`);
-      if (!unitRes.data?.ok) throw new Error("Unit data not found");
-      const unit = unitRes.data.unit || unitRes.data.item;
-
-      // Fetch list data
-      const [lRes, mRes] = await Promise.all([
+      const [unitRes, lRes, mRes] = await Promise.all([
+        apiClient.get(`/api/units/${activeUnitId}`).catch(() => ({ data: null })),
         listUnitLeaders(activeUnitId, token),
         listUnitMembers(activeUnitId, token),
       ]);
       setLeaders(lRes?.leaders || []);
       setMembers(mRes?.members || []);
-      if (unit) setUnitContext(unit);
+      const unit = unitRes?.data?.unit || unitRes?.data?.item;
+      if (unit) {
+        setUnitContext(unit);
+      } else {
+        try {
+          const raw = await AsyncStorage.getItem("user");
+          const u = raw ? JSON.parse(raw) : null;
+          const fromRole = (u?.roles || []).find(
+            (r: any) => r?.role === "UnitLeader" && r?.unit && typeof r.unit === "object",
+          )?.unit;
+          if (fromRole?.name) setUnitContext({ _id: activeUnitId, name: fromRole.name });
+        } catch {
+          /* ignore */
+        }
+      }
     } catch (e: any) {
       setError(e.message || "Failed to load unit data");
     } finally {
