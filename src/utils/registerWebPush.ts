@@ -29,7 +29,7 @@ export async function registerWebPushSubscription(): Promise<void> {
       if (perm !== "granted") return;
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapid.trim()),
+        applicationServerKey: urlBase64ToUint8Array(vapid.trim()) as any,
       });
     }
     const json = sub.toJSON();

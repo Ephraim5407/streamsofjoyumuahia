@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { ChevronLeft, Check, X } from "lucide-react";
 import apiClient from "../../../api/client";
 import { BASE_URl } from "../../../api/users";
 import AsyncStorage from "../../../utils/AsyncStorage";

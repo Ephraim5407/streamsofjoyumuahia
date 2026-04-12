@@ -6,6 +6,12 @@ declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
 };
 
+interface NotificationAction {
+  action: string;
+  title: string;
+  icon?: string;
+}
+
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 self.skipWaiting();
@@ -78,6 +84,7 @@ self.addEventListener("push", (event: PushEvent) => {
         timestamp?: number;
         actions?: NotificationAction[];
         renotify?: boolean;
+        image?: string;
       } = {
         body: payload.body,
         icon: payload.icon,
