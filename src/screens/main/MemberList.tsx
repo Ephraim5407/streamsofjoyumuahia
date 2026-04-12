@@ -702,14 +702,14 @@ export default function MemberListScreen() {
           )}
         </AnimatePresence>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
           {loading
             ? Array(8)
               .fill(0)
               .map((_, i) => (
                 <div
                   key={i}
-                  className="h-48 bg-white dark:bg-[#1a1c1e] animate-pulse rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm"
+                  className="h-40 sm:h-48 bg-white dark:bg-[#1a1c1e] animate-pulse rounded-[24px] sm:rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm"
                 />
               ))
             : filteredMembers.map((m) => (
@@ -718,9 +718,9 @@ export default function MemberListScreen() {
                 key={m._id}
                 onClick={() => handleMemberClick(m)}
                 whileHover={{ y: -4, scale: 1.02 }}
-                className="bg-white dark:bg-[#1a1c1e] p-6 rounded-[32px] shadow-sm border border-gray-100 dark:border-white/5 cursor-pointer group flex items-start gap-5 transition-all hover:shadow-xl hover:shadow-blue-900/5 hover:border-[#349DC5]/30"
+                className="bg-white dark:bg-[#1a1c1e] p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] shadow-sm border border-gray-100 dark:border-white/5 cursor-pointer group flex items-start gap-3 sm:gap-5 transition-all hover:shadow-xl hover:shadow-blue-900/5 hover:border-[#349DC5]/30"
               >
-                <div className="w-16 h-16 rounded-2xl bg-[#00204a]/5 dark:bg-white/5 border border-gray-100 dark:border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-[#00204a]/5 dark:bg-white/5 border border-gray-100 dark:border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
                   {m.profile?.avatar ? (
                     <img
                       src={m.profile.avatar}
@@ -728,7 +728,7 @@ export default function MemberListScreen() {
                       alt={m.firstName}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#00204a] text-white font-black text-xl">
+                    <div className="w-full h-full flex items-center justify-center bg-[#00204a] text-white font-black text-lg sm:text-xl">
                       {m.firstName?.[0]}{m.surname?.[0]}
                     </div>
                   )}
@@ -736,20 +736,20 @@ export default function MemberListScreen() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#349DC5] shadow-[0_0_8px_rgba(52,157,197,0.4)]" />
-                    <span className="text-[9px] font-black text-gray-400 dark:text-white/40 uppercase tracking-[0.15em] leading-none">
+                    <span className="text-[8px] sm:text-[9px] font-black text-gray-400 dark:text-white/40 uppercase tracking-[0.15em] leading-none">
                       {m.activeRole || "Member"}
                     </span>
                   </div>
-                  <h3 className="font-black text-[#00204a] dark:text-white truncate leading-none group-hover:text-[#349DC5] transition-colors uppercase text-sm tracking-tight">
+                  <h3 className="font-black text-[#00204a] dark:text-white truncate leading-none group-hover:text-[#349DC5] transition-colors uppercase text-xs sm:text-sm tracking-tight">
                     {m.title} {m.firstName} {m.surname}
                   </h3>
-                  <p className="text-[10px] font-bold text-[#349DC5] uppercase mt-2 mb-4 tracking-tighter tabular-nums drop-shadow-sm">
+                  <p className="text-[9px] sm:text-[10px] font-bold text-[#349DC5] uppercase mt-2 mb-3 sm:mb-4 tracking-tighter tabular-nums drop-shadow-sm">
                     {m.phone || "NO CONTACT"}
                   </p>
                   <div className="flex items-center gap-2">
                     <div
                       className={cn(
-                        "px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter",
+                        "px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[7px] sm:text-[8px] font-black uppercase tracking-tighter",
                         m.gender === "male"
                           ? "bg-blue-50 dark:bg-blue-500/10 text-blue-500"
                           : "bg-rose-50 dark:bg-rose-500/10 text-rose-500",
@@ -757,13 +757,13 @@ export default function MemberListScreen() {
                     >
                       {m.gender || "??"}
                     </div>
-                    <div className="px-2.5 py-1 rounded-lg text-[8px] font-black uppercase bg-gray-50 dark:bg-white/5 text-gray-400 tracking-tighter">
+                    <div className="px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[7px] sm:text-[8px] font-black uppercase bg-gray-50 dark:bg-white/5 text-gray-400 tracking-tighter">
                       {m.profile?.maritalStatus || "Single"}
                     </div>
                   </div>
                 </div>
-                <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-xl text-gray-200 group-hover:text-[#349DC5] group-hover:bg-[#349DC5]/10 transition-all mt-1">
-                  <ChevronRight size={18} />
+                <div className="p-1.5 sm:p-2 bg-gray-50 dark:bg-white/5 rounded-lg sm:rounded-xl text-gray-200 group-hover:text-[#349DC5] group-hover:bg-[#349DC5]/10 transition-all mt-1">
+                  <ChevronRight size={16} className="sm:w-5 sm:h-5" />
                 </div>
               </motion.div>
             ))}
