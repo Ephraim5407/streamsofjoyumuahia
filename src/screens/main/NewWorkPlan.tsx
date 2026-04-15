@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import AsyncStorage from "../../utils/AsyncStorage";
+import { loadLocalDrafts, upsertLocalDraft, removeLocalDraft, generateLocalDraftId, LocalWorkPlanDraft } from "../../utils/localDrafts";
 import apiClient from "../../api/client";
 import { getUnitContext } from "../../utils/context";
 import { cn } from "../../components/LayoutWrapper";
@@ -137,6 +138,7 @@ export default function NewWorkPlan() {
   // Support both ?edit=ID (from list page) and /work-plans/:id/edit (direct route)
   const editingId = searchParams.get("edit") || routeParams.id || undefined;
   const isEditMode = !!editingId;
+  const isLocalDraft = editingId?.startsWith("local_");
 
   // Form state
   const [title, setTitle] = useState("");
@@ -290,6 +292,37 @@ export default function NewWorkPlan() {
     setLoadingExisting(true);
     setLoadError(undefined);
     try {
+      // Handle local draft loading
+      if (isLocalDraft) {
+        const drafts = await loadLocalDrafts();
+        const draft = drafts.find((d) => d.id === editingId);
+        if (!draft) throw new Error("Draft not found");
+        setTitle(draft.title || "");
+        setGeneralGoal(draft.generalGoal || "");
+        setStartDate(draft.startDate ? draft.startDate.slice(0, 10) : "");
+        setEndDate(draft.endDate ? draft.endDate.slice(0, 10) : "");
+        setPlanStatus("draft");
+        if (draft.plans && Array.isArray(draft.plans) && draft.plans.length) {
+          const loaded: PlanDraft[] = draft.plans.map((pl: any) => ({
+            id: pl.id || uuid(),
+            title: pl.title || "",
+            activities: (pl.activities || []).map((a: any) => ({
+              id: a.id || uuid(),
+              title: a.title || "",
+              description: a.description || "",
+              resources: "",
+              resourcesArr: a.resourcesArr || [],
+            })),
+          }));
+          setPlans(loaded);
+          const expanded: Record<string, boolean> = {};
+          loaded.forEach((pl) => { expanded[pl.id] = true; });
+          setExpandedPlans(expanded);
+        }
+        setLoadingExisting(false);
+        return;
+      }
+      // Handle remote workplan loading
       const token = await AsyncStorage.getItem("token");
       if (!token) throw new Error("Auth token missing");
       const resp = await apiClient.get(`/api/workplans/${editingId}`);
@@ -336,7 +369,7 @@ export default function NewWorkPlan() {
     } finally {
       setLoadingExisting(false);
     }
-  }, [editingId]);
+  }, [editingId, isLocalDraft]);
 
   useEffect(() => {
     loadExisting();
@@ -354,6 +387,37 @@ export default function NewWorkPlan() {
       setShowValidationModal(true);
       return;
     }
+    
+    // Handle local draft saving
+    if (isLocalDraft && editingId) {
+      try {
+        setSubmitting(true);
+        const raw = await AsyncStorage.getItem("user");
+        const user = raw ? JSON.parse(raw) : {};
+        const draft: LocalWorkPlanDraft = {
+          id: editingId,
+          status: "draft",
+          title,
+          generalGoal,
+          startDate: startDate || null,
+          endDate: endDate || null,
+          plans: plans as any,
+          owner: user?._id,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          local: true,
+        };
+        await upsertLocalDraft(draft);
+        toast.success("Draft saved locally");
+        navigate(-1);
+      } catch (e: any) {
+        toast.error(e.message);
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+    
     if (editingId && planStatus && planStatus !== "draft") {
       // Save & resubmit rejected plan
       try {
@@ -448,6 +512,18 @@ export default function NewWorkPlan() {
 
       const body = serialize(title, generalGoal, startDate, endDate, plans, "pending", activeUnitId);
       let resp;
+      
+      // If publishing a local draft, first create as new then remove local draft
+      if (isLocalDraft && editingId) {
+        resp = await apiClient.post("/api/workplans", body);
+        if (!resp.data?.ok) { toast.error(resp.data?.error || "Failed"); return; }
+        await removeLocalDraft(editingId);
+        toast.success("Work Plan published — pending review");
+        navigate(`/work-plans/${resp.data.item._id}`, { replace: true });
+        setSubmitting(false);
+        return;
+      }
+      
       if (editingId) {
         resp = await apiClient.put(`/api/workplans/${editingId}`, body);
       } else {

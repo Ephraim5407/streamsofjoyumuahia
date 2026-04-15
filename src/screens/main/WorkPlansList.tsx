@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import apiClient from "../../api/client";
 import { BASE_URl } from "../../api/users";
 import AsyncStorage from "../../utils/AsyncStorage";
+import { loadLocalDrafts, removeLocalDraft, type LocalWorkPlanDraft } from "../../utils/localDrafts";
 
 interface Activity {
   title?: string;
@@ -46,6 +47,7 @@ const statusColors: Record<string, string> = {
 
 const filters = [
   { key: "all", label: "All" },
+  { key: "mydrafts", label: "My Drafts" },
   { key: "active", label: "Active" },
   { key: "past", label: "Past" },
   { key: "pending", label: "Pending" },
@@ -100,10 +102,25 @@ export default function WorkPlansList() {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
+      // Load remote workplans
       const res = await apiClient.get("/api/workplans");
-      if (res.data?.ok) {
-        setItems(res.data.items || []);
-      } else throw new Error(res.data?.error || "Failed to load");
+      const remoteItems: WorkPlanSummary[] = res.data?.ok ? res.data.items || [] : [];
+      
+      // Load local drafts
+      const drafts = await loadLocalDrafts();
+      const localOnes: WorkPlanSummary[] = drafts.map((d) => ({
+        _id: d.id,
+        title: d.title || "Untitled Draft",
+        status: "draft",
+        owner: d.owner,
+        startDate: d.startDate || undefined,
+        endDate: d.endDate || undefined,
+        generalGoal: d.generalGoal,
+        plans: d.plans,
+        local: true,
+      }));
+      
+      setItems([...localOnes, ...remoteItems]);
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   }, []);
@@ -113,6 +130,7 @@ export default function WorkPlansList() {
   const filteredItems = useMemo(() => {
     if (!items.length) return [];
     if (activeFilter === "all") return items;
+    if (activeFilter === "mydrafts") return items.filter(i => i.local === true);
     if (activeFilter === "active") return items.filter(i => {
       if (!i.startDate || !i.endDate) return false;
       const sd = new Date(i.startDate); const ed = new Date(i.endDate);
@@ -128,6 +146,15 @@ export default function WorkPlansList() {
   const doDelete = async (id: string) => {
     setDeleting(true);
     try {
+      // Handle local draft deletion
+      if (id.startsWith("local_")) {
+        await removeLocalDraft(id);
+        setItems((cur) => cur.filter((i) => i._id !== id));
+        setShowDeleteModal(null);
+        toast.success("Draft discarded");
+        return;
+      }
+      // Handle remote workplan deletion
       await apiClient.delete(`/api/workplans/${id}`);
       setItems(cur => cur.filter(i => i._id !== id));
       setShowDeleteModal(null);
@@ -137,7 +164,7 @@ export default function WorkPlansList() {
     } finally { setDeleting(false); }
   };
 
-  const publishDraft = async (draft: WorkPlanSummary) => {
+const publishDraft = async (draft: WorkPlanSummary) => {
     try {
       const body: any = {
         title: draft.title,
@@ -151,14 +178,19 @@ export default function WorkPlansList() {
             title: a.title,
             description: a.description,
             resources: a.resourcesArr || a.resources || [],
+            estimatedHours: a.estimatedHours ? Number(a.estimatedHours) : 0,
           })),
         })),
       };
-      await apiClient.put(`/api/workplans/${draft._id}`, body);
+      // Create new work plan via POST (not PUT) - this publishes the draft as a new item
+      const res = await apiClient.post("/api/workplans", body);
+      if (!res.data?.ok) throw new Error(res.data?.error || "Failed to publish");
+      // Remove local draft after successful publish
+      await removeLocalDraft(draft._id);
       toast.success("Draft published — pending review");
       load();
     } catch (e: any) {
-      toast.error(e.response?.data?.error || "Publish failed");
+      toast.error(e.response?.data?.error || e.message || "Publish failed");
     }
   };
 
@@ -223,7 +255,7 @@ export default function WorkPlansList() {
         ) : error ? (
           <p className="text-red-500 text-sm font-bold p-4">{error}</p>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center py-16 gap-4 text-center px-4">
+          <div className="flex flex-col items-center py-16 gap-4 text-center px-4 mt-6 ">
             <div className="w-[30vw] h-[30vw] max-w-[120px] max-h-[120px] rounded-full bg-[#e7f5fa] flex items-center justify-center mb-2">
               <div className="w-[20vw] h-[20vw] max-w-[80px] max-h-[80px] rounded-full bg-white border border-[#c8e3ee] flex items-center justify-center">
                 <Search size={28} className="text-[#349DC5]" />
@@ -263,9 +295,9 @@ export default function WorkPlansList() {
                   onClick={() => navigate(`/work-plans/${item._id}`)}
                   className="bg-white border border-[#dbe3ef] rounded-[10px] p-3.5 mb-4 relative overflow-visible cursor-pointer"
                 >
-                  <div className="flex items-start justify-between">
+<div className="flex items-start justify-between">
                     <p className="text-sm font-bold text-[#0f172a] flex-1 pr-6">{displayedTitle}</p>
-                    {ownerId === currentUserId && (
+                    {ownerId === currentUserId && item.status !== "completed" && (
                       <button 
                         onClick={(e) => { e.stopPropagation(); setMenuFor(menuFor === item._id ? null : item._id); }} 
                         className="absolute top-3 right-2 p-1"
