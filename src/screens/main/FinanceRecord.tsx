@@ -15,6 +15,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { BASE_URl } from "../../api/users";
 import AsyncStorage from "../../utils/AsyncStorage";
+import { resolveActiveUnitId } from "../../utils/context";
 export default function FinanceRecordScreen() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,7 +37,7 @@ export default function FinanceRecordScreen() {
   const fetchCategories = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const unitId = await AsyncStorage.getItem("activeUnitId");
+      const unitId = await resolveActiveUnitId();
       const res = await axios.get(`${BASE_URl}/api/finance/categories`, {
         params: { unitId, type: type === "deposit" ? "income" : type },
         headers: { Authorization: `Bearer ${token}` },
@@ -66,7 +67,7 @@ export default function FinanceRecordScreen() {
     if (!newCatName.trim()) return;
     try {
       const token = await AsyncStorage.getItem("token");
-      const unitId = await AsyncStorage.getItem("activeUnitId");
+      const unitId = await resolveActiveUnitId();
       await axios.post(
         `${BASE_URl}/api/finance/categories`,
         {
@@ -91,7 +92,7 @@ export default function FinanceRecordScreen() {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
-      const unitId = await AsyncStorage.getItem("activeUnitId");
+      const unitId = await resolveActiveUnitId();
       await axios.post(
         `${BASE_URl}/api/finance`,
         { ...form, unitId, type, amount: parseFloat(form.amount) },

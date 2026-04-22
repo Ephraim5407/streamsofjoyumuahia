@@ -34,6 +34,7 @@ import {
 import { BASE_URl } from "../../api/users";
 import { getFinanceSummary, type FinanceSummary } from "../../api/finance";
 import AsyncStorage from "../../utils/AsyncStorage";
+import { resolveActiveUnitId } from "../../utils/context";
 
 function cn(...inputs: any[]) {
   return inputs.filter(Boolean).join(" ");
@@ -127,7 +128,7 @@ export default function FinanceSummaryScreen() {
         const user = rawUser ? JSON.parse(rawUser) : null;
         const currentRole = user?.activeRole || "";
 
-        const unitId = routeUnitId || (await AsyncStorage.getItem("activeUnitId"));
+        const unitId = routeUnitId || (await resolveActiveUnitId());
 
         const [sumRes, listRes] = await Promise.all([
           getFinanceSummary({ unitId: unitId || undefined }, token),

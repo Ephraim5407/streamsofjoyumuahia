@@ -27,10 +27,23 @@ const formatDate = (iso?: string) => {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 };
 
-type AttendanceView = "list" | "add" | "edit";
+type AttendanceView = "list" | "add" | "edit" | "overview";
 type AttendanceType = "main" | "ys";
 
 type Record = AddAttendanceMainChurch & AddAttendanceYS;
+
+const CATEGORIES_MAIN = [
+  { name: "Sunday Services", services: ["Sunday First Service", "Sunday Second Service"] },
+  { name: "Midweek Service", services: ["Midweek Service"] },
+  { name: "Special Service", services: ["Special Service"] },
+  { name: "Prayer Meeting", services: ["Prayer Meeting"] },
+];
+
+const CATEGORIES_YS = [
+  { name: "Youth Service", services: ["Youth Service"] },
+  { name: "Singles Meeting", services: ["Singles Meeting"] },
+  { name: "Combined Y&S", services: ["Combined Youth & Singles"] },
+];
 
 export default function AttendanceScreen() {
   const navigate = useNavigate();
@@ -39,13 +52,16 @@ export default function AttendanceScreen() {
   const typeParam = (params.get("type") || "main") as AttendanceType;
 
   const [attendanceType, setAttendanceType] = useState<AttendanceType>(typeParam);
-  const [view, setView] = useState<AttendanceView>("list");
+  const [view, setView] = useState<AttendanceView>("overview");
   const [records, setRecords] = useState<Record[]>([]);
   const [editing, setEditing] = useState<Record | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showServicePicker, setShowServicePicker] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showOverviewModal, setShowOverviewModal] = useState(false);
 
   // Form state
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -61,10 +77,14 @@ export default function AttendanceScreen() {
     try {
       setLoading(true);
       const data = attendanceType === "main" ? await getMainChurchAttendances() : await getYSAttendances();
-      setRecords(Array.isArray(data) ? data : []);
+      const sortedRecords = Array.isArray(data) ? data : [];
+      setRecords(sortedRecords);
+      if (sortedRecords.length > 0 && !selectedDate) {
+        setSelectedDate(sortedRecords[0].date.slice(0, 10));
+      }
     } catch (e: any) { toast.error("Failed to load attendance records"); }
     finally { setLoading(false); }
-  }, [attendanceType]);
+  }, [attendanceType, selectedDate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -116,230 +136,398 @@ export default function AttendanceScreen() {
       else await deleteYSAttendance(rec._id);
       toast.success("Record deleted"); load();
     } catch { toast.error("Failed to delete"); }
-  };
-
-  // -------- List view --------
-  if (view === "list") return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#111] pb-24">
-      {/* Header */}
-      <div className="bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 px-4 pt-10 pb-4 sticky top-0 z-20">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-500">
-              <ArrowLeft size={20} />
-            </button>
-            <div>
-              <h1 className="text-lg font-black text-[#00204a] dark:text-white uppercase tracking-tight">Attendance Records</h1>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{records.length} entries · {grandTotal.toLocaleString()} total attendees</p>
-            </div>
-          </div>
-          <button onClick={openAdd} className="px-4 py-2 bg-[#349DC5] text-white rounded-2xl text-xs font-black uppercase flex items-center gap-1.5">
-            <Plus size={15} /> Add New
-          </button>
-        </div>
-
-        {/* Type toggle */}
-        <div className="flex bg-gray-50 dark:bg-white/5 rounded-2xl p-1 border border-gray-100 dark:border-white/5">
-          {(["main", "ys"] as AttendanceType[]).map(t => (
-            <button
-              key={t}
-              onClick={() => { setAttendanceType(t); }}
-              className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${attendanceType === t ? "bg-white dark:bg-[#2a2a2a] text-[#349DC5] shadow-sm" : "text-gray-400"}`}
-            >
-              {t === "main" ? "Main Church" : "Youth & Singles"}
-            </button>
-          ))}
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          {[
-            { label: "Total Sessions", value: records.length },
-            { label: "Total Male", value: records.reduce((s, r) => s + (r.maleCount || 0), 0).toLocaleString() },
-            { label: "Total Female", value: records.reduce((s, r) => s + (r.femaleCount || 0), 0).toLocaleString() },
-          ].map(stat => (
-            <div key={stat.label} className="bg-gray-50 dark:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 text-center">
-              <p className="text-lg font-black text-[#349DC5]">{stat.value}</p>
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-tight">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="px-4 pt-4 space-y-3">
-        {loading ? (
-          <div className="flex flex-col items-center py-16 gap-4">
-            <div className="w-12 h-12 rounded-full border-4 border-[#349DC5] border-t-transparent animate-spin" />
-            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading Records...</p>
-          </div>
-        ) : records.length === 0 ? (
-          <div className="flex flex-col items-center py-20 gap-4 text-center">
-            <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center">
-              <Users size={32} className="text-gray-300" />
-            </div>
-            <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No Attendance Records</p>
-            <button onClick={openAdd} className="px-6 py-3 bg-[#349DC5] text-white rounded-2xl font-black text-xs uppercase tracking-wider">
-              Record Attendance
-            </button>
-          </div>
-        ) : (
-          records.map(rec => {
-            const isExpanded = expandedId === rec._id;
-            return (
-              <motion.div key={rec._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-[#1e1e1e] rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
-                <button onClick={() => setExpandedId(isExpanded ? null : (rec._id || null))} className="w-full flex items-center justify-between p-4 text-left">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-[#349DC5]/10 flex items-center justify-center shrink-0">
-                      <Calendar size={18} className="text-[#349DC5]" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-black text-[#00204a] dark:text-white">{rec.serviceType}</p>
-                      <p className="text-xs text-gray-400 font-bold">{formatDate(rec.date)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="text-right">
-                      <p className="text-lg font-black text-[#349DC5]">{(rec.total || 0).toLocaleString()}</p>
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total</p>
-                    </div>
-                    <ChevronDown size={16} className={`text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                  </div>
-                </button>
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                      <div className="px-4 pb-4 pt-0 border-t border-gray-50 dark:border-white/5">
-                        <div className="grid grid-cols-2 gap-2 mb-3 mt-3">
-                          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
-                            <p className="text-lg font-black text-blue-600">{(rec.maleCount || 0).toLocaleString()}</p>
-                            <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Male</p>
-                          </div>
-                          <div className="bg-pink-50 dark:bg-pink-900/20 rounded-xl p-3 text-center">
-                            <p className="text-lg font-black text-pink-500">{(rec.femaleCount || 0).toLocaleString()}</p>
-                            <p className="text-[9px] font-black text-pink-400 uppercase tracking-widest">Female</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button onClick={() => openEdit(rec)} className="flex-1 py-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center gap-2 text-xs font-black text-[#349DC5]">
-                            <Edit3 size={13} /> Edit
-                          </button>
-                          <button onClick={() => handleDelete(rec)} className="flex-1 py-2.5 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center gap-2 text-xs font-black text-red-400">
-                            <Trash2 size={13} /> Delete Record
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })
-        )}
-      </div>
-    </div>
-  );
-
-  // -------- Add / Edit form --------
+  };  // -------- Views --------
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#111] pb-24">
-      {/* Header */}
-      <div className="bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 px-4 pt-10 pb-4 sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button onClick={() => { setView("list"); resetForm(); }} className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-500">
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            <h1 className="text-lg font-black text-[#00204a] dark:text-white uppercase tracking-tight">
-              {view === "edit" ? "Edit Attendance" : `Record Attendance`}
-            </h1>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-              {attendanceType === "main" ? "Main Church" : "Youth & Singles"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 pt-6 space-y-4">
-        {/* Service Type */}
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-4 border border-gray-100 dark:border-white/5 shadow-sm">
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Service Type *</label>
-          <button onClick={() => setShowServicePicker(true)} className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
-            <span className={`text-sm font-bold ${serviceType ? "text-[#00204a] dark:text-white" : "text-gray-300"}`}>{serviceType || "Select service type"}</span>
-            <ChevronDown size={16} className="text-gray-400" />
-          </button>
-        </div>
-
-        {/* Date */}
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-4 border border-gray-100 dark:border-white/5 shadow-sm">
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Date of Service *</label>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 text-sm font-bold text-[#00204a] dark:text-white outline-none" />
-        </div>
-
-        {/* Counts */}
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-4 border border-gray-100 dark:border-white/5 shadow-sm">
-          <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Attendance Count</label>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div>
-              <p className="text-xs font-black text-blue-400 uppercase tracking-widest mb-2">Male Count</p>
-              <input
-                type="number"
-                min={0}
-                value={maleCount}
-                onChange={e => setMaleCount(e.target.value)}
-                placeholder="0"
-                className="w-full px-4 py-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/30 text-xl font-black text-blue-600 outline-none text-center"
-              />
-            </div>
-            <div>
-              <p className="text-xs font-black text-pink-400 uppercase tracking-widest mb-2">Female Count</p>
-              <input
-                type="number"
-                min={0}
-                value={femaleCount}
-                onChange={e => setFemaleCount(e.target.value)}
-                placeholder="0"
-                className="w-full px-4 py-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl border border-pink-100 dark:border-pink-900/30 text-xl font-black text-pink-500 outline-none text-center"
-              />
-            </div>
-          </div>
-          {/* Total */}
-          <div className="bg-[#349DC5]/10 rounded-xl p-4 text-center">
-            <p className="text-[10px] font-black text-[#349DC5]/60 uppercase tracking-widest">Total Attendance</p>
-            <p className="text-4xl font-black text-[#349DC5]">{total.toLocaleString()}</p>
-          </div>
-        </div>
-
-        {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          disabled={submitting || !serviceType || !date}
-          className="w-full py-4 bg-[#349DC5] text-white rounded-2xl font-black text-xs uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {submitting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-          {view === "edit" ? "Update Record" : "Save and Submit"}
-        </button>
-      </div>
-
-      {/* Service type picker */}
-      <AnimatePresence>
-        {showServicePicker && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowServicePicker(false)}>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-            <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} onClick={e => e.stopPropagation()} className="relative bg-white dark:bg-[#1e1e1e] w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-widest">Service Type</p>
-                <button onClick={() => setShowServicePicker(false)}><X size={18} className="text-gray-400" /></button>
+      {view === "overview" || view === "list" ? (
+        <>
+          {/* Header */}
+          <div className="bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 px-4 pt-10 pb-4 sticky top-0 z-20">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-500">
+                  <ArrowLeft size={20} />
+                </button>
+                <div>
+                  <h1 className="text-lg font-black text-[#00204a] dark:text-white uppercase tracking-tight leading-tight">Attendance Records</h1>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{records.length} entries · {grandTotal.toLocaleString()} total attendees</p>
+                </div>
               </div>
-              {serviceTypes.map(st => (
-                <button key={st} onClick={() => { setServiceType(st); setShowServicePicker(false); }} className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                  <span className="text-sm font-bold text-[#00204a] dark:text-white">{st}</span>
-                  {serviceType === st && <Check size={15} className="text-[#349DC5]" />}
+              <button onClick={openAdd} className="px-4 py-2 bg-[#349DC5] text-white rounded-2xl text-xs font-black uppercase flex items-center gap-1.5 shadow-lg shadow-[#349DC5]/20">
+                <Plus size={15} /> Add New
+              </button>
+            </div>
+
+            {/* Type toggle */}
+            <div className="flex bg-gray-50 dark:bg-white/5 rounded-2xl p-1 border border-gray-100 dark:border-white/5 mb-3">
+              {(["main", "ys"] as AttendanceType[]).map(t => (
+                <button
+                  key={t}
+                  onClick={() => { setAttendanceType(t); setView("overview"); }}
+                  className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${attendanceType === t ? "bg-white dark:bg-[#2a2a2a] text-[#349DC5] shadow-sm" : "text-gray-400"}`}
+                >
+                  {t === "main" ? "Main Church" : "Youth & Singles"}
                 </button>
               ))}
-            </motion.div>
+            </div>
+
+            {/* View toggle */}
+            <div className="flex gap-2 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl">
+              <button onClick={() => setView("overview")} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === "overview" ? "bg-[#349DC5] text-white" : "text-gray-400 hover:text-gray-600"}`}>Overview</button>
+              <button onClick={() => setView("list")} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === "list" ? "bg-[#349DC5] text-white" : "text-gray-400 hover:text-gray-600"}`}>Detailed List</button>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              {[
+                { label: "Sessions", value: records.length },
+                { label: "Total Male", value: records.reduce((s, r) => s + (r.maleCount || 0), 0).toLocaleString() },
+                { label: "Total Female", value: records.reduce((s, r) => s + (r.femaleCount || 0), 0).toLocaleString() },
+              ].map(stat => (
+                <div key={stat.label} className="bg-gray-50 dark:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 text-center">
+                  <p className="text-lg font-black text-[#349DC5] leading-none mb-1">{stat.value}</p>
+                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-tight">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div className="px-4 pt-4">
+            {view === "overview" ? (
+              <div className="space-y-4">
+                {/* Date Selector */}
+                <div className="bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 px-1">Recorded Dates</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#349DC5]" size={18} />
+                    <select 
+                      value={selectedDate}
+                      onChange={e => setSelectedDate(e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 text-sm font-black text-[#00204a] dark:text-white outline-none appearance-none cursor-pointer"
+                    >
+                      {[...new Set(records.map(r => r.date?.slice(0, 10)))].filter(Boolean).sort((a,b) => b!.localeCompare(a!)).map(d => (
+                        <option key={d} value={d}>{formatDate(d)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-1">Service Breakdown</h2>
+                  {loading ? (
+                    <div className="py-20 flex flex-col items-center gap-4">
+                       <div className="w-10 h-10 border-4 border-[#349DC5] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : records.filter(r => r.date?.slice(0, 10) === selectedDate).length === 0 ? (
+                    <div className="py-20 text-center">
+                      <p className="text-xs font-black text-gray-400 uppercase tracking-widest">No data for this date</p>
+                    </div>
+                  ) : records.filter(r => r.date?.slice(0, 10) === selectedDate).map(rec => (
+                    <motion.button 
+                      key={rec._id || Math.random()} 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={() => {
+                        const cat = (attendanceType === 'main' ? CATEGORIES_MAIN : CATEGORIES_YS).find(c => c.services.includes(rec.serviceType));
+                        setSelectedCategory(cat?.name || rec.serviceType);
+                        setShowOverviewModal(true);
+                      }}
+                      className="w-full bg-white dark:bg-[#1a1a1a] p-4 rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm flex items-center justify-between group hover:border-[#349DC5]/30 transition-all"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-[#349DC5]/5 flex items-center justify-center text-[#349DC5] group-hover:bg-[#349DC5]/10">
+                          <Users size={24} />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{formatDate(rec.date)}</p>
+                          <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-tight">{rec.serviceType}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-xl font-black text-[#349DC5] leading-none mb-1">{(rec.total || 0).toLocaleString()}</p>
+                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">Attendees</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:bg-[#349DC5] group-hover:text-white transition-colors">
+                          <Eye size={16} />
+                        </div>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 pb-10">
+                {loading ? (
+                  <div className="flex flex-col items-center py-16 gap-4">
+                    <div className="w-10 h-10 border-4 border-[#349DC5] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : records.length === 0 ? (
+                  <div className="flex flex-col items-center py-20 gap-4 text-center">
+                    <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center">
+                      <Users size={32} className="text-gray-300" />
+                    </div>
+                    <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No Attendance Records</p>
+                  </div>
+                ) : (
+                  records.map(rec => {
+                    const isExpanded = expandedId === rec._id;
+                    return (
+                      <motion.div key={rec._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-[#1a1a1a] rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+                        <button onClick={() => setExpandedId(isExpanded ? null : (rec._id || null))} className="w-full flex items-center justify-between p-4 text-left">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-10 h-10 rounded-2xl bg-[#349DC5]/10 flex items-center justify-center shrink-0">
+                              <Calendar size={18} className="text-[#349DC5]" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-tight leading-tight mb-0.5">{rec.serviceType}</p>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{formatDate(rec.date)}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <div className="text-right">
+                              <p className="text-lg font-black text-[#349DC5] leading-none mb-1">{(rec.total || 0).toLocaleString()}</p>
+                              <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest leading-tight">Total</p>
+                            </div>
+                            <ChevronDown size={16} className={`text-gray-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          </div>
+                        </button>
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                              <div className="px-4 pb-4 pt-0 border-t border-gray-50 dark:border-white/5">
+                                <div className="grid grid-cols-2 gap-2 mb-3 mt-3">
+                                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-3 text-center">
+                                    <p className="text-lg font-black text-blue-600">{(rec.maleCount || 0).toLocaleString()}</p>
+                                    <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Male</p>
+                                  </div>
+                                  <div className="bg-pink-50 dark:bg-pink-900/20 rounded-2xl p-3 text-center">
+                                    <p className="text-lg font-black text-pink-500">{(rec.femaleCount || 0).toLocaleString()}</p>
+                                    <p className="text-[9px] font-black text-pink-400 uppercase tracking-widest">Female</p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <button onClick={() => openEdit(rec)} className="flex-1 py-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black text-[#349DC5] uppercase tracking-widest">
+                                    <Edit3 size={12} /> Edit
+                                  </button>
+                                  <button onClick={() => handleDelete(rec)} className="flex-1 py-3 bg-red-50 dark:bg-red-900/20 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black text-red-400 uppercase tracking-widest">
+                                    <Trash2 size={12} /> Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </motion.div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Overview Detailed Modal */}
+          <AnimatePresence>
+            {showOverviewModal && (
+              <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowOverviewModal(false)}>
+                <motion.div 
+                  initial={{ scale: 0.95, opacity: 0 }} 
+                  animate={{ scale: 1, opacity: 1 }} 
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={e => e.stopPropagation()}
+                  className="bg-gray-50 dark:bg-[#111] w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+                >
+                  <div className="bg-white dark:bg-[#1a1a1a] p-8 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-black text-[#349DC5] uppercase tracking-[0.3em] mb-1">Service Summary</p>
+                      <h2 className="text-2xl font-black text-[#00204a] dark:text-white uppercase tracking-tight leading-none">{selectedCategory}</h2>
+                    </div>
+                    <button onClick={() => setShowOverviewModal(false)} className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4 pt-4">
+                    {(() => {
+                      const cat = (attendanceType === 'main' ? CATEGORIES_MAIN : CATEGORIES_YS).find(c => c.name === selectedCategory);
+                      const relevantServices = cat ? cat.services : [selectedCategory || ''];
+                      
+                      return relevantServices.map(serviceName => {
+                        const serviceRecords = records.filter(r => r.serviceType === serviceName);
+                        const male = serviceRecords.reduce((s, r) => s + (r.maleCount || 0), 0);
+                        const female = serviceRecords.reduce((s, r) => s + (r.femaleCount || 0), 0);
+                        const totalCount = male + female;
+                        const avg = serviceRecords.length > 0 ? Math.round(totalCount / serviceRecords.length) : 0;
+
+                        return (
+                          <div key={serviceName} className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+                            <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-50 dark:border-white/5">
+                              <h3 className="text-sm font-black text-[#00204a] dark:text-white uppercase tracking-tight">{serviceName}</h3>
+                              <div className="bg-[#349DC5]/10 px-3 py-1 rounded-full text-[9px] font-extrabold text-[#349DC5] uppercase tracking-widest">{serviceRecords.length} Records</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              {[
+                                { label: "Male Attendance", value: male.toLocaleString() },
+                                { label: "Female Attendance", value: female.toLocaleString() },
+                                { label: "Total Volume", value: totalCount.toLocaleString() },
+                                { label: "Average Session", value: avg.toLocaleString() },
+                              ].map(s => (
+                                <div key={s.label}>
+                                  <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">{s.label}</p>
+                                  <p className="text-xl font-black text-[#00204a] dark:text-white leading-none">{s.value}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+
+                    <div className="bg-[#349DC5] p-8 rounded-[2.5rem] text-white shadow-xl shadow-[#349DC5]/20 mt-4 mb-4">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 opacity-70">Consolidated Grand Totals</p>
+                      <div className="grid grid-cols-2 gap-8">
+                        <div>
+                          <p className="text-3xl font-black leading-none mb-1">
+                            {(() => {
+                              const cat = (attendanceType === 'main' ? CATEGORIES_MAIN : CATEGORIES_YS).find(c => c.name === selectedCategory);
+                              const services = cat ? cat.services : [selectedCategory || ''];
+                              return records.filter(r => services.includes(r.serviceType)).reduce((s, r) => s + (r.maleCount || 0), 0).toLocaleString();
+                            })()}
+                          </p>
+                          <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Grand Total Male</p>
+                        </div>
+                        <div>
+                          <p className="text-3xl font-black leading-none mb-1">
+                            {(() => {
+                              const cat = (attendanceType === 'main' ? CATEGORIES_MAIN : CATEGORIES_YS).find(c => c.name === selectedCategory);
+                              const services = cat ? cat.services : [selectedCategory || ''];
+                              return records.filter(r => services.includes(r.serviceType)).reduce((s, r) => s + (r.femaleCount || 0), 0).toLocaleString();
+                            })()}
+                          </p>
+                          <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Grand Total Female</p>
+                        </div>
+                      </div>
+                      <div className="mt-8 pt-8 border-t border-white/20">
+                        <p className="text-4xl font-black leading-none">
+                          {(() => {
+                            const cat = (attendanceType === 'main' ? CATEGORIES_MAIN : CATEGORIES_YS).find(c => c.name === selectedCategory);
+                            const services = cat ? cat.services : [selectedCategory || ''];
+                            return records.filter(r => services.includes(r.serviceType)).reduce((s, r) => s + (r.total || 0), 0).toLocaleString();
+                          })()}
+                        </p>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mt-2">Total Attendance Accumulated</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+        </>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="bg-white dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-white/5 px-4 pt-10 pb-4 sticky top-0 z-20">
+            <div className="flex items-center gap-3">
+              <button onClick={() => { setView("overview"); resetForm(); }} className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-500">
+                <ArrowLeft size={20} />
+              </button>
+              <div>
+                <h1 className="text-lg font-black text-[#00204a] dark:text-white uppercase tracking-tight">
+                  {view === "edit" ? "Edit Attendance" : `Record Attendance`}
+                </h1>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  {attendanceType === "main" ? "Main Church" : "Youth & Singles"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 pt-6 space-y-4">
+            {/* Service Type */}
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Service Type *</label>
+              <button onClick={() => setShowServicePicker(true)} className="w-full flex items-center justify-between px-5 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10">
+                <span className={`text-sm font-bold ${serviceType ? "text-[#00204a] dark:text-white" : "text-gray-300"}`}>{serviceType || "Select service type"}</span>
+                <ChevronDown size={18} className="text-gray-400" />
+              </button>
+            </div>
+
+            {/* Date */}
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Date of Service *</label>
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full px-5 py-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 text-sm font-bold text-[#00204a] dark:text-white outline-none" />
+            </div>
+
+            {/* Counts */}
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Attendance Count</label>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Male Count</p>
+                  <input
+                    type="number"
+                    min={0}
+                    value={maleCount}
+                    onChange={e => setMaleCount(e.target.value)}
+                    placeholder="0"
+                    className="w-full px-4 py-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-900/30 text-2xl font-black text-blue-600 outline-none text-center"
+                  />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-pink-400 uppercase tracking-widest mb-2">Female Count</p>
+                  <input
+                    type="number"
+                    min={0}
+                    value={femaleCount}
+                    onChange={e => setFemaleCount(e.target.value)}
+                    placeholder="0"
+                    className="w-full px-4 py-4 bg-pink-50 dark:bg-pink-900/20 rounded-2xl border border-pink-100 dark:border-pink-900/30 text-2xl font-black text-pink-500 outline-none text-center"
+                  />
+                </div>
+              </div>
+              {/* Total */}
+              <div className="bg-[#349DC5]/10 rounded-2xl p-6 text-center">
+                <p className="text-[10px] font-black text-[#349DC5]/60 uppercase tracking-widest mb-1">Total Attendance</p>
+                <p className="text-4xl font-black text-[#349DC5]">{total.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || !serviceType || !date}
+              className="w-full py-5 bg-[#349DC5] text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl shadow-[#349DC5]/20"
+            >
+              {submitting && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              {view === "edit" ? "Update Record" : "Save and Submit"}
+            </button>
+          </div>
+
+          {/* Service type picker */}
+          <AnimatePresence>
+            {showServicePicker && (
+              <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowServicePicker(false)}>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                <motion.div initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} onClick={e => e.stopPropagation()} className="relative bg-white dark:bg-[#1a1a1a] w-full sm:max-w-sm rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 shadow-2xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <p className="text-[10px] font-black text-[#349DC5] uppercase tracking-[0.3em]">Select Service Type</p>
+                    <button onClick={() => setShowServicePicker(false)} className="w-8 h-8 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400"><X size={18} /></button>
+                  </div>
+                  <div className="space-y-1">
+                    {serviceTypes.map(st => (
+                      <button key={st} onClick={() => { setServiceType(st); setShowServicePicker(false); }} className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all ${serviceType === st ? "bg-[#349DC5]/10 text-[#349DC5]" : "hover:bg-gray-50 dark:hover:bg-white/5 text-gray-600 dark:text-white/60"}`}>
+                        <span className="text-sm font-black uppercase tracking-tight">{st}</span>
+                        {serviceType === st && <Check size={18} />}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

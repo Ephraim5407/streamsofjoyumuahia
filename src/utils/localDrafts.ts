@@ -1,4 +1,4 @@
-import AsyncStorage from "../../utils/AsyncStorage";
+import AsyncStorage from "./AsyncStorage";
 
 export interface LocalWorkPlanDraft {
   id: string;

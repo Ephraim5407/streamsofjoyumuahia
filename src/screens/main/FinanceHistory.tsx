@@ -9,9 +9,9 @@ import {
 import axios from "axios";
 import toast from "react-hot-toast";
 import { BASE_URl } from "../../api/users";
+import { resolveActiveUnitId } from "../../utils/context";
 
 const token = () => localStorage.getItem("token");
-const activeUnitId = () => localStorage.getItem("activeUnitId");
 
 const currency = (n: number) => `₦${(n || 0).toLocaleString()}`;
 
@@ -68,7 +68,7 @@ export default function FinanceHistoryScreen() {
   const type = (params.get("type") || "income") as FinanceType;
   const unitIdParam = params.get("unitId");
 
-  const [unitId, setUnitId] = useState<string | null>(unitIdParam || activeUnitId());
+  const [unitId, setUnitId] = useState<string | null>(unitIdParam || localStorage.getItem("activeUnitId"));
   const [items, setItems] = useState<FinanceDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -96,14 +96,7 @@ export default function FinanceHistoryScreen() {
         const u = res.data.user;
         setRole(u.activeRole || "");
         const roles = Array.isArray(u.roles) ? u.roles : [];
-        let uid = unitIdParam;
-        if (!uid) {
-          uid = localStorage.getItem("activeUnitId");
-          if (!uid) {
-            const match = roles.find((r: any) => r.role === u.activeRole && (r.unit || r.unitId));
-            if (match) uid = String(match.unit || match.unitId);
-          }
-        }
+        let uid = unitIdParam || (await resolveActiveUnitId());
         if (uid) setUnitId(uid);
         const catType = type === "deposit" ? "income" : type;
         const catRes = await axios.get(`${BASE_URl}/api/finance/categories`, {

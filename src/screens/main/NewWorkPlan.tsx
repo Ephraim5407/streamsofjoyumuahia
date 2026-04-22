@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import AsyncStorage from "../../utils/AsyncStorage";
-import { loadLocalDrafts, upsertLocalDraft, removeLocalDraft, generateLocalDraftId, LocalWorkPlanDraft } from "../../utils/localDrafts";
+import { loadLocalDrafts, upsertLocalDraft, removeLocalDraft, generateLocalDraftId, type LocalWorkPlanDraft } from "../../utils/localDrafts";
 import apiClient from "../../api/client";
 import { getUnitContext } from "../../utils/context";
 import { cn } from "../../components/LayoutWrapper";
