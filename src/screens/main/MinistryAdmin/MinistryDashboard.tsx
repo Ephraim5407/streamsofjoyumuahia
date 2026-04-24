@@ -279,9 +279,16 @@ export default function MinistryDashboard() {
                 {(summary?.totals?.soulsWon || 0).toLocaleString()}
               </h3>
             </div>
-            <div className="bg-surface dark:bg-dark-surface p-8 rounded-xl shadow-md border border-border dark:border-dark-border flex flex-col justify-center transition-all">
+            <div 
+              onClick={() => {
+                const minName = currentMinistry || "";
+                const isYS = minName.toLowerCase().includes("youth") || minName.toLowerCase().includes("single");
+                navigate(isYS ? "/attendance/ys" : "/attendance/main-church");
+              }}
+              className="bg-surface dark:bg-dark-surface p-8 rounded-xl shadow-md border border-border dark:border-dark-border flex flex-col justify-center cursor-pointer active:scale-95 transition-all hover:border-primary/30 group"
+            >
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-success/10 text-success flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-success/10 text-success flex items-center justify-center group-hover:scale-110 transition-transform">
                   <UserCheck size={24} />
                 </div>
                 <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">

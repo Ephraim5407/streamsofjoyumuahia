@@ -291,9 +291,12 @@ export default function SuperAdminDashboard() {
             <p className="text-[7px] sm:text-[9px] font-semibold text-text-muted uppercase mt-1 sm:mt-3 hidden sm:block">Total Harvested</p>
           </div>
 
-          <div className="bg-surface dark:bg-dark-surface p-3 sm:p-5 md:p-8 rounded-xl shadow-md border border-border dark:border-dark-border">
+          <div 
+            onClick={() => navigate("/attendance/main-church")}
+            className="bg-surface dark:bg-dark-surface p-3 sm:p-5 md:p-8 rounded-xl shadow-md border border-border dark:border-dark-border cursor-pointer active:scale-95 transition-all hover:border-primary/30 group"
+          >
             <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-6">
-              <Calendar className="text-success" size={14} />
+              <Calendar className="text-success group-hover:scale-110 transition-transform" size={14} />
               <span className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider leading-tight">Attendance</span>
             </div>
             <h3 className="text-lg sm:text-2xl md:text-4xl font-bold text-text-primary dark:text-dark-text-primary leading-none">

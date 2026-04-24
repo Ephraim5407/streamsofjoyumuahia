@@ -18,6 +18,7 @@ import { eventBus } from "../utils/eventBus";
 import toast from "react-hot-toast";
 import { registerWebPushSubscription } from "../utils/registerWebPush";
 import { playSoftNotificationChime } from "../utils/notificationChime";
+import AttendanceReminder from "./AttendanceReminder";
 
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
@@ -207,6 +208,7 @@ export default function LayoutWrapper({
       <main className="flex-1 flex flex-col min-w-0 min-h-0 relative pb-[calc(72px+env(safe-area-inset-bottom,0px))] md:pb-0">
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain w-full">
           {children}
+          <AttendanceReminder />
         </div>
       </main>
       <nav
